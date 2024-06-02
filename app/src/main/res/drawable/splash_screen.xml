@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <!--    <item-->
+    <!--        android:width="@dimen/_80sdp"-->
+    <!--        android:height="@dimen/_80sdp"-->
+    <!--        android:drawable="@drawable/cloudy_night"-->
+    <!--        android:gravity="center"-->
+    <!--        tools:ignore="UnusedAttribute" />-->
+
+    <item
+        android:width="@dimen/splash_screen_icon_size"
+        android:height="@dimen/splash_screen_icon_size"
+        android:drawable="@drawable/app_logo_res"
+        android:gravity="center"
+        tools:ignore="UnusedAttribute" />
+
+
+</layer-list>
