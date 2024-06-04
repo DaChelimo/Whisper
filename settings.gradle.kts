@@ -1,3 +1,5 @@
+@file:Suppress("UnstableApiUsage")
+
 pluginManagement {
     repositories {
         google {
@@ -19,6 +21,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "Generate"
+rootProject.name = "Whisper"
 include(":app")
  

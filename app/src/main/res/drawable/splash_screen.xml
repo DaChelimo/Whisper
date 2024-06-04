@@ -12,7 +12,7 @@
     <item
         android:width="@dimen/splash_screen_icon_size"
         android:height="@dimen/splash_screen_icon_size"
-        android:drawable="@drawable/app_logo_res"
+        android:drawable="@drawable/whisper_logo"
         android:gravity="center"
         tools:ignore="UnusedAttribute" />
 

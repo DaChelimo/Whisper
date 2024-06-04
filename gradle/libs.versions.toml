@@ -26,7 +26,8 @@ moshi = "1.15.1"
 retrofit = "2.11.0"
 room = "2.6.1"
 
-firebasePluginVersion = "4.4.2"
+firebasePlugin = "4.4.2"
+truth = "1.4.2"
 
 
 [libraries]
@@ -60,6 +61,7 @@ firebase-storage = { group = "com.google.firebase", name = "firebase-storage" }
 
 compose-googleFonts = { group = "androidx.compose.ui", name = "ui-text-google-fonts", version.ref = "googlefonts-compose" }
 compose-glide = { group = "com.github.bumptech.glide", name = "compose", version.ref = "glide-compose" }
+compose-countrycode = { group = "io.github.joelkanyi", name = "komposecountrycodepicker", version = "1.2.0" }
 
 
 koin-bom = { group = "io.insert-koin", name = "koin-bom", version.ref = "koin-bom" }
@@ -86,6 +88,7 @@ room-compiler = { group = "androidx.room", name = "room-compiler", version.ref =
 logging-timber = { group = "com.jakewharton.timber", name = "timber", version.ref = "timber" }
 jodaTime = { group = "net.danlew", name = "android.joda", version.ref = "jodaTime" }
 permissionX = { group = "com.guolindev.permissionx", name = "permissionx", version.ref = "permissionX" }
+truth = { module = "com.google.truth:truth", version.ref = "truth" }
 
 
 [plugins]
@@ -100,4 +103,4 @@ spotless = { id = "com.diffplug.spotless", version.ref = "spotless" }
 kapt = { id = "kotlin-kapt" }
 ksp = { id = "com.google.devtools.ksp", version = "1.9.0-1.0.12" }
 parcelize = { id = "kotlin-parcelize" }
-gms = { id = "com.google.gms.google-services", version.ref = "firebasePluginVersion" }
+gms = { id = "com.google.gms.google-services", version.ref = "firebasePlugin" }

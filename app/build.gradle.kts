@@ -5,13 +5,15 @@ plugins {
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.spotless)
 
+    alias(libs.plugins.gms)
+
     // Annotation processing
     alias(libs.plugins.ksp)
     id(libs.plugins.kapt.get().pluginId)
 }
 
 android {
-    namespace = "com.da_chelimo.generate"
+    namespace = "com.da_chelimo.whisper"
     compileSdk = 34
 
     defaultConfig {
@@ -19,7 +21,7 @@ android {
         val defaultRelease = 0
         val minorRelease = 0
 
-        applicationId = "com.da_chelimo.generate"
+        applicationId = "com.da_chelimo.whisper"
         minSdk = 24
         targetSdk = 34
         versionCode = (majorRelease * 100) + (defaultRelease * 10) + minorRelease
@@ -80,6 +82,7 @@ dependencies {
 
     // Compose UI libraries
     implementation(libs.compose.glide)
+    implementation(libs.compose.countrycode)
     implementation(libs.compose.googleFonts)
 
     // Firebase
@@ -118,6 +121,7 @@ dependencies {
 
 
     testImplementation(libs.junit)
+    testImplementation(libs.truth)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))
