@@ -1,39 +1,48 @@
 package com.da_chelimo.whisper.auth.ui.screens.enter_number
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.da_chelimo.whisper.R
-import com.da_chelimo.whisper.auth.ui.VerifyState
+import com.da_chelimo.whisper.core.domain.TaskState
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
+import timber.log.Timber
 
 class EnterNumberViewModel: ViewModel() {
 
     private val _number = MutableStateFlow("")
     val number: StateFlow<String> = _number
 
-    private val _verifyState = MutableStateFlow<VerifyState?>(null)
-    val verifyState: StateFlow<VerifyState?> = _verifyState
+    val numberWithCountryCode = number.map { "+254$it" }.stateIn(viewModelScope, SharingStarted.Eagerly, "")
+
+    private val _taskState = MutableStateFlow<TaskState?>(null)
+    val taskState: StateFlow<TaskState?> = _taskState
 
     private val _shouldNavigateToEnterCode = MutableStateFlow(false)
     val shouldNavigateToEnterCode: StateFlow<Boolean> = _shouldNavigateToEnterCode
 
     fun updateNumber(newNumber: String) {
         _number.value = newNumber
+        verifyNumber()
     }
 
-    fun verifyNumber(): VerifyState {
+    fun verifyNumber() {
         val correctDigitCount = 9
-        return when {
-            number.value.count() < correctDigitCount -> VerifyState.Error(R.string.number_too_short)
-            number.value.count() > correctDigitCount -> VerifyState.Error(R.string.number_too_long)
+        _taskState.value = when {
+            number.value.count() < correctDigitCount -> TaskState.DONE.ERROR(R.string.number_too_short)
+            number.value.count() > correctDigitCount -> TaskState.DONE.ERROR(R.string.number_too_long)
 
-            else -> VerifyState.Success()
+            else -> TaskState.DONE.SUCCESS
         }
     }
 
-    fun requestCode() {
-        if (verifyState.value is VerifyState.Success)
+    fun navigateToEnterCode() {
+        if (taskState.value is TaskState.DONE.SUCCESS)
             _shouldNavigateToEnterCode.value = true
+        Timber.d("shouldNavigateToEnterCode.value is ${shouldNavigateToEnterCode.value}")
     }
 
     fun resetShouldNavigate() {

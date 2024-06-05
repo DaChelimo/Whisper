@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -25,8 +26,9 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.da_chelimo.whisper.R
-import com.da_chelimo.whisper.auth.ui.components.CodeTextField
 import com.da_chelimo.whisper.auth.ui.components.LoadingSpinner
+import com.da_chelimo.whisper.auth.ui.components.OTPTextField
+import com.da_chelimo.whisper.core.domain.TaskState
 import com.da_chelimo.whisper.core.presentation.ui.CreateProfile
 import com.da_chelimo.whisper.core.presentation.ui.components.DefaultScreen
 import com.da_chelimo.whisper.core.presentation.ui.theme.AppTheme
@@ -38,24 +40,36 @@ fun EnterCodeScreen(navController: NavController, phoneNumberWithCountryCode: St
 
     val viewModel = viewModel<EnterCodeViewModel>()
     val code by viewModel.code.collectAsState()
-    val isLoading by viewModel.isLoading.collectAsState()
+    val taskState by viewModel.taskState.collectAsState()
 
     val activity = LocalContext.current.getActivity()
 
 
-    LaunchedEffect(key1 = Unit) {
-        viewModel.authenticateWithNumber(phoneNumberWithCountryCode, activity)
+    LaunchedEffect(key1 = taskState) {
+        when (taskState) {
+            is TaskState.NONE -> viewModel.authenticateWithNumber(
+                phoneNumberWithCountryCode,
+                activity
+            )
 
-        if (viewModel.shouldNavigate.value)
-            navController.navigate(CreateProfile(phoneNumberWithCountryCode))
+            is TaskState.DONE.SUCCESS -> {
+                navController
+                    .navigate(CreateProfile(phoneNumberWithCountryCode))
+                viewModel.resetTaskState()
+            }
+
+            else -> {}
+        }
     }
 
     DefaultScreen(
         navController = navController,
-        modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp)
+        modifier = Modifier
+            .padding(horizontal = 8.dp, vertical = 8.dp)
+            .imePadding()
     ) {
 
-        if (isLoading) {
+        if (taskState is TaskState.LOADING) {
 
             Column(
                 Modifier.fillMaxSize(),
@@ -68,15 +82,21 @@ fun EnterCodeScreen(navController: NavController, phoneNumberWithCountryCode: St
         } else {
             Text(
                 text = stringResource(R.string.enter_code),
-                modifier = Modifier.padding(top = 18.dp),
+                modifier = Modifier
+                    .padding(top = 18.dp)
+                    .align(Alignment.CenterHorizontally),
                 style = MaterialTheme.typography.titleLarge
             )
 
 
-            CodeTextField(
+            OTPTextField(
                 value = code,
                 length = EnterCodeViewModel.CODE_LENGTH,
-                modifier = Modifier.padding(top = 8.dp)
+                modifier = Modifier
+                    .padding(top = 16.dp)
+                    .fillMaxWidth()
+                    .align(Alignment.CenterHorizontally),
+                spacedBy = 10.dp
             ) { newCode ->
                 viewModel.updateCode(newCode)
             }

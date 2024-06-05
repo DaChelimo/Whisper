@@ -1,5 +1,6 @@
 package com.da_chelimo.whisper.auth.ui.components
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -10,7 +11,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
@@ -27,23 +27,27 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.da_chelimo.whisper.core.presentation.ui.theme.AppTheme
+import com.da_chelimo.whisper.core.presentation.ui.theme.Cabin
 
 @Composable
-fun CodeField(
+fun OTPTextField(
     value: String,
     length: Int,
     modifier: Modifier = Modifier,
+    spacedBy: Dp = 6.dp,
+    boxAlignment: Alignment = Alignment.Center,
     enabled: Boolean = true,
-    keyboardOptions: KeyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
+    keyboardOptions: KeyboardOptions = KeyboardOptions(
+        keyboardType = KeyboardType.NumberPassword,
+        showKeyboardOnFocus = true
+    ),
     keyboardActions: KeyboardActions = KeyboardActions(),
     onValueChange: (String) -> Unit,
 ) {
@@ -61,7 +65,7 @@ fun CodeField(
         keyboardActions = keyboardActions,
         decorationBox = { innerTextField ->
             Box {
-                // hide the inner text field as we are dwelling the text field ourselves
+                // Prevents highlighting background color in case user chooses to select all
                 CompositionLocalProvider(
                     LocalTextSelectionColors.provides(
                         TextSelectionColors(
@@ -70,60 +74,84 @@ fun CodeField(
                         )
                     )
                 ) {
-                    Box(modifier = Modifier.drawWithContent { }) {
-                        innerTextField()
-                    }
-                }
-                Row(
-                    Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
 
-                    repeat(length) { index ->
-                        // if char is not null, show it, otherwise show empty box
-                        val currentChar = value.getOrNull(index)
-                        Box(
-                            modifier = modifier
-                                .size(38.dp)
-                                .border(
-                                    width = 1.dp,
-                                    color = if (currentChar != null) MaterialTheme.colorScheme.surface else MaterialTheme.colorScheme.surfaceVariant,
-                                    shape = RoundedCornerShape(8.dp),
-                                )
-                        ) {
-                            if (currentChar != null) {
-                                Text(
-                                    modifier = Modifier.align(Alignment.Center),
-                                    text = currentChar.toString(),
-                                    textAlign = TextAlign.Center,
-                                    fontSize = 18.sp
-                                )
-                            }
+                    Row(
+                        modifier = Modifier.align(boxAlignment),
+                        horizontalArrangement = Arrangement.spacedBy(spacedBy)
+                    ) {
+                        repeat(length) { index ->
+                            val isFocused = index == value.length
+                            val char = value.getOrNull(index)?.toString()
+
+                            OTPDigit(char = char, isFocused = isFocused)
                         }
-
-                        if (index != length - 1)
-                            Text(
-                                modifier = Modifier
-                                    .padding(horizontal = 2.dp)
-                                    .width(8.dp)
-                                    .align(Alignment.CenterVertically),
-                                text = "-",
-                                textAlign = TextAlign.Center,
-                                fontWeight = FontWeight.Bold,
-                                color = Color.LightGray,
-                                fontSize = 32.sp
-                            )
                     }
                 }
             }
-        },
+        }
     )
+}
+
+
+@Composable
+fun OTPDigit(char: String?, isFocused: Boolean, modifier: Modifier = Modifier) {
+    Box(
+        modifier = modifier
+            .border(
+                BorderStroke(
+                    if (isFocused) 2.dp else 1.dp,
+                    if (isFocused)
+                        MaterialTheme.colorScheme.surface
+                    else MaterialTheme.colorScheme.surface.copy(alpha = 0.6f)
+                ),
+                RoundedCornerShape(10.dp)
+            )
+            .size(40.dp)
+    ) {
+        if (char != null) {
+            Text(
+                text = char,
+                modifier = Modifier.align(Alignment.Center),
+                fontFamily = Cabin,
+                fontWeight = FontWeight.SemiBold
+            )
+        }
+    }
 }
 
 @Preview
 @Composable
-fun CodeTextFieldPreview() = AppTheme {
+private fun PreviewOTPDigit() = AppTheme {
+    var code by remember {
+        mutableStateOf("")
+    }
+
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .padding(vertical = 12.dp)
+            .background(MaterialTheme.colorScheme.background)
+    ) {
+        OTPTextField(value = code, length = 6) {
+            code = it
+        }
+    }
+//    Row(
+//        Modifier
+//            .fillMaxWidth()
+//            .padding(vertical = 12.dp)
+//            .background(MaterialTheme.colorScheme.background),
+//        horizontalArrangement = Arrangement.spacedBy(4.dp)
+//    ) {
+//        OTPDigit("1", false)
+//        OTPDigit("2", false)
+//        OTPDigit("", true)
+//    }
+}
+
+@Preview
+@Composable
+fun OTPTextFieldPreview() = AppTheme {
     Column(
         Modifier
             .fillMaxSize()

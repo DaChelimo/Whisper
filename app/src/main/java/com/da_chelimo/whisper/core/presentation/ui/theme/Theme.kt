@@ -1,19 +1,20 @@
 package com.da_chelimo.whisper.core.presentation.ui.theme
 
 import android.os.Build
-import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
+import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
+import androidx.core.view.WindowCompat
+import com.da_chelimo.whisper.core.utils.getActivity
 
 private val DarkColorScheme = darkColorScheme(
     primary = DarkBlack,
@@ -33,6 +34,7 @@ private val LightColorScheme = lightColorScheme(
     tertiary = Color.White,
     background = Color.White,
     surface = DarkBlue,
+    surfaceDim = DarkerBlue,
     surfaceVariant = DarkBlue.copy(0.6f),
 
     onPrimary = DarkBlack,
@@ -58,16 +60,21 @@ fun AppTheme(
         else -> LightColorScheme
     }
 
+    val view = LocalView.current
+//    if (!view.isInEditMode)
+    SideEffect {
+        val window = (view.context.getActivity() ?: return@SideEffect).window
+        window.statusBarColor = colorScheme.surface.toArgb()
+        window.navigationBarColor = colorScheme.background.toArgb()
+
+        WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = false
+        WindowCompat.getInsetsController(window, view).isAppearanceLightNavigationBars = false
+    }
+
+
     MaterialTheme(
         colorScheme = colorScheme,
         typography = Typography,
         content = content
     )
-}
-
-@Composable
-fun PreviewTheme(modifier: Modifier = Modifier, content: @Composable () -> Unit) = AppTheme(dynamicColor = false) {
-    Column(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background).then(modifier)) {
-
-    }
 }

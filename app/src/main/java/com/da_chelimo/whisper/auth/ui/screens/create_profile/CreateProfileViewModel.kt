@@ -3,7 +3,8 @@ package com.da_chelimo.whisper.auth.ui.screens.create_profile
 import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.da_chelimo.whisper.auth.ui.screens.TaskState
+import com.da_chelimo.whisper.R
+import com.da_chelimo.whisper.core.domain.TaskState
 import com.da_chelimo.whisper.core.domain.User
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.ktx.firestore
@@ -56,7 +57,7 @@ class CreateProfileViewModel : ViewModel() {
                 if (task.isSuccessful)
                     _taskState.value = TaskState.DONE.SUCCESS
                 else
-                    _taskState.value = TaskState.DONE.ERROR
+                    _taskState.value = TaskState.DONE.ERROR(R.string.error_occurred)
 
             }
         }

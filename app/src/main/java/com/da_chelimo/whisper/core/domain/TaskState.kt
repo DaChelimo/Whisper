@@ -1,14 +1,17 @@
-package com.da_chelimo.whisper.auth.ui.screens
+package com.da_chelimo.whisper.core.domain
+
+import androidx.annotation.StringRes
 
 sealed class TaskState {
     // No task happening
     data object NONE: TaskState()
 
+    // Loading: Task in progress
     data object LOADING: TaskState()
 
     sealed class DONE: TaskState() {
         data object SUCCESS: DONE()
 
-        data object ERROR: DONE()
+        data class ERROR(@StringRes val errorMessageRes: Int): DONE()
     }
 }

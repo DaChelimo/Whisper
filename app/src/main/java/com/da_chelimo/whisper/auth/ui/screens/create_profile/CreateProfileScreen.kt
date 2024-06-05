@@ -51,7 +51,7 @@ import com.bumptech.glide.integration.compose.GlideImage
 import com.bumptech.glide.integration.compose.placeholder
 import com.da_chelimo.whisper.R
 import com.da_chelimo.whisper.auth.ui.components.LoadingSpinner
-import com.da_chelimo.whisper.auth.ui.screens.TaskState
+import com.da_chelimo.whisper.core.domain.TaskState
 import com.da_chelimo.whisper.core.presentation.ui.Home
 import com.da_chelimo.whisper.core.presentation.ui.components.DefaultScreen
 import com.da_chelimo.whisper.core.presentation.ui.theme.AppTheme
@@ -190,9 +190,9 @@ fun CreateProfileScreen(
 
                 LaunchedEffect(key1 = Unit) {
                     viewModel.taskState.collectLatest {
-                        if (it == TaskState.DONE.SUCCESS)
+                        if (it is TaskState.DONE.SUCCESS)
                             navController.navigate(Home)
-                        else if (it == TaskState.DONE.ERROR)
+                        else if (it is TaskState.DONE.ERROR)
                             snackbarHostState.showSnackbar("Error occurred")
                     }
                 }

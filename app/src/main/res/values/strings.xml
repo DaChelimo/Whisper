@@ -18,4 +18,7 @@
     <string name="provide_name_and_profile_photo">Please provide your name and an optional profile photo</string>
     <string name="next">Next</string>
     <string name="enter_your_name">Enter your name</string>
+
+    <string name="error_occurred">Error occurred</string>
+    <string name="send_message">Send message</string>
 </resources>

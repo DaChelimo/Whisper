@@ -16,6 +16,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
+import com.da_chelimo.whisper.auth.ui.screens.WelcomeScreen
 import com.da_chelimo.whisper.auth.ui.screens.create_profile.CreateProfileScreen
 import com.da_chelimo.whisper.auth.ui.screens.enter_code.EnterCodeScreen
 import com.da_chelimo.whisper.auth.ui.screens.enter_number.EnterNumberScreen
@@ -23,8 +24,11 @@ import com.da_chelimo.whisper.core.presentation.ui.CreateProfile
 import com.da_chelimo.whisper.core.presentation.ui.EnterCode
 import com.da_chelimo.whisper.core.presentation.ui.EnterNumber
 import com.da_chelimo.whisper.core.presentation.ui.Home
+import com.da_chelimo.whisper.core.presentation.ui.Welcome
 import com.da_chelimo.whisper.core.presentation.ui.screens.HomeScreen
 import com.da_chelimo.whisper.core.presentation.ui.theme.AppTheme
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.ktx.Firebase
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -43,11 +47,18 @@ class MainActivity : ComponentActivity() {
 
                         val navController = rememberNavController()
 
-                        NavHost(navController = navController, startDestination = Home) {
+                        NavHost(
+                            navController = navController,
+                            startDestination = if (Firebase.auth.uid == null) Welcome else Home
+                        ) {
 
                             // Home Screen
                             composable<Home> {
                                 HomeScreen()
+                            }
+
+                            composable<Welcome> {
+                                WelcomeScreen(navController = navController)
                             }
 
                             composable<EnterNumber> {
