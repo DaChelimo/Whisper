@@ -1,20 +1,14 @@
-@file:OptIn(ExperimentalGlideComposeApi::class)
-
 package com.da_chelimo.whisper.auth.ui.screens.create_profile
 
 import android.annotation.SuppressLint
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.material3.Button
@@ -35,9 +29,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
@@ -47,13 +38,12 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
-import com.bumptech.glide.integration.compose.GlideImage
-import com.bumptech.glide.integration.compose.placeholder
 import com.da_chelimo.whisper.R
 import com.da_chelimo.whisper.auth.ui.components.LoadingSpinner
-import com.da_chelimo.whisper.auth.ui.screens.TaskState
-import com.da_chelimo.whisper.core.presentation.ui.Home
+import com.da_chelimo.whisper.core.domain.TaskState
+import com.da_chelimo.whisper.core.presentation.ui.AllChats
 import com.da_chelimo.whisper.core.presentation.ui.components.DefaultScreen
+import com.da_chelimo.whisper.core.presentation.ui.components.UserIcon
 import com.da_chelimo.whisper.core.presentation.ui.theme.AppTheme
 import com.da_chelimo.whisper.core.presentation.ui.theme.DarkBlue
 import com.da_chelimo.whisper.core.presentation.ui.theme.Poppins
@@ -114,34 +104,12 @@ fun CreateProfileScreen(
                         .padding(top = 12.dp)
                 )
 
-                if (profilePic != null)
-                    GlideImage(
-                        model = profilePic ?: R.drawable.alien,
-                        contentDescription = stringResource(R.string.change_profile_picture),
-                        modifier = Modifier
-                            .padding(top = 16.dp)
-                            .size(140.dp)
-                            .clip(
-                                CircleShape
-                            ),
-                        failure = placeholder(R.drawable.alien),
-                        contentScale = ContentScale.Crop
-                    )
-                else
-                    Image(
-                        painter = painterResource(id = R.drawable.alien),
-                        contentDescription = null,
-                        modifier = Modifier
-                            .padding(top = 16.dp)
-                            .size(140.dp)
-                            .clip(
-                                CircleShape
-                            )
-                            .clickable {
-                                shouldOpenImagePicker = true
-                            },
-                        contentScale = ContentScale.Crop
-                    )
+                UserIcon(
+                    profilePic = profilePic?.toString(),
+                    iconSize = 140.dp,
+                    modifier = Modifier.padding(top = 16.dp),
+                    onClick = { shouldOpenImagePicker = true }
+                )
 
                 val indicatorColor = MaterialTheme.colorScheme.surface
                 OutlinedTextField(
@@ -190,9 +158,9 @@ fun CreateProfileScreen(
 
                 LaunchedEffect(key1 = Unit) {
                     viewModel.taskState.collectLatest {
-                        if (it == TaskState.DONE.SUCCESS)
-                            navController.navigate(Home)
-                        else if (it == TaskState.DONE.ERROR)
+                        if (it is TaskState.DONE.SUCCESS)
+                            navController.navigate(AllChats)
+                        else if (it is TaskState.DONE.ERROR)
                             snackbarHostState.showSnackbar("Error occurred")
                     }
                 }

@@ -1,6 +1,5 @@
 package com.da_chelimo.whisper.auth.ui.components
 
-import android.content.res.Resources
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -9,9 +8,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.requiredHeight
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -39,21 +36,14 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.da_chelimo.whisper.core.presentation.ui.theme.AppTheme
-import com.da_chelimo.whisper.core.presentation.ui.theme.Cabin
-import com.da_chelimo.whisper.core.presentation.ui.theme.CabinSemiCondensed
-import com.da_chelimo.whisper.core.presentation.ui.theme.LightBlack
-import com.da_chelimo.whisper.core.presentation.ui.theme.Poppins
 
-
-// In the spirit of giving credit where it's due, CodeTextField was a copy paste of this Medium article
-// by Lucian: @link https://medium.com/@lucianghimpu/code-textfield-in-jetpack-compose-32e9bc07b8e9
 @Composable
-fun CodeTextField(
+fun CodeField(
     value: String,
     length: Int,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
-    keyboardOptions: KeyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Text),
+    keyboardOptions: KeyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberPassword),
     keyboardActions: KeyboardActions = KeyboardActions(),
     onValueChange: (String) -> Unit,
 ) {
@@ -139,24 +129,11 @@ fun CodeTextFieldPreview() = AppTheme {
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background)
     ) {
-        CodeTextField(
-            value = "filll",
-            length = 5,
-            onValueChange = { },
-            modifier = Modifier.padding(bottom = 16.dp),
-        )
-        CodeTextField(
-            value = "",
-            length = 4,
-            onValueChange = { },
-            modifier = Modifier.padding(bottom = 16.dp),
-        )
-
         var field by remember {
             mutableStateOf("123")
         }
         Row(Modifier.padding(horizontal = 8.dp)) {
-            CodeTextField(
+            CodeField(
                 value = field,
                 length = 6,
                 onValueChange = {

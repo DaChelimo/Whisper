@@ -2,6 +2,7 @@ package com.da_chelimo.whisper.auth.ui.screens.enter_number
 
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.selection.TextSelectionColors
@@ -12,6 +13,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -26,7 +28,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.da_chelimo.whisper.R
-import com.da_chelimo.whisper.auth.ui.VerifyState
+import com.da_chelimo.whisper.core.domain.TaskState
+import com.da_chelimo.whisper.core.presentation.ui.EnterCode
 import com.da_chelimo.whisper.core.presentation.ui.components.DefaultScreen
 import com.da_chelimo.whisper.core.presentation.ui.theme.AppTheme
 import com.da_chelimo.whisper.core.presentation.ui.theme.CorrectGreen
@@ -35,16 +38,16 @@ import com.da_chelimo.whisper.core.presentation.ui.theme.ErrorRed
 import com.da_chelimo.whisper.core.presentation.ui.theme.Poppins
 import com.da_chelimo.whisper.core.presentation.ui.theme.QuickSand
 import com.da_chelimo.whisper.core.presentation.ui.theme.SelectionBlue
-import com.joelkanyi.jcomposecountrycodepicker.component.rememberKomposeCountryCodePickerState
 
 @Composable
 fun EnterNumberScreen(navController: NavController) {
     val viewModel = viewModel<EnterNumberViewModel>()
 
     val number by viewModel.number.collectAsState()
-    val verifyState by viewModel.verifyState.collectAsState()
+    val taskState by viewModel.taskState.collectAsState()
+    val shouldNavigateToEnterCode by viewModel.shouldNavigateToEnterCode.collectAsState()
 
-    DefaultScreen(navController = navController, modifier = Modifier.padding(horizontal = 12.dp)) {
+    DefaultScreen(navController = navController, modifier = Modifier.padding(horizontal = 12.dp).imePadding()) {
         Text(
             text = "Enter your phone number",
             fontFamily = QuickSand,
@@ -67,14 +70,7 @@ fun EnterNumberScreen(navController: NavController) {
 
 
         val indicatorColor =
-            if (verifyState is VerifyState.Success) CorrectGreen else MaterialTheme.colorScheme.surface
-        val komposeState = rememberKomposeCountryCodePickerState(
-            limitedCountries = listOf(
-                "Kenya",
-                "Uganda",
-                "Tanzania"
-            )
-        )
+            if (taskState is TaskState.DONE.SUCCESS) CorrectGreen else MaterialTheme.colorScheme.surface
 
         OutlinedTextField(
             value = number,
@@ -85,9 +81,11 @@ fun EnterNumberScreen(navController: NavController) {
             colors = TextFieldDefaults.colors(
                 unfocusedContainerColor = MaterialTheme.colorScheme.background,
                 focusedContainerColor = MaterialTheme.colorScheme.background,
+                errorContainerColor = MaterialTheme.colorScheme.background,
 
                 focusedTextColor = MaterialTheme.colorScheme.onBackground,
                 unfocusedTextColor = MaterialTheme.colorScheme.onBackground,
+                errorTextColor = MaterialTheme.colorScheme.onBackground,
 
                 cursorColor = DarkBlue,
                 selectionColors = TextSelectionColors(
@@ -113,19 +111,29 @@ fun EnterNumberScreen(navController: NavController) {
             modifier = Modifier
                 .padding(top = 16.dp)
                 .fillMaxWidth(),
-            isError = verifyState is VerifyState.Error,
+            isError = taskState is TaskState.DONE.ERROR,
             supportingText = {
-                val state = verifyState
-                if (state is VerifyState.Error && state.messageRes != null)
-                    Text(stringResource(id = state.messageRes))
+                val state = taskState as? TaskState.DONE.ERROR
+
+                state?.let {
+                    Text(stringResource(id = state.errorMessageRes))
+                }
             }
         )
 
         Spacer(modifier = Modifier.weight(1f))
 
+
+        LaunchedEffect(shouldNavigateToEnterCode) {
+            if (shouldNavigateToEnterCode) {
+                navController.navigate(EnterCode(viewModel.numberWithCountryCode.value))
+                viewModel.resetShouldNavigate()
+            }
+        }
+
         Button(
             onClick = {
-                viewModel.requestCode()
+                viewModel.navigateToEnterCode()
             },
             modifier = Modifier
                 .padding(vertical = 24.dp)
@@ -136,7 +144,7 @@ fun EnterNumberScreen(navController: NavController) {
                 disabledContentColor = MaterialTheme.colorScheme.onSurface.copy(0.75f),
                 disabledContainerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.75f)
             ),
-            enabled = verifyState is VerifyState.Success,
+            enabled = taskState is TaskState.DONE.SUCCESS,
             shape = MaterialTheme.shapes.medium
         ) {
             Text(

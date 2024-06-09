@@ -16,10 +16,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -27,9 +25,8 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.da_chelimo.whisper.R
+import com.da_chelimo.whisper.core.presentation.ui.EnterNumber
 import com.da_chelimo.whisper.core.presentation.ui.theme.AppTheme
-import com.da_chelimo.whisper.core.presentation.ui.theme.CabinSemiCondensed
-import com.da_chelimo.whisper.core.presentation.ui.theme.DarkBlue
 import com.da_chelimo.whisper.core.presentation.ui.theme.Poppins
 import com.da_chelimo.whisper.core.presentation.ui.theme.QuickSand
 
@@ -53,16 +50,16 @@ fun WelcomeScreen(navController: NavController) {
 
             Text(
                 text = stringResource(id = R.string.welcome_message),
-                modifier = Modifier.padding(top = 24.dp),
+                modifier = Modifier.padding(top = 30.dp),
                 fontFamily = QuickSand,
-                fontWeight = FontWeight.Medium,
-                fontSize = 22.sp
+                fontWeight = FontWeight.SemiBold,
+                fontSize = 24.sp
             )
         }
 
         Button(
             onClick = {
-                      navController
+                      navController.navigate(EnterNumber)
             },
             modifier = Modifier
                 .align(Alignment.BottomCenter)

@@ -7,6 +7,8 @@ plugins {
 
     alias(libs.plugins.gms)
 
+    id(libs.plugins.parcelize.get().pluginId)
+
     // Annotation processing
     alias(libs.plugins.ksp)
     id(libs.plugins.kapt.get().pluginId)
