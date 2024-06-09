@@ -20,7 +20,7 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.da_chelimo.whisper.chats.domain.Chat
+import com.da_chelimo.whisper.chats.domain.Message
 import com.da_chelimo.whisper.chats.utils.toHourAndMinute
 import com.da_chelimo.whisper.core.presentation.ui.theme.AppTheme
 import com.da_chelimo.whisper.core.presentation.ui.theme.Cabin
@@ -29,7 +29,7 @@ import com.da_chelimo.whisper.core.presentation.ui.theme.Poppins
 
 
 @Composable
-fun MyChat(modifier: Modifier = Modifier, chat: Chat) {
+fun MyChat(modifier: Modifier = Modifier, message: Message) {
     val cornerSize = 10.dp
     val edgeCornerSize = 2.dp
 
@@ -46,13 +46,13 @@ fun MyChat(modifier: Modifier = Modifier, chat: Chat) {
             contentColor = MaterialTheme.colorScheme.onSurface
         ),
         chatAlignment = Alignment.End,
-        chat = chat
+        message = message
     )
 }
 
 
 @Composable
-fun OtherChat(modifier: Modifier = Modifier, chat: Chat) {
+fun OtherChat(modifier: Modifier = Modifier, message: Message) {
     val cornerSize = 10.dp
     val edgeCornerSize = 2.dp
 
@@ -69,13 +69,13 @@ fun OtherChat(modifier: Modifier = Modifier, chat: Chat) {
             contentColor = MaterialTheme.colorScheme.onBackground
         ),
         chatAlignment = Alignment.Start,
-        chat = chat
+        message = message
     )
 }
 
 
 @Composable
-fun ChatMessage(chatShape: Shape, chatColors: CardColors, chatAlignment: Alignment.Horizontal, modifier: Modifier = Modifier, chat: Chat) {
+fun ChatMessage(chatShape: Shape, chatColors: CardColors, chatAlignment: Alignment.Horizontal, modifier: Modifier = Modifier, message: Message) {
     Column(
         modifier = modifier
             .fillMaxWidth()
@@ -89,7 +89,7 @@ fun ChatMessage(chatShape: Shape, chatColors: CardColors, chatAlignment: Alignme
             modifier = Modifier.requiredWidthIn(min = 120.dp, max = 300.dp)
         ) {
             Text(
-                text = chat.message,
+                text = message.message,
                 fontFamily = Cabin,
                 fontSize = 14.sp,
                 lineHeight = 20.sp,
@@ -101,7 +101,7 @@ fun ChatMessage(chatShape: Shape, chatColors: CardColors, chatAlignment: Alignme
         }
 
         Text(
-            text = chat.timeSent.toHourAndMinute(),
+            text = message.timeSent.toHourAndMinute(),
             modifier = Modifier.align(chatAlignment).padding(horizontal = 2.dp),
             fontSize = 10.sp,
             color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
@@ -122,13 +122,13 @@ private fun PreviewChats() = AppTheme {
     ) {
 
 
-        MyChat(chat = Chat.TEST_MY_CHAT)
+        MyChat(message = Message.TEST_MY_Message)
         Spacer(modifier = Modifier.height(4.dp))
-        OtherChat(chat = Chat.TEST_MY_CHAT)
+        OtherChat(message = Message.TEST_MY_Message)
 
-        MyChat(chat = Chat.LONG_TEST_MY_CHAT)
+        MyChat(message = Message.LONG_TEST_MY_Message)
         Spacer(modifier = Modifier.height(4.dp))
-        OtherChat(chat = Chat.LONG_TEST_MY_CHAT)
+        OtherChat(message = Message.LONG_TEST_MY_Message)
 
     }
 }
@@ -142,8 +142,8 @@ private fun PreviewMyChat() = AppTheme {
             .background(LightWhite)
             .padding(vertical = 20.dp)
     ) {
-        MyChat(chat = Chat.TEST_MY_CHAT)
+        MyChat(message = Message.TEST_MY_Message)
         Spacer(modifier = Modifier.height(4.dp))
-        MyChat(chat = Chat.LONG_TEST_MY_CHAT)
+        MyChat(message = Message.LONG_TEST_MY_Message)
     }
 }

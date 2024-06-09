@@ -1,9 +1,8 @@
 package com.da_chelimo.whisper
 
 import android.app.Application
-import com.da_chelimo.whisper.core.data.di.appModule
-import com.da_chelimo.whisper.core.data.di.localModule
-import com.da_chelimo.whisper.core.data.di.networkModule
+import com.da_chelimo.whisper.core.di.appModule
+import com.da_chelimo.whisper.core.di.localModule
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import org.koin.android.ext.koin.androidContext
@@ -17,14 +16,14 @@ class App: Application() {
     override fun onCreate() {
         super.onCreate()
         Timber.plant(Timber.DebugTree())
+        Timber.d("Firebase.auth.uid is ${Firebase.auth.uid}")
 
         startKoin {
             androidLogger(Level.DEBUG)
             androidContext(this@App)
-            modules(appModule, localModule, networkModule)
+            modules(appModule)
+            modules(localModule)
         }
-
-        Timber.d("Firebase.auth.uid is ${Firebase.auth.uid}")
     }
 
 }

@@ -52,7 +52,7 @@ fun TypeMessageBar(
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 8.dp)
-            .clip(RoundedCornerShape(24))
+            .clip(RoundedCornerShape(16.dp))
             .background(MaterialTheme.colorScheme.surfaceDim),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -66,6 +66,7 @@ fun TypeMessageBar(
                 fontSize = 15.sp,
                 fontFamily = QuickSand
             ),
+            maxLines = 4,
             colors = TextFieldDefaults.colors(
                 cursorColor = Color.White,
                 selectionColors = TextSelectionColors(
@@ -124,6 +125,9 @@ private fun PreviewTypeMessageBar() = AppTheme {
             .padding(vertical = 10.dp)
     )
     {
-        TypeMessageBar(value = message, onValueChange = { message = it }, sendMessage = { })
+        TypeMessageBar(
+            value = message,
+            onValueChange = { message = it },
+            sendMessage = { })
     }
 }

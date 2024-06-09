@@ -34,6 +34,7 @@ import com.da_chelimo.whisper.core.presentation.ui.components.DefaultScreen
 import com.da_chelimo.whisper.core.presentation.ui.theme.AppTheme
 import com.da_chelimo.whisper.core.presentation.ui.theme.Poppins
 import com.da_chelimo.whisper.core.utils.getActivity
+import timber.log.Timber
 
 @Composable
 fun EnterCodeScreen(navController: NavController, phoneNumberWithCountryCode: String) {
@@ -46,6 +47,7 @@ fun EnterCodeScreen(navController: NavController, phoneNumberWithCountryCode: St
 
 
     LaunchedEffect(key1 = taskState) {
+        Timber.d("taskState is $taskState")
         when (taskState) {
             is TaskState.NONE -> viewModel.authenticateWithNumber(
                 phoneNumberWithCountryCode,
@@ -120,7 +122,7 @@ fun EnterCodeScreen(navController: NavController, phoneNumberWithCountryCode: St
                 shape = MaterialTheme.shapes.medium
             ) {
                 Text(
-                    text = stringResource(R.string.request_code),
+                    text = stringResource(R.string.submit_code),
                     fontFamily = Poppins,
                     fontSize = 16.sp,
                     modifier = Modifier.padding(vertical = 6.dp)

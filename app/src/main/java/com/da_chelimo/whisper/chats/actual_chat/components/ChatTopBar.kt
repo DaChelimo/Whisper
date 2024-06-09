@@ -36,6 +36,7 @@ import com.da_chelimo.whisper.core.presentation.ui.theme.QuickSand
 @Composable
 fun ChatTopBar(
     navController: NavController,
+    otherPersonName: String?,
     modifier: Modifier = Modifier,
     onVoiceCall: () -> Unit,
     onVideoCall: () -> Unit
@@ -64,7 +65,7 @@ fun ChatTopBar(
             }
 
             Text(
-                text = "Andrew Chelimo",
+                text = otherPersonName ?: "",
                 fontFamily = QuickSand,
                 fontSize = 19.sp,
                 fontWeight = FontWeight.SemiBold,
@@ -99,6 +100,10 @@ fun ChatTopBar(
 @Composable
 private fun PreviewChatTopBar() = AppTheme {
     Column(Modifier.background(Color.White)) {
-        ChatTopBar(navController = rememberNavController(), onVoiceCall = {}, onVideoCall = {})
+        ChatTopBar(
+            navController = rememberNavController(),
+            otherPersonName = "Andrew Chelimo",
+            onVoiceCall = {},
+            onVideoCall = {})
     }
 }

@@ -1,4 +1,4 @@
-package com.da_chelimo.whisper.core.data.repo.local.dao
+package com.da_chelimo.whisper.chats.repo.contacts.local.dao
 
 import androidx.room.Dao
 import androidx.room.Insert

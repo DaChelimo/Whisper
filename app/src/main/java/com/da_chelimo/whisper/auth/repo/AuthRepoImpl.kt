@@ -74,9 +74,6 @@ class AuthRepoImpl : AuthRepo {
                     onSignInComplete(task.isSuccessful)
                 }
                 .await()
-        }
-
-        // If storedVerificationId was null for any reason whatsoever, show an error
-        onSignInComplete(false)
+        } ?: onSignInComplete(false)
     }
 }

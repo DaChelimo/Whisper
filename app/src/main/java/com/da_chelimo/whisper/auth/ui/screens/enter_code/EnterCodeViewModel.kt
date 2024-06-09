@@ -10,6 +10,7 @@ import com.da_chelimo.whisper.core.domain.TaskState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import timber.log.Timber
 
 class EnterCodeViewModel(
     private val authRepo: AuthRepo = AuthRepoImpl()
@@ -47,6 +48,7 @@ class EnterCodeViewModel(
             _taskState.value = TaskState.LOADING
 
             authRepo.submitSMSCode(code.value) { isSuccess ->
+                Timber.d("isSuccess in authRepo.submitSMSCode(code.value) is $isSuccess")
                 if (isSuccess)
                     _taskState.value = TaskState.DONE.SUCCESS
                 else

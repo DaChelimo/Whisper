@@ -1,32 +1,45 @@
 package com.da_chelimo.whisper.chats.domain
 
+import com.da_chelimo.whisper.core.domain.MiniUser
+
 data class Chat(
-    val senderID: String,
-    val receiverID: String,
-    var message: String,
-    var timeSent: Long,
-    var chatStatus: ChatStatus
+    val chatID: String,
+
+    val firstMiniUser: MiniUser,
+    val secondMiniUser: MiniUser,
+
+    var unreadMessagesCount: Int,
+
+    var lastMessage: String,
+    var lastMessageSender: String,
+    val lastMessageStatus: MessageStatus,
+    var timeOfLastMessage: Long // Time in millis when the last text was sent
 ) {
 
-    constructor(): this("", "", "", 0, ChatStatus.SENT)
+    constructor() : this(
+        "",
+        MiniUser("", "", null),
+        MiniUser("", "", null),
+        0,
+        "",
+        "",
+        MessageStatus.SENT,
+        0
+    )
+
 
     companion object {
-        val TEST_MY_CHAT = Chat("me", "you", "Hey there", 12345678, ChatStatus.RECEIVED)
-        val LONG_TEST_MY_CHAT = Chat("me", "you", "Hey there. I'm Andrew. We met during the joint prefect's hike at Ngong hills.", 12345678, ChatStatus.RECEIVED)
-        val TEST_OTHER_CHAT = Chat("you", "me", "Hey there", 12345678, ChatStatus.RECEIVED)
-        val LONG_TEST_OTHER_CHAT = Chat("you", "me", "Hey there. I'm Andrew. We met during the joint prefect's hike at Ngong hills.", 12345678, ChatStatus.RECEIVED)
-
-        val TEST_LIST_OF_CHATS = listOf(
-            TEST_MY_CHAT, TEST_OTHER_CHAT,
-            LONG_TEST_MY_CHAT, TEST_OTHER_CHAT, LONG_TEST_OTHER_CHAT,
-            TEST_MY_CHAT
+        val TEST_CHAT = Chat(
+            "chat1234",
+            MiniUser("Andrew", "1234", null),
+            MiniUser("Diana", "0000", null),
+            6,
+            "Wanna come over for lunch?",
+            "0000",
+            MessageStatus.RECEIVED,
+            1234455
         )
     }
-
 }
 
-enum class ChatStatus {
-    SENT,
-    RECEIVED,
-    OPENED
-}
+

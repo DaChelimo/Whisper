@@ -9,6 +9,7 @@ val LightBlack = Color(0xFF292929)
 
 val DarkBlue = Color(0xFF1c2e46)
 val DarkerBlue = Color(0xFF0E1D31)
+val GreyBlue = Color(0xFF304057)
 
 val CorrectGreen = Color(0xFF00FF92)
 val ErrorRed = Color(0xFFF0384E)

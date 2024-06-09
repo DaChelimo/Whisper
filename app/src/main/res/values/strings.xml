@@ -21,4 +21,12 @@
 
     <string name="error_occurred">Error occurred</string>
     <string name="send_message">Send message</string>
+    <string name="select_contact">Select contact</string>
+    <string name="contacts_on_whisper">Contacts on Whisper</string>
+    <string name="messages">Messages</string>
+    <string name="open_menu">Open menu</string>
+    <string name="search">Search</string>
+    <string name="start_a_chat">Start a chat</string>
+    <string name="submit_code">Submit code</string>
+    <string name="read_contacts_permission">Read contacts permission needed to message people in your contacts</string>
 </resources>
