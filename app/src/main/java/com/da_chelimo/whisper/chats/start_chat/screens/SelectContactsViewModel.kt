@@ -14,6 +14,6 @@ class SelectContactsViewModel(
     val inviteToWhisperList = mutableStateListOf<User>()
 
     suspend fun fetchContactsOnWhisper(context: Context) {
-        contactsRepo.getContactsOnWhisper(context)
+        contactsRepo.refreshContactsOnWhisper(context)
     }
 }

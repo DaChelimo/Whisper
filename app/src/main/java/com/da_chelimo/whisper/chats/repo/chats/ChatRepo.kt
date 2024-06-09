@@ -8,6 +8,13 @@ import kotlinx.coroutines.flow.Flow
 
 interface ChatRepo {
 
+    data class PersonalizedChat(
+        val chatID: String
+    ) {
+        constructor() : this("")
+    }
+
+
     companion object {
         const val PERSONALIZED_CHATS = "personalized_chats"
 

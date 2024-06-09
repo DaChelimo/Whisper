@@ -27,7 +27,6 @@ fun DefaultScreen(
     content: @Composable ColumnScope.() -> Unit
 ) {
     DefaultScreen(
-        navController = navController,
         modifier = modifier,
         appBar = {
             AppBar(navController = navController, appBarText = appBarText)
@@ -40,12 +39,11 @@ fun DefaultScreen(
 
 @Composable
 fun DefaultScreen(
-    navController: NavController,
     modifier: Modifier = Modifier,
     appBar: @Composable () -> Unit,
     surfaceColor: Color = MaterialTheme.colorScheme.surface,
     backgroundColor: Color = MaterialTheme.colorScheme.background,
-    content: @Composable ColumnScope.() -> Unit
+    content: @Composable() (ColumnScope.() -> Unit)
 ) {
     Column(
         modifier = Modifier

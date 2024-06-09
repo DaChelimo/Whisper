@@ -9,7 +9,6 @@ interface UserRepo {
 
     companion object {
         const val USERS_COLLECTION = "users"
-        const val USER_PROFILE = "profile"
 
         const val PROFILE_PIC = "profilePic"
     }

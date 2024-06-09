@@ -4,6 +4,7 @@ import android.Manifest
 import android.annotation.SuppressLint
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -47,6 +48,7 @@ import com.da_chelimo.whisper.core.presentation.ui.SelectContact
 import com.da_chelimo.whisper.core.presentation.ui.components.DefaultScreen
 import com.da_chelimo.whisper.core.presentation.ui.components.TintedAppBarIcon
 import com.da_chelimo.whisper.core.presentation.ui.theme.AppTheme
+import com.da_chelimo.whisper.core.presentation.ui.theme.LightWhite
 import com.da_chelimo.whisper.core.presentation.ui.theme.QuickSand
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -61,7 +63,6 @@ fun AllChatsScreen(
     val context = LocalContext.current
 
     DefaultScreen(
-        navController = navController,
         appBar = {
             Row(
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -90,20 +91,19 @@ fun AllChatsScreen(
                     contentDescription = stringResource(R.string.search)
                 )
             }
-        }
+        },
+        backgroundColor = LightWhite
     ) {
 
-        Box(modifier = Modifier.fillMaxSize()) {
+        Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
             LazyColumn(
-                modifier = Modifier.padding(bottom = 4.dp),
+                modifier = Modifier.padding(bottom = 4.dp).fillMaxSize(),
                 verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 items(viewModel.chats) { chat ->
                     ChatPreview(
                         chat = chat,
-                        modifier = Modifier
-                            .padding(vertical = 8.dp)
-                            .padding(end = 4.dp),
+                        modifier = Modifier,
                         openProfilePic = {
 
                         },

@@ -22,36 +22,24 @@ class ContactsRepoImpl(private val localContactDao: LocalContactDao) : ContactsR
     override val contactsOnWhisper: Flow<List<User>> =
         localContactDao.getContacts()
 
-    companion object {
-
-        val CONTACTS_PROJECTION = arrayOf(
-            ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME_PRIMARY,
-            ContactsContract.CommonDataKinds.Phone.NORMALIZED_NUMBER
-        )
-    }
 
     override suspend fun getContactFromUID(userUID: String): User? =
         localContactDao.getContact(userUID)
 
 
-    override suspend fun getContactsOnWhisper(context: Context): MutableList<User> {
-        val contactsOnWhisper = refreshContactListOnWhisper(context)
-
-        Timber.d("contactsOnWhisper is $contactsOnWhisper")
-        return contactsOnWhisper
-    }
-
-    private suspend fun ContactsRepoImpl.refreshContactListOnWhisper(context: Context): MutableList<User> {
+    /**
+     * Gets all the contacts on the user's phone, breaks them into groups of 30 (maximum for Firebase queries) and
+     * searches for them on Firebase Firestore
+     */
+    override suspend fun refreshContactsOnWhisper(context: Context) {
         val phoneContacts = getContactsOnPhone(context).values.toMutableList()
         val numOfLists = phoneContacts.count() / 30 + 1
-
         val shorterPhoneContacts = (0..numOfLists).map { index ->
             val fromIndex = (index * 30).coerceAtLeast(0)
             val toIndex = ((index + 1) * 30).coerceAtMost(phoneContacts.count() - 1)
 
             phoneContacts.subList(fromIndex, toIndex)
         }
-        Timber.d("shorterPhoneContacts.count is ${shorterPhoneContacts.count()}")
 
         val contactsOnWhisper = mutableListOf<User>()
         shorterPhoneContacts.forEach { listToCheck ->
@@ -66,7 +54,7 @@ class ContactsRepoImpl(private val localContactDao: LocalContactDao) : ContactsR
         }
 
         localContactDao.insertData(contactsOnWhisper.toLocalContacts())
-        return contactsOnWhisper
+        Timber.d("contactsOnWhisper is $contactsOnWhisper")
     }
 
 
@@ -89,12 +77,8 @@ class ContactsRepoImpl(private val localContactDao: LocalContactDao) : ContactsR
                     val contactNumber =
                         it.getString(it.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.NORMALIZED_NUMBER))
 
-                    Timber.d("contactName is $contactName")
-                    Timber.d("contactNumber is $contactNumber")
-
                     try {
                         contacts[contactName] = contactNumber
-//                        contactCount++
                     } catch (_: NullPointerException) {
                     }
                 }
@@ -103,5 +87,14 @@ class ContactsRepoImpl(private val localContactDao: LocalContactDao) : ContactsR
             cursor?.close()
             return@withContext contacts
         }
+
+
+
+    companion object {
+        val CONTACTS_PROJECTION = arrayOf(
+            ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME_PRIMARY,
+            ContactsContract.CommonDataKinds.Phone.NORMALIZED_NUMBER
+        )
+    }
 
 }
