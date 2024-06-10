@@ -35,11 +35,19 @@ class ContactsRepoImpl(private val localContactDao: LocalContactDao) : ContactsR
         val phoneContacts = getContactsOnPhone(context).values.toMutableList()
         val numOfLists = phoneContacts.count() / 30 + 1
         val shorterPhoneContacts = (0..numOfLists).map { index ->
-            val fromIndex = (index * 30).coerceAtLeast(0)
-            val toIndex = ((index + 1) * 30).coerceAtMost(phoneContacts.count() - 1)
+            val lastIndex =
+                if ((phoneContacts.count() - 1) < 0) 0
+                else phoneContacts.count() - 1
 
-            phoneContacts.subList(fromIndex, toIndex)
-        }
+            val fromIndex = (index * 30).coerceAtLeast(0).coerceAtMost(lastIndex)
+            val toIndex =
+                ((index + 1) * 30).coerceAtLeast(0).coerceAtMost(lastIndex)
+
+            if (toIndex > fromIndex)
+                phoneContacts.subList(fromIndex, toIndex)
+            else
+                listOf()
+        }.filter { it.isNotEmpty() }
 
         val contactsOnWhisper = mutableListOf<User>()
         shorterPhoneContacts.forEach { listToCheck ->
@@ -87,7 +95,6 @@ class ContactsRepoImpl(private val localContactDao: LocalContactDao) : ContactsR
             cursor?.close()
             return@withContext contacts
         }
-
 
 
     companion object {

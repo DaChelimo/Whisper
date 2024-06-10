@@ -29,6 +29,8 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -45,6 +47,7 @@ import com.da_chelimo.whisper.R
 import com.da_chelimo.whisper.chats.all_chats.components.ChatPreview
 import com.da_chelimo.whisper.core.presentation.ui.ActualChat
 import com.da_chelimo.whisper.core.presentation.ui.SelectContact
+import com.da_chelimo.whisper.core.presentation.ui.Settings
 import com.da_chelimo.whisper.core.presentation.ui.components.DefaultScreen
 import com.da_chelimo.whisper.core.presentation.ui.components.TintedAppBarIcon
 import com.da_chelimo.whisper.core.presentation.ui.theme.AppTheme
@@ -62,6 +65,8 @@ fun AllChatsScreen(
     val viewModel = viewModel<AllChatsViewModel>()
     val context = LocalContext.current
 
+    val chats by viewModel.chats.collectAsState(initial = listOf())
+
     DefaultScreen(
         appBar = {
             Row(
@@ -75,7 +80,10 @@ fun AllChatsScreen(
 
                 TintedAppBarIcon(
                     imageVector = Icons.Rounded.Menu,
-                    contentDescription = stringResource(R.string.open_menu)
+                    contentDescription = stringResource(R.string.open_menu),
+                    onClick = {
+                        navController.navigate(Settings)
+                    }
                 )
 
                 Text(
@@ -88,19 +96,26 @@ fun AllChatsScreen(
 
                 TintedAppBarIcon(
                     imageVector = Icons.Rounded.Search,
-                    contentDescription = stringResource(R.string.search)
+                    contentDescription = stringResource(R.string.search),
+                    onClick = {
+
+                    }
                 )
             }
         },
         backgroundColor = LightWhite
     ) {
 
-        Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
+        Box(modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)) {
             LazyColumn(
-                modifier = Modifier.padding(bottom = 4.dp).fillMaxSize(),
+                modifier = Modifier
+                    .padding(bottom = 4.dp)
+                    .fillMaxSize(),
                 verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
-                items(viewModel.chats) { chat ->
+                items(chats) { chat ->
                     ChatPreview(
                         chat = chat,
                         modifier = Modifier,

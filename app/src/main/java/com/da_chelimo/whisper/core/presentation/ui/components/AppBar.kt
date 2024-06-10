@@ -1,6 +1,7 @@
 package com.da_chelimo.whisper.core.presentation.ui.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -67,6 +68,7 @@ fun AppBar(
 fun TintedAppBarIcon(
     imageVector: ImageVector,
     contentDescription: String,
+    onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Icon(
@@ -74,6 +76,7 @@ fun TintedAppBarIcon(
         contentDescription = contentDescription,
         modifier = modifier
             .size(34.dp)
+            .clickable { onClick() }
             .clip(RoundedCornerShape(6.dp))
             .background(GreyBlue)
             .padding(5.dp),
