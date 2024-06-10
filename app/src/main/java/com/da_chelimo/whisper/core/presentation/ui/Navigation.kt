@@ -5,9 +5,6 @@ import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
 
 @Serializable
-object Home
-
-@Serializable
 object Welcome
 
 @Serializable
@@ -25,6 +22,9 @@ data class EnterCode(val phoneNumberWithCountryCode: String)
 @Parcelize
 data class CreateProfile(val phoneNumber: String) : Parcelable
 
+
+@Serializable
+object Settings
 
 @Serializable
 object AllChats

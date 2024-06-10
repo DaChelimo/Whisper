@@ -26,41 +26,45 @@ class ChatRepoImpl(private val userRepo: UserRepo = UserRepoImpl()) : ChatRepo {
 
     private val firestore = Firebase.firestore
 
-
-    data class PersonalizedChat(
-        val chatID: String
-    ) {
-        constructor() : this("")
-    }
-
     override suspend fun getChatFromChatID(chatID: String): Chat? =
-        firestore.collection(CHAT_DETAILS)
-            .document(chatID)
+        getChatDetailsRef(chatID)
             .get()
             .await()
             .toObject<Chat>()
 
-    override suspend fun getChatsForUser(userID: String): List<Chat> {
+    override fun getChatsForUser(userID: String) = callbackFlow<List<Chat>> {
         val listOfChatIDs = getPersonalizedChatsFirebaseRef(userID)
             .get()
             .await()
-            .toObjects(PersonalizedChat::class.java)
+            .toObjects(ChatRepo.PersonalizedChat::class.java)
             .map { it.chatID }
 
         if (listOfChatIDs.isEmpty())
-            return emptyList()
+            trySend(emptyList())
 
         Timber.d("listOfChatIDs is $listOfChatIDs")
 
-        val chats = firestore.collection(CHAT_DETAILS)
-            .whereIn(Chat::chatID.name, listOfChatIDs)
-            .orderBy(Chat::timeOfLastMessage.name, Query.Direction.DESCENDING)
-            .get()
-            .await()
-            .toObjects(Chat::class.java)
+        if (listOfChatIDs.isNotEmpty()) {
+            val chatsListener = firestore.collection(CHAT_DETAILS)
+                .whereIn(Chat::chatID.name, listOfChatIDs)
+                .orderBy(Chat::timeOfLastMessage.name, Query.Direction.DESCENDING)
+                .addSnapshotListener { value, error ->
+                    val chats = value?.toObjects(Chat::class.java)
+                    Timber.e(error)
+                    Timber.d("chats in addSnapshotListener() are $chats")
 
-        Timber.d("chats is $chats")
-        return chats
+                    trySend(chats ?: listOf())
+                }
+
+
+            awaitClose {
+                chatsListener.remove()
+            }
+        }
+
+        awaitClose {
+
+        }
     }
 
     override suspend fun createConversation(newContact: User): String {
@@ -88,20 +92,23 @@ class ChatRepoImpl(private val userRepo: UserRepo = UserRepoImpl()) : ChatRepo {
 
 
         // Add to my individual list of chats
-        // PERSONALIZED_CHATS >> uid1234  >> chat1234
+        // PERSONALIZED_CHATS >> FILLER >> uid1234  >> chat1234
         getPersonalizedChatsFirebaseRef(Firebase.auth.uid!!)
             .document(chatID)
-            .set(PersonalizedChat(chatID))
+            .set(ChatRepo.PersonalizedChat(chatID))
 
 
         // Add to other individual list of chats
         // PERSONALIZED_CHATS >> FILLER >> uid0000 >> chat1234
         getPersonalizedChatsFirebaseRef(newContact.uid)
             .document(chatID)
-            .set(PersonalizedChat(chatID))
+            .set(ChatRepo.PersonalizedChat(chatID))
 
         return chatID
     }
+
+    private fun getChatDetailsRef(chatID: String) =
+        firestore.collection(CHAT_DETAILS).document(chatID)
 
     private fun getPersonalizedChatsFirebaseRef(uid: String) =
         firestore.collection(PERSONALIZED_CHATS)
@@ -109,12 +116,16 @@ class ChatRepoImpl(private val userRepo: UserRepo = UserRepoImpl()) : ChatRepo {
             .collection(uid)
 
 
+    private fun getMessagesCollectionRef(chatID: String) =
+        firestore.collection(CHATS_COLLECTION)
+            .document(chatID)
+            .collection(CHAT_MESSAGES)
+
+
     // chats >> chat1234 >> messages >> messageID
     override suspend fun sendMessage(chatID: String, message: Message): Boolean {
         return try {
-            firestore.collection(CHATS_COLLECTION)
-                .document(chatID)
-                .collection(CHAT_MESSAGES)
+            getMessagesCollectionRef(chatID)
                 .document(message.messageID)
                 .set(message)
                 .addOnCompleteListener {
@@ -122,15 +133,25 @@ class ChatRepoImpl(private val userRepo: UserRepo = UserRepoImpl()) : ChatRepo {
                 }
                 .await()
 
-            firestore.collection(CHATS_COLLECTION)
-                .document(chatID)
-                .collection(CHAT_MESSAGES)
+            getMessagesCollectionRef(chatID)
                 .document(message.messageID)
                 .update(Message::messageStatus.name, MessageStatus.SENT)
                 .addOnCompleteListener {
                     Timber.d("update(Message::messageStatus.name) is ${it.isSuccessful}")
                 }
                 .await()
+
+
+            val chat = getChatFromChatID(chatID)
+
+            getChatDetailsRef(chatID).update(
+                mapOf(
+                    Chat::lastMessage.name to message.message,
+                    Chat::lastMessageSender.name to message.senderID,
+                    Chat::timeOfLastMessage.name to message.timeSent,
+                    Chat::unreadMessagesCount.name to (chat?.unreadMessagesCount ?: 0) + 1
+                )
+            )
 
             true
         } catch (e: Exception) {
@@ -141,10 +162,7 @@ class ChatRepoImpl(private val userRepo: UserRepo = UserRepoImpl()) : ChatRepo {
 
     // chats >> chat1234 >> messages
     override suspend fun getMessagesFromChatID(chatID: String) = callbackFlow<List<Message>> {
-
-        val messagesSnapshotListener = firestore.collection(CHATS_COLLECTION)
-            .document(chatID)
-            .collection(CHAT_MESSAGES)
+        val messagesSnapshotListener = getMessagesCollectionRef(chatID)
             .orderBy(Message::timeSent.name, Query.Direction.DESCENDING)
             .addSnapshotListener { value, error ->
                 val messages = value?.toObjects(Message::class.java)
@@ -159,6 +177,18 @@ class ChatRepoImpl(private val userRepo: UserRepo = UserRepoImpl()) : ChatRepo {
         }
     }
 
+
+    override suspend fun resetUnreadMessagesCount(chatID: String) {
+        val chat = getChatFromChatID(chatID)
+
+        if (chat?.lastMessageSender != Firebase.auth.uid)
+            getChatDetailsRef(chatID).update(
+                mapOf(
+                    Chat::unreadMessagesCount.name to 0,
+                    Chat::lastMessageStatus.name to MessageStatus.OPENED
+                )
+            )
+    }
 
     override suspend fun updateMessageStatus(messageID: String, messageStatus: MessageStatus) {
 

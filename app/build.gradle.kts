@@ -82,6 +82,8 @@ dependencies {
     implementation(libs.androidx.runtime)
     implementation(libs.androidx.runtime.livedata)
 
+    implementation(project(":compose_ccp"))
+
     // Compose UI libraries
     implementation(libs.compose.glide)
     implementation(libs.compose.countrycode)

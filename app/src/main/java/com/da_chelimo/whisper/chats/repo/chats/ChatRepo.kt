@@ -8,6 +8,13 @@ import kotlinx.coroutines.flow.Flow
 
 interface ChatRepo {
 
+    data class PersonalizedChat(
+        val chatID: String
+    ) {
+        constructor() : this("")
+    }
+
+
     companion object {
         const val PERSONALIZED_CHATS = "personalized_chats"
 
@@ -34,7 +41,7 @@ interface ChatRepo {
     /**
      * Gets all the chats of the user, given the userID
      */
-    suspend fun getChatsForUser(userID: String): List<Chat>
+    fun getChatsForUser(userID: String): Flow<List<Chat>>
 
 
 
@@ -59,6 +66,13 @@ interface ChatRepo {
      */
     suspend fun sendMessage(chatID: String, message: Message): Boolean
 
+    /**
+     * Checks if the current user is the one who has pending unread messages
+     *
+     * If chats have been opened by the user who had unread messages,
+     * reset the unreadMessagesCount to 0
+     */
+    suspend fun resetUnreadMessagesCount(chatID: String)
 
     suspend fun updateMessageStatus(messageID: String, messageStatus: MessageStatus)
 }

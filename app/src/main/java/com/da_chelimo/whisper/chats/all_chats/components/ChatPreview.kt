@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
@@ -43,10 +44,10 @@ fun ChatPreview(
     Card(
         modifier
             .fillMaxWidth()
-            .clickable { openChat() }
-            .padding(vertical = 6.dp)
-            .padding(horizontal = 8.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.background)
+            .clickable { openChat() },
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.background),
+        shape = RoundedCornerShape(4.dp)
+//        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
     ) {
         val otherUser =
             if (chat.firstMiniUser.uid == Firebase.auth.uid)
@@ -55,7 +56,11 @@ fun ChatPreview(
                 chat.firstMiniUser
 
 
-        Row {
+        Row(
+            Modifier
+                .padding(vertical = 8.dp)
+                .padding(horizontal = 8.dp)
+        ) {
             UserIcon(
                 profilePic = otherUser.profilePic,
                 iconSize = 46.dp,
@@ -138,11 +143,13 @@ private fun PreviewChatPreview() = AppTheme {
             .fillMaxWidth()
             .background(Color.White)
     ) {
-        ChatPreview(
-            chat = Chat.TEST_CHAT,
-            modifier = Modifier,
-            openProfilePic = {},
-            openChat = {}
-        )
+        repeat(4) {
+            ChatPreview(
+                chat = Chat.TEST_CHAT,
+                modifier = Modifier,
+                openProfilePic = {},
+                openChat = {}
+            )
+        }
     }
 }

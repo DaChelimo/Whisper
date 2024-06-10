@@ -29,4 +29,8 @@
     <string name="start_a_chat">Start a chat</string>
     <string name="submit_code">Submit code</string>
     <string name="read_contacts_permission">Read contacts permission needed to message people in your contacts</string>
+    <string name="verify_number_statement">Whisper will need to verify your phone number. Carrier charges may apply</string>
+    <string name="enter_your_phone_number">Enter your phone number</string>
+    <string name="settings">Settings</string>
+    <string name="sign_out">Sign out</string>
 </resources>

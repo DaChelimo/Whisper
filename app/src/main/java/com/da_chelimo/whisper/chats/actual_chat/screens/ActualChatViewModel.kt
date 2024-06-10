@@ -77,6 +77,12 @@ class ActualChatViewModel(
                     messages.addAll(it)
                 }
                 .launchIn(viewModelScope)
+
+            /**
+             * If chats have been opened by the user who had unread messages,
+             * reset the unreadMessagesCount to 0
+             */
+            chatRepo.resetUnreadMessagesCount(chatID!!)
         }
     }
 

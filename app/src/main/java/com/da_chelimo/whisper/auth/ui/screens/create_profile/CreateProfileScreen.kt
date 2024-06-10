@@ -2,6 +2,7 @@ package com.da_chelimo.whisper.auth.ui.screens.create_profile
 
 import android.annotation.SuppressLint
 import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -24,9 +25,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -37,7 +35,6 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.da_chelimo.whisper.R
 import com.da_chelimo.whisper.auth.ui.components.LoadingSpinner
 import com.da_chelimo.whisper.core.domain.TaskState
@@ -69,22 +66,14 @@ fun CreateProfileScreen(
         val name by viewModel.name.collectAsState()
         val profilePic by viewModel.profilePic.collectAsState()
 
-        var shouldOpenImagePicker by remember {
-            mutableStateOf(false)
-        }
 
-
-        if (shouldOpenImagePicker) {
-            val activityContract = ActivityResultContracts.PickVisualMedia()
-
-            rememberLauncherForActivityResult(contract = activityContract) { imageUri ->
+        val launcher =
+            rememberLauncherForActivityResult(contract = ActivityResultContracts.PickVisualMedia()) { imageUri ->
                 imageUri?.let {
                     viewModel.updateProfilePic(newPic = it)
                 }
-
-                shouldOpenImagePicker = false
             }
-        }
+
 
 
         Row(Modifier.fillMaxSize()) {
@@ -108,7 +97,7 @@ fun CreateProfileScreen(
                     profilePic = profilePic?.toString(),
                     iconSize = 140.dp,
                     modifier = Modifier.padding(top = 16.dp),
-                    onClick = { shouldOpenImagePicker = true }
+                    onClick = { launcher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) }
                 )
 
                 val indicatorColor = MaterialTheme.colorScheme.surface

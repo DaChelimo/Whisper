@@ -66,6 +66,7 @@ fun ActualChatScreen(
                 .fillMaxWidth()
                 .clip(bottomRoundedShape)
                 .background(MaterialTheme.colorScheme.background)
+                .padding(bottom = 6.dp)
         ) {
 
             ChatTopBar(
@@ -76,15 +77,14 @@ fun ActualChatScreen(
                 onVideoCall = {}
             )
 
+            Spacer(modifier = Modifier.height(1.dp).fillMaxWidth())
 
-//            val messagesListState = rememberLazyListState()
             LazyColumn(
                 verticalArrangement = Arrangement.Bottom,
                 modifier = Modifier
                     .fillMaxSize()
                     .imePadding(),
-                reverseLayout = true,
-//                state = messagesListState
+                reverseLayout = true
             ) {
                 items(viewModel.messages) { chat ->
                     if (chat.senderID == Firebase.auth.uid)
@@ -95,12 +95,7 @@ fun ActualChatScreen(
                     Spacer(modifier = Modifier.height(2.dp))
                 }
             }
-            
-//            LaunchedEffect(key1 = viewModel.messages.size) {
-//                val lastIndex = (viewModel.messages.size - 1).coerceAtLeast(0)
-//                messagesListState.animateScrollToItem(lastIndex)
-//            }
-            
+
         }
 
 

@@ -4,6 +4,7 @@ import android.Manifest
 import android.annotation.SuppressLint
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -28,6 +29,8 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -44,9 +47,11 @@ import com.da_chelimo.whisper.R
 import com.da_chelimo.whisper.chats.all_chats.components.ChatPreview
 import com.da_chelimo.whisper.core.presentation.ui.ActualChat
 import com.da_chelimo.whisper.core.presentation.ui.SelectContact
+import com.da_chelimo.whisper.core.presentation.ui.Settings
 import com.da_chelimo.whisper.core.presentation.ui.components.DefaultScreen
 import com.da_chelimo.whisper.core.presentation.ui.components.TintedAppBarIcon
 import com.da_chelimo.whisper.core.presentation.ui.theme.AppTheme
+import com.da_chelimo.whisper.core.presentation.ui.theme.LightWhite
 import com.da_chelimo.whisper.core.presentation.ui.theme.QuickSand
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -60,8 +65,9 @@ fun AllChatsScreen(
     val viewModel = viewModel<AllChatsViewModel>()
     val context = LocalContext.current
 
+    val chats by viewModel.chats.collectAsState(initial = listOf())
+
     DefaultScreen(
-        navController = navController,
         appBar = {
             Row(
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -74,7 +80,10 @@ fun AllChatsScreen(
 
                 TintedAppBarIcon(
                     imageVector = Icons.Rounded.Menu,
-                    contentDescription = stringResource(R.string.open_menu)
+                    contentDescription = stringResource(R.string.open_menu),
+                    onClick = {
+                        navController.navigate(Settings)
+                    }
                 )
 
                 Text(
@@ -87,23 +96,29 @@ fun AllChatsScreen(
 
                 TintedAppBarIcon(
                     imageVector = Icons.Rounded.Search,
-                    contentDescription = stringResource(R.string.search)
+                    contentDescription = stringResource(R.string.search),
+                    onClick = {
+
+                    }
                 )
             }
-        }
+        },
+        backgroundColor = LightWhite
     ) {
 
-        Box(modifier = Modifier.fillMaxSize()) {
+        Box(modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)) {
             LazyColumn(
-                modifier = Modifier.padding(bottom = 4.dp),
+                modifier = Modifier
+                    .padding(bottom = 4.dp)
+                    .fillMaxSize(),
                 verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
-                items(viewModel.chats) { chat ->
+                items(chats) { chat ->
                     ChatPreview(
                         chat = chat,
-                        modifier = Modifier
-                            .padding(vertical = 8.dp)
-                            .padding(end = 4.dp),
+                        modifier = Modifier,
                         openProfilePic = {
 
                         },
