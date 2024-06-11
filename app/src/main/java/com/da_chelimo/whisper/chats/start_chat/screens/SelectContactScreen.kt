@@ -27,7 +27,7 @@ import androidx.navigation.compose.rememberNavController
 import com.da_chelimo.whisper.R
 import com.da_chelimo.whisper.auth.ui.components.LoadingSpinner
 import com.da_chelimo.whisper.chats.start_chat.components.ContactPreview
-import com.da_chelimo.whisper.core.presentation.ui.ActualChat
+import com.da_chelimo.whisper.core.presentation.ui.AllChats
 import com.da_chelimo.whisper.core.presentation.ui.components.DefaultScreen
 import com.da_chelimo.whisper.core.presentation.ui.theme.QuickSand
 import org.koin.androidx.compose.koinViewModel
@@ -40,10 +40,21 @@ fun SelectContactScreen(
     viewModel: SelectContactsViewModel = koinViewModel()
 ) {
     val contactsOnWhisper by viewModel.contactsOnWhisper.collectAsState(initial = listOf())
-
+    val shouldNavigateToActualChat by viewModel.shouldNavigateToActualChat.collectAsState()
 
     LaunchedEffect(Unit) {
         viewModel.fetchContactsOnWhisper(context)
+    }
+
+    LaunchedEffect(key1 = shouldNavigateToActualChat) {
+        if (shouldNavigateToActualChat != null) {
+            navController.navigate(shouldNavigateToActualChat!!) {
+                popUpTo(AllChats) {
+                    inclusive = false
+                }
+            }
+            viewModel.resetShouldNavigateToActualChat()
+        }
     }
 
 
@@ -75,9 +86,7 @@ fun SelectContactScreen(
                         },
                         startConversation = {
                             Timber.d("Navigating with contact as $contact")
-                            navController.navigate(
-                                ActualChat(chatId = null, newContact = contact.uid)
-                            )
+                            viewModel.startOrResumeConversation(contact)
                         }
                     )
                 }

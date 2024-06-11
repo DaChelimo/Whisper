@@ -3,10 +3,10 @@ package com.da_chelimo.whisper.chats.repo.chats
 import com.da_chelimo.whisper.chats.domain.Chat
 import com.da_chelimo.whisper.chats.domain.Message
 import com.da_chelimo.whisper.chats.domain.MessageStatus
-import com.da_chelimo.whisper.chats.repo.chats.ChatRepo.Companion.CHATS_COLLECTION
 import com.da_chelimo.whisper.chats.repo.chats.ChatRepo.Companion.CHAT_DETAILS
-import com.da_chelimo.whisper.chats.repo.chats.ChatRepo.Companion.CHAT_MESSAGES
-import com.da_chelimo.whisper.chats.repo.chats.ChatRepo.Companion.PERSONALIZED_CHATS
+import com.da_chelimo.whisper.chats.repo.chats.ChatRepo.Companion.getChatDetailsRef
+import com.da_chelimo.whisper.chats.repo.chats.ChatRepo.Companion.getMessagesCollectionRef
+import com.da_chelimo.whisper.chats.repo.chats.ChatRepo.Companion.getPersonalizedChatsFirebaseRef
 import com.da_chelimo.whisper.core.domain.MiniUser
 import com.da_chelimo.whisper.core.domain.User
 import com.da_chelimo.whisper.core.repo.user.UserRepo
@@ -16,9 +16,12 @@ import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.firestore.toObject
 import com.google.firebase.ktx.Firebase
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.withContext
 import timber.log.Timber
 import java.util.UUID
 
@@ -107,20 +110,6 @@ class ChatRepoImpl(private val userRepo: UserRepo = UserRepoImpl()) : ChatRepo {
         return chatID
     }
 
-    private fun getChatDetailsRef(chatID: String) =
-        firestore.collection(CHAT_DETAILS).document(chatID)
-
-    private fun getPersonalizedChatsFirebaseRef(uid: String) =
-        firestore.collection(PERSONALIZED_CHATS)
-            .document("FILLER")
-            .collection(uid)
-
-
-    private fun getMessagesCollectionRef(chatID: String) =
-        firestore.collection(CHATS_COLLECTION)
-            .document(chatID)
-            .collection(CHAT_MESSAGES)
-
 
     // chats >> chat1234 >> messages >> messageID
     override suspend fun sendMessage(chatID: String, message: Message): Boolean {
@@ -169,11 +158,37 @@ class ChatRepoImpl(private val userRepo: UserRepo = UserRepoImpl()) : ChatRepo {
                 Timber.d("messages is $messages")
                 Timber.e(error)
 
+                launch {
+                    markUnreadMessagesAsRead(chatID, messages)
+                }
+
                 trySend(messages ?: listOf())
             }
 
         awaitClose {
             messagesSnapshotListener.remove()
+        }
+    }
+
+    /**
+     * Receives a list of messages, filters for the unread ones sent by the OTHER person and marks them as OPENED
+     */
+    private suspend fun markUnreadMessagesAsRead(chatID: String, messages: List<Message>?) = withContext(Dispatchers.IO) {
+        val unreadMessages = messages?.filter {
+            (it.messageStatus == MessageStatus.SENT || it.messageStatus == MessageStatus.RECEIVED)
+                    &&
+                    it.senderID != Firebase.auth.uid
+        }
+        Timber.d("unreadMessages are $unreadMessages")
+
+        if (!unreadMessages.isNullOrEmpty()) {
+            val messagesCollection = getMessagesCollectionRef(chatID)
+            Timber.d("unreadMessages updated")
+
+            unreadMessages.forEach {
+                messagesCollection.document(it.messageID)
+                    .update(Message::messageStatus.name, MessageStatus.OPENED)
+            }
         }
     }
 

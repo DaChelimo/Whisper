@@ -4,6 +4,7 @@ import com.da_chelimo.whisper.chats.actual_chat.screens.ActualChatViewModel
 import com.da_chelimo.whisper.chats.repo.contacts.ContactsRepo
 import com.da_chelimo.whisper.chats.repo.contacts.ContactsRepoImpl
 import com.da_chelimo.whisper.chats.start_chat.screens.SelectContactsViewModel
+import com.da_chelimo.whisper.core.repo.user.UserRepoImpl
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import org.koin.androidx.viewmodel.dsl.viewModel
@@ -16,7 +17,7 @@ val appModule = module {
     single<Moshi> { Moshi.Builder().add(KotlinJsonAdapterFactory()).build() }
 
 
-    single<ContactsRepo> { ContactsRepoImpl(get()) }
+    single<ContactsRepo> { ContactsRepoImpl(get(), UserRepoImpl()) }
     viewModel { SelectContactsViewModel(get()) }
     viewModel { ActualChatViewModel(contactsRepo = get()) }
 }

@@ -4,6 +4,8 @@ import com.da_chelimo.whisper.chats.domain.Chat
 import com.da_chelimo.whisper.chats.domain.Message
 import com.da_chelimo.whisper.chats.domain.MessageStatus
 import com.da_chelimo.whisper.core.domain.User
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.flow.Flow
 
 interface ChatRepo {
@@ -21,6 +23,21 @@ interface ChatRepo {
         const val CHATS_COLLECTION = "chats"
         const val CHAT_DETAILS = "chat_details"
         const val CHAT_MESSAGES = "messages"
+
+        fun getChatDetailsRef(chatID: String) =
+            Firebase.firestore.collection(ChatRepo.CHAT_DETAILS).document(chatID)
+
+        fun getPersonalizedChatsFirebaseRef(uid: String) =
+            Firebase.firestore.collection(ChatRepo.PERSONALIZED_CHATS)
+                .document("FILLER")
+                .collection(uid)
+
+
+        fun getMessagesCollectionRef(chatID: String) =
+            Firebase.firestore.collection(ChatRepo.CHATS_COLLECTION)
+                .document(chatID)
+                .collection(ChatRepo.CHAT_MESSAGES)
+
     }
 
 
@@ -42,7 +59,6 @@ interface ChatRepo {
      * Gets all the chats of the user, given the userID
      */
     fun getChatsForUser(userID: String): Flow<List<Chat>>
-
 
 
     /**
