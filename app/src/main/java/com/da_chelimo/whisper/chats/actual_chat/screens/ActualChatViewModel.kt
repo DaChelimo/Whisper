@@ -70,6 +70,8 @@ class ActualChatViewModel(
         chatID = paramChatID
 
         if (chatID != null) {
+            Timber.d("chatID is $chatID")
+
             chatRepo.getMessagesFromChatID(chatID!!)
                 .onEach { // TODO: Improve this coz this is TERRIBLEEEEEE :)
                     Timber.d("chatRepo.getMessagesFromChatID(chatID!!).collect is $it")

@@ -1,13 +1,20 @@
 package com.da_chelimo.whisper.chats.actual_chat.components
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.requiredWidthIn
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardColors
 import androidx.compose.material3.CardDefaults
@@ -16,11 +23,15 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.da_chelimo.whisper.chats.domain.Message
+import com.da_chelimo.whisper.chats.domain.MessageStatus
 import com.da_chelimo.whisper.chats.utils.toHourAndMinute
 import com.da_chelimo.whisper.core.presentation.ui.theme.AppTheme
 import com.da_chelimo.whisper.core.presentation.ui.theme.Cabin
@@ -46,7 +57,8 @@ fun MyChat(modifier: Modifier = Modifier, message: Message) {
             contentColor = MaterialTheme.colorScheme.onSurface
         ),
         chatAlignment = Alignment.End,
-        message = message
+        message = message,
+        isMyChat = true
     )
 }
 
@@ -69,13 +81,21 @@ fun OtherChat(modifier: Modifier = Modifier, message: Message) {
             contentColor = MaterialTheme.colorScheme.onBackground
         ),
         chatAlignment = Alignment.Start,
-        message = message
+        message = message,
+        isMyChat = false
     )
 }
 
 
 @Composable
-fun ChatMessage(chatShape: Shape, chatColors: CardColors, chatAlignment: Alignment.Horizontal, modifier: Modifier = Modifier, message: Message) {
+fun ChatMessage(
+    chatShape: Shape,
+    chatColors: CardColors,
+    chatAlignment: Alignment.Horizontal,
+    modifier: Modifier = Modifier,
+    message: Message,
+    isMyChat: Boolean
+) {
     Column(
         modifier = modifier
             .fillMaxWidth()
@@ -100,14 +120,47 @@ fun ChatMessage(chatShape: Shape, chatColors: CardColors, chatAlignment: Alignme
             )
         }
 
-        Text(
-            text = message.timeSent.toHourAndMinute(),
-            modifier = Modifier.align(chatAlignment).padding(horizontal = 2.dp),
-            fontSize = 10.sp,
-            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
-            fontFamily = Poppins
-        )
+        Row(
+            modifier = Modifier.align(chatAlignment),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = message.timeSent.toHourAndMinute(),
+                modifier = Modifier.padding(horizontal = if (isMyChat) 4.dp else 2.dp),
+                fontSize = 10.sp,
+                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
+                fontFamily = Poppins
+            )
+
+            if (isMyChat) {
+                if (message.messageStatus == MessageStatus.OPENED)
+                    Row {
+                        RoundedSingleTick(
+                            modifier = Modifier
+                        )
+                        RoundedSingleTick(
+                            modifier = Modifier.offset((-8).dp)
+                        )
+                    }
+                else
+                    RoundedSingleTick()
+            }
+        }
     }
+}
+
+
+@Composable
+fun RoundedSingleTick(modifier: Modifier = Modifier, color: Color = MaterialTheme.colorScheme.surface) {
+    Image(
+        imageVector = Icons.Default.CheckCircle,
+        contentDescription = null,
+        modifier = modifier
+            .size(15.dp)
+            .clip(CircleShape)
+            .background(MaterialTheme.colorScheme.background),
+        colorFilter = ColorFilter.tint(color)
+    )
 }
 
 
@@ -145,5 +198,6 @@ private fun PreviewMyChat() = AppTheme {
         MyChat(message = Message.TEST_MY_Message)
         Spacer(modifier = Modifier.height(4.dp))
         MyChat(message = Message.LONG_TEST_MY_Message)
+        MyChat(message = Message.TEST_MY_Message.copy(messageStatus = MessageStatus.SENT))
     }
 }

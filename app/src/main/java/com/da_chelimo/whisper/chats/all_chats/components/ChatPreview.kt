@@ -1,15 +1,19 @@
 package com.da_chelimo.whisper.chats.all_chats.components
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
@@ -19,15 +23,19 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.da_chelimo.whisper.chats.domain.Chat
+import com.da_chelimo.whisper.chats.domain.MessageStatus
 import com.da_chelimo.whisper.chats.utils.toHourAndMinute
 import com.da_chelimo.whisper.core.presentation.ui.components.UserIcon
 import com.da_chelimo.whisper.core.presentation.ui.theme.AppTheme
+import com.da_chelimo.whisper.core.presentation.ui.theme.DarkBlue
 import com.da_chelimo.whisper.core.presentation.ui.theme.Montserrat
 import com.da_chelimo.whisper.core.presentation.ui.theme.QuickSand
 import com.da_chelimo.whisper.core.presentation.ui.theme.Roboto
@@ -92,7 +100,21 @@ fun ChatPreview(
                 }
 
 
-                Row(Modifier.padding(top = 2.dp)) {
+                val lastMessageIsMine =
+                    chat.lastMessageSender == Firebase.auth.uid
+
+                Row(Modifier.padding(top = 2.dp), verticalAlignment = Alignment.CenterVertically) {
+                    if (lastMessageIsMine) {
+                        if (chat.lastMessageStatus == MessageStatus.OPENED)
+                            Row {
+                                SingleTick(color = DarkBlue)
+                                SingleTick(modifier = Modifier.offset((-9).dp), color = DarkBlue)
+                            }
+                        else
+                            SingleTick(modifier = Modifier.padding(end = 6.dp))
+                    }
+
+
                     Text(
                         text = chat.lastMessage,
                         fontFamily = Roboto,
@@ -108,13 +130,29 @@ fun ChatPreview(
                     )
 
                     // TODO: Add double ticks {grey or blue at the end}
-                    if (chat.lastMessageSender != Firebase.auth.uid)
+                    if (!lastMessageIsMine && chat.unreadMessagesCount != 0)
                         UnreadTextsCount(count = chat.unreadMessagesCount)
                 }
             }
         }
     }
 }
+
+
+@Composable
+fun SingleTick(
+    modifier: Modifier = Modifier,
+    color: Color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.85f)
+) {
+    Image(
+        imageVector = Icons.Rounded.Check,
+        contentDescription = null,
+        modifier = modifier.size(16.dp),
+        contentScale = ContentScale.Crop,
+        colorFilter = ColorFilter.tint(color)
+    )
+}
+
 
 @Composable
 fun UnreadTextsCount(count: Int, modifier: Modifier = Modifier) {

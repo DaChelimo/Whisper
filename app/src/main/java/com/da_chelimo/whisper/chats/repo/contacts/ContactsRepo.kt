@@ -12,6 +12,16 @@ interface ContactsRepo {
     val contactsOnWhisper: Flow<List<User>>
 
     /**
+     * Checks if the contact uid is in the user's chats already { There is a pre-existing convo }
+     *
+     * @param contactToCheck - the user to check
+     *
+     * @return chatID if existing chat is present; else, returns null
+     */
+    suspend fun checkForPreExistingChat(contactToCheck: User): String?
+
+
+    /**
      * Fetches a list of the users contacts who are on Whisper and stores in Room DB
      */
     suspend fun refreshContactsOnWhisper(context: Context)
