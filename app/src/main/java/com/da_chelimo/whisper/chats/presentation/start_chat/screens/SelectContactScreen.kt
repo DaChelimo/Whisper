@@ -1,4 +1,4 @@
-package com.da_chelimo.whisper.chats.start_chat.screens
+package com.da_chelimo.whisper.chats.presentation.start_chat.screens
 
 import android.content.Context
 import androidx.compose.foundation.layout.Arrangement
@@ -26,7 +26,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.da_chelimo.whisper.R
 import com.da_chelimo.whisper.core.presentation.ui.components.LoadingSpinner
-import com.da_chelimo.whisper.chats.start_chat.components.ContactPreview
+import com.da_chelimo.whisper.chats.presentation.start_chat.components.ContactPreview
 import com.da_chelimo.whisper.core.presentation.ui.AllChats
 import com.da_chelimo.whisper.core.presentation.ui.components.DefaultScreen
 import com.da_chelimo.whisper.core.presentation.ui.theme.QuickSand

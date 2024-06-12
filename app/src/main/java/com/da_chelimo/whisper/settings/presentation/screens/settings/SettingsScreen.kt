@@ -24,7 +24,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.da_chelimo.whisper.R
 import com.da_chelimo.whisper.core.presentation.ui.AllChats
-import com.da_chelimo.whisper.core.presentation.ui.Profile
+import com.da_chelimo.whisper.core.presentation.ui.MyProfile
 import com.da_chelimo.whisper.core.presentation.ui.Welcome
 import com.da_chelimo.whisper.core.presentation.ui.components.DefaultScreen
 import com.da_chelimo.whisper.core.presentation.ui.components.TintedAppBarIcon
@@ -71,7 +71,7 @@ fun SettingsScreen(navController: NavController) {
             name = stringResource(R.string.my_profile),
             modifier = Modifier,
             onOptionSelected = {
-                navController.navigate(Profile)
+                navController.navigate(MyProfile)
             }
         )
 
@@ -93,7 +93,11 @@ fun SettingsScreen(navController: NavController) {
 
 
 @Composable
-fun SettingsOption(name: String, modifier: Modifier = Modifier, onOptionSelected: () -> Unit) {
+fun SettingsOption(
+    name: String,
+    modifier: Modifier = Modifier,
+    onOptionSelected: () -> Unit
+) {
     Button(
         onClick = { onOptionSelected() },
         modifier = modifier

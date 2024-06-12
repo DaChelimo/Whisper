@@ -1,4 +1,4 @@
-package com.da_chelimo.whisper.chats.actual_chat.components
+package com.da_chelimo.whisper.chats.presentation.actual_chat.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column

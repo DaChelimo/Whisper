@@ -1,4 +1,4 @@
-package com.da_chelimo.whisper.chats.actual_chat.components
+package com.da_chelimo.whisper.chats.presentation.actual_chat.components
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -32,7 +32,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.da_chelimo.whisper.chats.domain.Message
 import com.da_chelimo.whisper.chats.domain.MessageStatus
-import com.da_chelimo.whisper.chats.utils.toHourAndMinute
+import com.da_chelimo.whisper.chats.presentation.utils.toHourAndMinute
 import com.da_chelimo.whisper.core.presentation.ui.theme.AppTheme
 import com.da_chelimo.whisper.core.presentation.ui.theme.Cabin
 import com.da_chelimo.whisper.core.presentation.ui.theme.LightWhite

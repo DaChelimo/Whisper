@@ -25,7 +25,8 @@ fun UserIcon(profilePic: String?, iconSize: Dp, onClick: () -> Unit, modifier: M
             contentDescription = stringResource(R.string.change_profile_picture),
             modifier = modifier
                 .size(iconSize)
-                .clip(CircleShape),
+                .clip(CircleShape)
+                .clickable { onClick() },
             failure = placeholder(R.drawable.alien),
             contentScale = ContentScale.Crop
         )
@@ -36,9 +37,7 @@ fun UserIcon(profilePic: String?, iconSize: Dp, onClick: () -> Unit, modifier: M
             modifier = modifier
                 .size(iconSize)
                 .clip(CircleShape)
-                .clickable {
-                    onClick()
-                },
+                .clickable { onClick() },
             contentScale = ContentScale.Crop
         )
 }

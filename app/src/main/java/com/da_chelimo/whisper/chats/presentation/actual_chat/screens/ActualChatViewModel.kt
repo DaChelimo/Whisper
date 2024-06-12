@@ -1,4 +1,4 @@
-package com.da_chelimo.whisper.chats.actual_chat.screens
+package com.da_chelimo.whisper.chats.presentation.actual_chat.screens
 
 import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.ViewModel
@@ -8,7 +8,7 @@ import com.da_chelimo.whisper.chats.domain.MessageStatus
 import com.da_chelimo.whisper.chats.repo.chats.ChatRepo
 import com.da_chelimo.whisper.chats.repo.chats.ChatRepoImpl
 import com.da_chelimo.whisper.chats.repo.contacts.ContactsRepo
-import com.da_chelimo.whisper.chats.utils.toActualChatSeparatorTime
+import com.da_chelimo.whisper.chats.presentation.utils.toActualChatSeparatorTime
 import com.da_chelimo.whisper.core.domain.User
 import com.da_chelimo.whisper.core.repo.user.UserRepo
 import com.da_chelimo.whisper.core.repo.user.UserRepoImpl

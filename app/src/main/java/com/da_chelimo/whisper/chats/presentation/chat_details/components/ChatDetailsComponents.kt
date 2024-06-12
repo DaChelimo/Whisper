@@ -1,0 +1,196 @@
+package com.da_chelimo.whisper.chats.presentation.chat_details.components
+
+import androidx.annotation.DrawableRes
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Popup
+import com.da_chelimo.whisper.R
+import com.da_chelimo.whisper.core.presentation.ui.theme.AppTheme
+import com.da_chelimo.whisper.core.presentation.ui.theme.DarkBlue
+import com.da_chelimo.whisper.core.presentation.ui.theme.ErrorRed
+import com.da_chelimo.whisper.core.presentation.ui.theme.QuickSand
+
+
+@Composable
+fun ChatDetailActions(
+    modifier: Modifier = Modifier,
+    onMessage: () -> Unit,
+    onAudioCall: () -> Unit,
+    onVideoCall: () -> Unit
+) {
+    Column(modifier = modifier) {
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            modifier = Modifier
+                .fillMaxWidth(0.8f)
+                .align(Alignment.CenterHorizontally)
+                .padding(horizontal = 8.dp, vertical = 20.dp)
+        ) {
+            ChatDetailAction(
+                modifier = Modifier.weight(1f),
+                actionIcon = R.drawable.messages,
+                actionName = stringResource(R.string.message),
+                onClick = onMessage
+            )
+            ChatDetailAction(
+                modifier = Modifier.weight(1f),
+                actionIcon = R.drawable.phone_call,
+                actionName = stringResource(R.string.audio),
+                onClick = onAudioCall
+            )
+            ChatDetailAction(
+                modifier = Modifier.weight(1f),
+                actionIcon = R.drawable.video_camera,
+                actionName = stringResource(R.string.video),
+                onClick = onVideoCall
+            )
+        }
+    }
+}
+
+@Composable
+fun ChatDetailAction(
+    @DrawableRes actionIcon: Int,
+    actionName: String,
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit
+) {
+    val roundShape = RoundedCornerShape(percent = 16)
+    Column(
+        modifier = modifier
+            .clip(roundShape)
+            .clickable { onClick() }
+            .border(2.dp, DarkBlue, roundShape)
+            .padding(vertical = 16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+
+        Icon(
+            painter = painterResource(id = actionIcon),
+            contentDescription = null,
+            modifier = Modifier.size(20.dp),
+            tint = DarkBlue
+        )
+
+        Text(
+            text = actionName,
+            modifier = Modifier.padding(top = 5.dp),
+            fontFamily = QuickSand,
+            fontWeight = FontWeight.Medium,
+            fontSize = 14.sp
+        )
+
+    }
+}
+
+
+@Preview
+@Composable
+private fun PreviewChatDetailsActions() = AppTheme {
+    Column(Modifier.fillMaxWidth()) {
+        ChatDetailActions(Modifier, {}, {}, {})
+    }
+}
+
+
+@Composable
+fun ComingSoonPopup(modifier: Modifier = Modifier, hidePopup: () -> Unit) {
+    Popup(onDismissRequest = { hidePopup() }, alignment = Alignment.Center) {
+        Column(
+            modifier
+                .padding(horizontal = 12.dp, vertical = 36.dp)
+                .fillMaxWidth(0.6f)
+                .background(MaterialTheme.colorScheme.background),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Image(
+                painter = painterResource(id = R.drawable.work_icon),
+                contentDescription = null,
+                colorFilter = ColorFilter.tint(DarkBlue)
+            )
+
+            Text(
+                text = stringResource(R.string.coming_soon),
+                modifier = Modifier.padding(top = 20.dp).fillMaxWidth(),
+                textAlign = TextAlign.Center,
+                fontFamily = QuickSand,
+                fontSize = 15.sp,
+                lineHeight = 18.sp,
+                fontWeight = FontWeight.Medium
+            )
+        }
+    }
+}
+
+
+@Preview
+@Composable
+private fun PreviewComingSoonPopup() = AppTheme {
+    Column(
+        Modifier
+            .fillMaxSize()
+            .background(Color.White)) {
+        ComingSoonPopup {
+
+        }
+    }
+}
+
+
+@Composable
+fun RedBorderButton(name: String, modifier: Modifier = Modifier, onOptionSelected: () -> Unit) {
+    Button(
+        onClick = { onOptionSelected() },
+        modifier = modifier
+            .padding(horizontal = 8.dp)
+            .fillMaxWidth(),
+        shape = RoundedCornerShape(6.dp),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = MaterialTheme.colorScheme.background,
+            contentColor = MaterialTheme.colorScheme.surface
+        ),
+        border = BorderStroke(1.dp, ErrorRed)
+    ) {
+        Text(
+            text = name,
+            textAlign = TextAlign.Center,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 2.dp),
+            fontFamily = QuickSand,
+            fontSize = 15.sp,
+            fontWeight = FontWeight.SemiBold
+        )
+    }
+}

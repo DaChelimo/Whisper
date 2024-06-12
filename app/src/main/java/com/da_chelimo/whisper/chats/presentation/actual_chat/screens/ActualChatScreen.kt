@@ -1,6 +1,7 @@
-package com.da_chelimo.whisper.chats.actual_chat.screens
+package com.da_chelimo.whisper.chats.presentation.actual_chat.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -23,11 +24,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import com.da_chelimo.whisper.chats.actual_chat.components.ChatTopBar
-import com.da_chelimo.whisper.chats.actual_chat.components.DaySeparatorForActualChat
-import com.da_chelimo.whisper.chats.actual_chat.components.MyChat
-import com.da_chelimo.whisper.chats.actual_chat.components.OtherChat
-import com.da_chelimo.whisper.chats.actual_chat.components.TypeMessageBar
+import com.da_chelimo.whisper.chats.presentation.actual_chat.components.ChatTopBar
+import com.da_chelimo.whisper.chats.presentation.actual_chat.components.DaySeparatorForActualChat
+import com.da_chelimo.whisper.chats.presentation.actual_chat.components.MyChat
+import com.da_chelimo.whisper.chats.presentation.actual_chat.components.OtherChat
+import com.da_chelimo.whisper.chats.presentation.actual_chat.components.TypeMessageBar
+import com.da_chelimo.whisper.core.presentation.ui.ChatDetails
 import com.da_chelimo.whisper.core.presentation.ui.theme.AppTheme
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
@@ -41,7 +43,7 @@ fun ActualChatScreen(
     newContact: String? = null
 ) {
     val composeMessage by viewModel.textMessage.collectAsState()
-    val user by viewModel.otherUser.collectAsState()
+    val otherUser by viewModel.otherUser.collectAsState()
 
     LaunchedEffect(key1 = Unit) {
         viewModel.loadOtherUser(chatID, newContact)
@@ -72,8 +74,12 @@ fun ActualChatScreen(
 
             ChatTopBar(
                 navController = navController,
-                otherPersonName = user?.name,
-                modifier = Modifier,
+                otherPersonName = otherUser?.name,
+                modifier = Modifier.clickable {
+                    val otherUID = otherUser?.uid
+                    if (chatID != null && otherUID != null)
+                        navController.navigate(ChatDetails(chatID, otherUID))
+                },
                 onVoiceCall = {},
                 onVideoCall = {}
             )
