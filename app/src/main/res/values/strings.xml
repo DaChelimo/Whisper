@@ -49,4 +49,5 @@
     <string name="block_user">Block user</string>
     <string name="report_user">Report user</string>
     <string name="coming_soon">Working on this feature {Coming soon}</string>
+    <string name="close">Close</string>
 </resources>

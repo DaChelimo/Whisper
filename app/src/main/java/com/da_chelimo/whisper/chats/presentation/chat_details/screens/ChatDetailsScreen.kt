@@ -56,7 +56,6 @@ fun ChatDetailsScreen(chatID: String, otherUserID: String, navController: NavCon
     ControlBlurOnScreen(
         isPictureOnFullScreen = isProfilePicFullScreen,
         profilePic = otherUser?.profilePic,
-        addKeys = true,
         dismissPicture = { isProfilePicFullScreen = false }
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
