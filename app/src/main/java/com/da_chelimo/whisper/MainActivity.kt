@@ -22,15 +22,17 @@ import com.da_chelimo.whisper.auth.ui.screens.WelcomeScreen
 import com.da_chelimo.whisper.auth.ui.screens.create_profile.CreateProfileScreen
 import com.da_chelimo.whisper.auth.ui.screens.enter_code.EnterCodeScreen
 import com.da_chelimo.whisper.auth.ui.screens.enter_number.EnterNumberScreen
-import com.da_chelimo.whisper.chats.actual_chat.screens.ActualChatScreen
-import com.da_chelimo.whisper.chats.all_chats.screens.AllChatsScreen
-import com.da_chelimo.whisper.chats.start_chat.screens.SelectContactScreen
+import com.da_chelimo.whisper.chats.presentation.actual_chat.screens.ActualChatScreen
+import com.da_chelimo.whisper.chats.presentation.all_chats.screens.AllChatsScreen
+import com.da_chelimo.whisper.chats.presentation.chat_details.screens.ChatDetailsScreen
+import com.da_chelimo.whisper.chats.presentation.start_chat.screens.SelectContactScreen
 import com.da_chelimo.whisper.core.presentation.ui.ActualChat
 import com.da_chelimo.whisper.core.presentation.ui.AllChats
+import com.da_chelimo.whisper.core.presentation.ui.ChatDetails
 import com.da_chelimo.whisper.core.presentation.ui.CreateProfile
 import com.da_chelimo.whisper.core.presentation.ui.EnterCode
 import com.da_chelimo.whisper.core.presentation.ui.EnterNumber
-import com.da_chelimo.whisper.core.presentation.ui.Profile
+import com.da_chelimo.whisper.core.presentation.ui.MyProfile
 import com.da_chelimo.whisper.core.presentation.ui.SelectContact
 import com.da_chelimo.whisper.core.presentation.ui.Settings
 import com.da_chelimo.whisper.core.presentation.ui.Welcome
@@ -61,7 +63,9 @@ class MainActivity : ComponentActivity() {
 
                         NavHost(
                             navController = navController,
-                            startDestination = if (Firebase.auth.uid == null) Welcome else AllChats
+                            startDestination = if (Firebase.auth.uid == null) Welcome else AllChats,
+//                            enterTransition = { EnterTransition.None },
+//                            exitTransition = { ExitTransition.None }
                         ) {
 
                             composable<Welcome> {
@@ -103,7 +107,7 @@ class MainActivity : ComponentActivity() {
                             composable<Settings> {
                                 SettingsScreen(navController = navController)
                             }
-                            composable<Profile> {
+                            composable<MyProfile> {
                                 ProfileScreen(navController = navController)
                             }
 
@@ -123,6 +127,17 @@ class MainActivity : ComponentActivity() {
                                     navController = navController,
                                     chatID = args.chatId,
                                     newContact = args.newContact
+                                )
+                            }
+
+
+                            composable<ChatDetails> {
+                                val args = it.toRoute<ChatDetails>()
+
+                                ChatDetailsScreen(
+                                    chatID = args.chatId,
+                                    otherUserID = args.otherUserId,
+                                    navController = navController
                                 )
                             }
                         }

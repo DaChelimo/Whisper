@@ -1,4 +1,4 @@
-package com.da_chelimo.whisper.chats.all_chats.components
+package com.da_chelimo.whisper.chats.presentation.all_chats.components
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -32,7 +32,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.da_chelimo.whisper.chats.domain.Chat
 import com.da_chelimo.whisper.chats.domain.MessageStatus
-import com.da_chelimo.whisper.chats.utils.toChatPreviewTime
+import com.da_chelimo.whisper.chats.presentation.utils.toChatPreviewTime
 import com.da_chelimo.whisper.core.presentation.ui.components.UserIcon
 import com.da_chelimo.whisper.core.presentation.ui.theme.AppTheme
 import com.da_chelimo.whisper.core.presentation.ui.theme.DarkBlue
@@ -46,7 +46,7 @@ import com.google.firebase.ktx.Firebase
 fun ChatPreview(
     chat: Chat,
     modifier: Modifier = Modifier,
-    openProfilePic: () -> Unit,
+    openProfilePic: (String?) -> Unit,
     openChat: () -> Unit
 ) {
     Card(
@@ -71,8 +71,8 @@ fun ChatPreview(
         ) {
             UserIcon(
                 profilePic = otherUser.profilePic,
-                iconSize = 52.dp,
-                onClick = { openProfilePic() }
+                iconSize = 53.dp,
+                onClick = { openProfilePic(otherUser.profilePic) }
             )
 
             Column(

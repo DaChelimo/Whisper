@@ -36,7 +36,6 @@ import com.da_chelimo.whisper.core.presentation.ui.components.LoadingSpinner
 import com.da_chelimo.whisper.core.presentation.ui.theme.AppTheme
 import com.da_chelimo.whisper.core.presentation.ui.theme.Poppins
 import com.da_chelimo.whisper.core.utils.getActivity
-import timber.log.Timber
 
 @Composable
 fun EnterCodeScreen(navController: NavController, phoneNumberWithCountryCode: String) {
@@ -49,7 +48,6 @@ fun EnterCodeScreen(navController: NavController, phoneNumberWithCountryCode: St
 
 
     LaunchedEffect(key1 = taskState) {
-        Timber.d("taskState is $taskState")
         when (taskState) {
             is TaskState.NONE -> viewModel.authenticateWithNumber(
                 phoneNumberWithCountryCode,
@@ -58,7 +56,6 @@ fun EnterCodeScreen(navController: NavController, phoneNumberWithCountryCode: St
 
             is TaskState.DONE.SUCCESS -> {
                 val isExistingAccount = viewModel.checkIfUserHasExistingAccount()
-                Timber.d("isExistingAccount is $isExistingAccount")
 
                 if (isExistingAccount)
                     navController.navigate(AllChats) {
@@ -72,7 +69,9 @@ fun EnterCodeScreen(navController: NavController, phoneNumberWithCountryCode: St
                 viewModel.resetTaskState()
             }
 
-            else -> {}
+            else -> {
+
+            }
         }
     }
 

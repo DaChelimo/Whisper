@@ -42,4 +42,11 @@
     <string name="save">Save</string>
     <string name="phone">Phone</string>
     <string name="my_profile">My Profile</string>
+    <string name="message">Message</string>
+    <string name="audio">Audio</string>
+    <string name="video">Video</string>
+    <string name="bio">Bio</string>
+    <string name="block_user">Block user</string>
+    <string name="report_user">Report user</string>
+    <string name="coming_soon">Working on this feature {Coming soon}</string>
 </resources>

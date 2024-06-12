@@ -1,9 +1,9 @@
 package com.da_chelimo.whisper.core.di
 
-import com.da_chelimo.whisper.chats.actual_chat.screens.ActualChatViewModel
+import com.da_chelimo.whisper.chats.presentation.actual_chat.screens.ActualChatViewModel
 import com.da_chelimo.whisper.chats.repo.contacts.ContactsRepo
 import com.da_chelimo.whisper.chats.repo.contacts.ContactsRepoImpl
-import com.da_chelimo.whisper.chats.start_chat.screens.SelectContactsViewModel
+import com.da_chelimo.whisper.chats.presentation.start_chat.screens.SelectContactsViewModel
 import com.da_chelimo.whisper.core.repo.user.UserRepoImpl
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory

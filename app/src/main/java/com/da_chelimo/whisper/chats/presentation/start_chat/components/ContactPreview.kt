@@ -1,4 +1,4 @@
-package com.da_chelimo.whisper.chats.start_chat.components
+package com.da_chelimo.whisper.chats.presentation.start_chat.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable

@@ -1,4 +1,4 @@
-package com.da_chelimo.whisper.chats.utils
+package com.da_chelimo.whisper.chats.presentation.utils
 
 import org.joda.time.DateTime
 import org.joda.time.DateTimeZone

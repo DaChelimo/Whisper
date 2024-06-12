@@ -1,4 +1,4 @@
-package com.da_chelimo.whisper.chats.start_chat.screens
+package com.da_chelimo.whisper.chats.presentation.start_chat.screens
 
 import android.content.Context
 import androidx.compose.runtime.mutableStateListOf

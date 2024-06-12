@@ -27,10 +27,15 @@ data class CreateProfile(val phoneNumber: String) : Parcelable
 object Settings
 
 @Serializable
-object Profile
+object MyProfile
+
+
+
 
 @Serializable
 object AllChats
-
 @Serializable
 data class ActualChat(val chatId: String?, val newContact: String?)
+@Serializable
+data class ChatDetails(val chatId: String, val otherUserId: String)
+
