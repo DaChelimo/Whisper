@@ -27,7 +27,7 @@ class CreateProfileViewModel(
         val profilePicLocalUri = profilePic.value
 
         viewModelScope.launch {
-            _taskState.value = TaskState.LOADING
+            _taskState.value = TaskState.LOADING()
 
             userRepo.createUser(
                 name = name.value,

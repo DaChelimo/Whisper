@@ -4,6 +4,9 @@ import android.net.Uri
 import com.da_chelimo.whisper.core.domain.TaskState
 import com.da_chelimo.whisper.core.domain.User
 import com.google.firebase.firestore.DocumentReference
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
+import com.google.firebase.storage.ktx.storage
 
 interface UserRepo {
 
@@ -11,6 +14,15 @@ interface UserRepo {
         const val USERS_COLLECTION = "users"
 
         const val PROFILE_PIC = "profilePic"
+
+        fun getStorageRefForProfilePic(uid: String) =
+            Firebase.storage
+                .getReference("$uid/$PROFILE_PIC")
+
+        fun getUserProfileReference(uid: String): DocumentReference =
+            Firebase.firestore
+                .collection(USERS_COLLECTION)
+                .document(uid)
     }
 
     /**
@@ -18,11 +30,6 @@ interface UserRepo {
      */
     suspend fun createUser(name: String, phoneNumber: String, profilePicLocalUri: Uri?, onComplete: (TaskState) -> Unit)
 
-
-    /**
-     * Provides the Firebase DocumentReference for the user profile based on the user's UID
-     */
-    fun getUserProfileReference(uid: String): DocumentReference
 
 
     /**

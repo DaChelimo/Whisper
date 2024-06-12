@@ -1,4 +1,4 @@
-package com.da_chelimo.whisper.settings.presentation.screens
+package com.da_chelimo.whisper.settings.presentation.screens.settings
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -24,6 +24,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.da_chelimo.whisper.R
 import com.da_chelimo.whisper.core.presentation.ui.AllChats
+import com.da_chelimo.whisper.core.presentation.ui.Profile
 import com.da_chelimo.whisper.core.presentation.ui.Welcome
 import com.da_chelimo.whisper.core.presentation.ui.components.DefaultScreen
 import com.da_chelimo.whisper.core.presentation.ui.components.TintedAppBarIcon
@@ -66,38 +67,56 @@ fun SettingsScreen(navController: NavController) {
             }
         }) {
 
-        Button(
-            onClick = {
+        SettingsOption(
+            name = stringResource(R.string.my_profile),
+            modifier = Modifier,
+            onOptionSelected = {
+                navController.navigate(Profile)
+            }
+        )
+
+        SettingsOption(
+            name = stringResource(R.string.sign_out),
+            modifier = Modifier,
+            onOptionSelected = {
                 viewModel.signOut()
                 navController.navigate(Welcome) {
                     popUpTo(AllChats) {
                         inclusive = true
                     }
                 }
-            },
-            modifier = Modifier
-                .padding(horizontal = 8.dp)
-                .padding(top = 8.dp)
-                .fillMaxWidth(),
-            shape = RoundedCornerShape(6.dp),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = MaterialTheme.colorScheme.background,
-                contentColor = MaterialTheme.colorScheme.surface
-            ),
-            elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp)
-        ) {
-            Text(
-                text = stringResource(R.string.sign_out),
-                textAlign = TextAlign.Center,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 4.dp),
-                fontFamily = QuickSand,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.SemiBold
-            )
-        }
+            }
+        )
 
+    }
+}
+
+
+@Composable
+fun SettingsOption(name: String, modifier: Modifier = Modifier, onOptionSelected: () -> Unit) {
+    Button(
+        onClick = { onOptionSelected() },
+        modifier = modifier
+            .padding(horizontal = 8.dp)
+            .padding(top = 8.dp)
+            .fillMaxWidth(),
+        shape = RoundedCornerShape(6.dp),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = MaterialTheme.colorScheme.background,
+            contentColor = MaterialTheme.colorScheme.surface
+        ),
+        elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp)
+    ) {
+        Text(
+            text = name,
+            textAlign = TextAlign.Center,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 4.dp),
+            fontFamily = QuickSand,
+            fontSize = 16.sp,
+            fontWeight = FontWeight.SemiBold
+        )
     }
 }
 

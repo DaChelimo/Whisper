@@ -180,7 +180,7 @@ fun CreateProfileScreen(
                 }
             }
 
-            if (taskState == TaskState.LOADING)
+            if (taskState is TaskState.LOADING)
                 LoadingSpinner()
         }
     }

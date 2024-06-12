@@ -45,7 +45,7 @@ class EnterCodeViewModel(
 
     fun submitCode() {
         viewModelScope.launch {
-            _taskState.value = TaskState.LOADING
+            _taskState.value = TaskState.LOADING()
 
             authRepo.submitSMSCode(code.value) { isSuccess ->
                 Timber.d("isSuccess in authRepo.submitSMSCode(code.value) is $isSuccess")

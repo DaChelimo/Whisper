@@ -7,7 +7,7 @@ sealed class TaskState {
     data object NONE: TaskState()
 
     // Loading: Task in progress
-    data object LOADING: TaskState()
+    data class LOADING(val progress: Int? = null): TaskState()
 
     sealed class DONE: TaskState() {
         data object SUCCESS: DONE()
