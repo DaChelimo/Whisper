@@ -4,14 +4,11 @@ import android.net.Uri
 import com.da_chelimo.whisper.R
 import com.da_chelimo.whisper.core.domain.TaskState
 import com.da_chelimo.whisper.core.domain.User
-import com.da_chelimo.whisper.core.repo.user.UserRepo.Companion.PROFILE_PIC
-import com.da_chelimo.whisper.core.repo.user.UserRepo.Companion.USERS_COLLECTION
+import com.da_chelimo.whisper.core.repo.user.UserRepo.Companion.getStorageRefForProfilePic
+import com.da_chelimo.whisper.core.repo.user.UserRepo.Companion.getUserProfileReference
 import com.google.firebase.auth.ktx.auth
-import com.google.firebase.firestore.DocumentReference
-import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.firestore.toObject
 import com.google.firebase.ktx.Firebase
-import com.google.firebase.storage.ktx.storage
 import kotlinx.coroutines.tasks.await
 
 class UserRepoImpl : UserRepo {
@@ -25,8 +22,7 @@ class UserRepoImpl : UserRepo {
         var profilePicRemoteUrl: Uri? = null
 
         if (profilePicLocalUri != null)
-            profilePicRemoteUrl = Firebase.storage
-                .getReference("${Firebase.auth.uid}/$PROFILE_PIC").putFile(profilePicLocalUri)
+            profilePicRemoteUrl = getStorageRefForProfilePic(Firebase.auth.uid!!).putFile(profilePicLocalUri)
                 .await()
                 .storage.downloadUrl.await()
 
@@ -49,12 +45,6 @@ class UserRepoImpl : UserRepo {
 
             }
     }
-
-
-    override fun getUserProfileReference(uid: String): DocumentReference =
-        Firebase.firestore
-            .collection(USERS_COLLECTION)
-            .document(uid)
 
 
     override suspend fun getUserFromUID(uid: String): User? =

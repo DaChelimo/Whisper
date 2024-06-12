@@ -41,7 +41,41 @@ fun LoadingSpinner(modifier: Modifier = Modifier) {
             )
 
             Text(
-                text = stringResource(R.string.loading),
+                text = stringResource(id = R.string.loading),
+                fontFamily = QuickSand,
+                fontSize = 16.sp,
+                modifier = Modifier.padding(top = 16.dp)
+            )
+        }
+    }
+}
+
+
+@Composable
+fun LoadingSpinnerWithProgress(progress: Int, modifier: Modifier = Modifier) {
+    Card(
+        modifier.fillMaxWidth(0.38f),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.background),
+        elevation = CardDefaults.elevatedCardElevation(defaultElevation = 4.dp)
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 32.dp)
+        ) {
+            CircularProgressIndicator(
+                progress = { progress.toFloat() },
+                color = MaterialTheme.colorScheme.surface,
+                trackColor = MaterialTheme.colorScheme.background,
+                modifier = Modifier.size(42.dp)
+            )
+
+            Text(
+                text = stringResource(
+                    R.string.loading_with_progress,
+                    progress
+                ),
                 fontFamily = QuickSand,
                 fontSize = 16.sp,
                 modifier = Modifier.padding(top = 16.dp)

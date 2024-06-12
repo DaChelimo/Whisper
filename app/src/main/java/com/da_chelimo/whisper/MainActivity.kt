@@ -30,11 +30,13 @@ import com.da_chelimo.whisper.core.presentation.ui.AllChats
 import com.da_chelimo.whisper.core.presentation.ui.CreateProfile
 import com.da_chelimo.whisper.core.presentation.ui.EnterCode
 import com.da_chelimo.whisper.core.presentation.ui.EnterNumber
+import com.da_chelimo.whisper.core.presentation.ui.Profile
 import com.da_chelimo.whisper.core.presentation.ui.SelectContact
 import com.da_chelimo.whisper.core.presentation.ui.Settings
 import com.da_chelimo.whisper.core.presentation.ui.Welcome
 import com.da_chelimo.whisper.core.presentation.ui.theme.AppTheme
-import com.da_chelimo.whisper.settings.presentation.screens.SettingsScreen
+import com.da_chelimo.whisper.settings.presentation.screens.profile.ProfileScreen
+import com.da_chelimo.whisper.settings.presentation.screens.settings.SettingsScreen
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 
@@ -100,6 +102,9 @@ class MainActivity : ComponentActivity() {
 
                             composable<Settings> {
                                 SettingsScreen(navController = navController)
+                            }
+                            composable<Profile> {
+                                ProfileScreen(navController = navController)
                             }
 
 

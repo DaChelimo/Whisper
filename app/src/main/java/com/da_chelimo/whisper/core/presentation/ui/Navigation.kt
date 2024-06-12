@@ -27,6 +27,9 @@ data class CreateProfile(val phoneNumber: String) : Parcelable
 object Settings
 
 @Serializable
+object Profile
+
+@Serializable
 object AllChats
 
 @Serializable

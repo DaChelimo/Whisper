@@ -33,4 +33,13 @@
     <string name="enter_your_phone_number">Enter your phone number</string>
     <string name="settings">Settings</string>
     <string name="sign_out">Sign out</string>
+    <string name="profile">Profile</string>
+    <string name="name">Name</string>
+    <string name="loading_with_progress">Loading: %1$s</string>
+    <string name="about">About</string>
+    <string name="enter_your_bio">Enter your bio</string>
+    <string name="cancel">Cancel</string>
+    <string name="save">Save</string>
+    <string name="phone">Phone</string>
+    <string name="my_profile">My Profile</string>
 </resources>
