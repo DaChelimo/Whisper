@@ -25,7 +25,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.da_chelimo.whisper.R
-import com.da_chelimo.whisper.auth.ui.components.LoadingSpinner
+import com.da_chelimo.whisper.core.presentation.ui.components.LoadingSpinner
 import com.da_chelimo.whisper.chats.start_chat.components.ContactPreview
 import com.da_chelimo.whisper.core.presentation.ui.AllChats
 import com.da_chelimo.whisper.core.presentation.ui.components.DefaultScreen

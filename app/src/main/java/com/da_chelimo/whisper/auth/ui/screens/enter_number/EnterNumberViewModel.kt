@@ -2,6 +2,8 @@ package com.da_chelimo.whisper.auth.ui.screens.enter_number
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.da_chelimo.compose_ccp.model.PickerUtils
+import com.da_chelimo.compose_countrycodepicker.libs.Country
 import com.da_chelimo.whisper.R
 import com.da_chelimo.whisper.core.domain.TaskState
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -16,7 +18,10 @@ class EnterNumberViewModel: ViewModel() {
     private val _number = MutableStateFlow("")
     val number: StateFlow<String> = _number
 
-    val numberWithCountryCode = number.map { "+254$it" }.stateIn(viewModelScope, SharingStarted.Eagerly, "")
+    private val _country = MutableStateFlow(PickerUtils.allCountries.first())
+    val country: StateFlow<Country> = _country
+
+    val numberWithCountryCode = number.map { "${country.value.phoneNoCode}$it".trim() }.stateIn(viewModelScope, SharingStarted.Eagerly, "")
 
     private val _taskState = MutableStateFlow<TaskState?>(null)
     val taskState: StateFlow<TaskState?> = _taskState
@@ -27,6 +32,10 @@ class EnterNumberViewModel: ViewModel() {
     fun updateNumber(newNumber: String) {
         _number.value = newNumber
         verifyNumber()
+    }
+
+    fun updateCountry(newCountry: Country) {
+        _country.value = newCountry
     }
 
     fun verifyNumber() {

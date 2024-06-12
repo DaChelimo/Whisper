@@ -36,7 +36,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.da_chelimo.whisper.R
-import com.da_chelimo.whisper.auth.ui.components.LoadingSpinnerWithProgress
+import com.da_chelimo.whisper.core.presentation.ui.components.LoadingSpinnerWithProgress
 import com.da_chelimo.whisper.core.domain.TaskState
 import com.da_chelimo.whisper.core.presentation.ui.components.DefaultScreen
 import com.da_chelimo.whisper.core.presentation.ui.components.UserIcon

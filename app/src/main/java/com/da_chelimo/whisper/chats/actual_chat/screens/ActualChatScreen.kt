@@ -24,6 +24,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.da_chelimo.whisper.chats.actual_chat.components.ChatTopBar
+import com.da_chelimo.whisper.chats.actual_chat.components.DaySeparatorForActualChat
 import com.da_chelimo.whisper.chats.actual_chat.components.MyChat
 import com.da_chelimo.whisper.chats.actual_chat.components.OtherChat
 import com.da_chelimo.whisper.chats.actual_chat.components.TypeMessageBar
@@ -77,7 +78,11 @@ fun ActualChatScreen(
                 onVideoCall = {}
             )
 
-            Spacer(modifier = Modifier.height(1.dp).fillMaxWidth())
+            Spacer(
+                modifier = Modifier
+                    .height(1.dp)
+                    .fillMaxWidth()
+            )
 
             LazyColumn(
                 verticalArrangement = Arrangement.Bottom,
@@ -86,13 +91,18 @@ fun ActualChatScreen(
                     .imePadding(),
                 reverseLayout = true
             ) {
-                items(viewModel.messages) { chat ->
-                    if (chat.senderID == Firebase.auth.uid)
-                        MyChat(message = chat)
+                items(viewModel.messages) { message ->
+                    if (message.senderID == Firebase.auth.uid)
+                        MyChat(message = message)
                     else
-                        OtherChat(message = chat)
+                        OtherChat(message = message)
 
                     Spacer(modifier = Modifier.height(2.dp))
+
+                    DaySeparatorForActualChat(
+                        mapOfMessageIDAndDateInString = viewModel.mapOfMessageIDAndDateInString,
+                        message = message
+                    )
                 }
             }
 

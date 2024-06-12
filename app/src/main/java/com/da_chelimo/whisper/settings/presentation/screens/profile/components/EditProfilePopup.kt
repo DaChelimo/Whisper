@@ -28,9 +28,11 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -68,10 +70,15 @@ fun EditProfilePopup(
 
             Text(text = popupTitle, modifier = Modifier, fontFamily = Cabin)
 
-            var value by remember { mutableStateOf(popupData) }
+
+
+            var textFieldValue by remember {
+                mutableStateOf(TextFieldValue(popupData, selection = TextRange(index = popupData.length)))
+            }
+//            var value by remember { mutableStateOf(popupData) }
             OutlinedTextField(
-                value = value,
-                onValueChange = { value = it },
+                value = textFieldValue,
+                onValueChange = { textFieldValue = it },
                 modifier = Modifier
                     .focusRequester(focusRequester)
                     .padding(top = 12.dp)
@@ -90,14 +97,13 @@ fun EditProfilePopup(
                     selectionColors = TextSelectionColors(DarkBlue, DarkBlue.copy(alpha = 0.5f))
                 ),
                 textStyle = TextStyle(
-                    fontFamily = QuickSand,
-                    fontWeight = FontWeight.SemiBold,
+                    fontFamily = Cabin,
+                    fontWeight = FontWeight.Normal,
                     fontSize = 16.sp
                 ),
                 keyboardActions = KeyboardActions {
-//                    focusManager.clearFocus(force = true)
                     hidePopup()
-                    saveNewChange(value)
+                    saveNewChange(textFieldValue.text)
                 },
                 keyboardOptions = KeyboardOptions.Default.copy(
                     showKeyboardOnFocus = null,
@@ -123,7 +129,7 @@ fun EditProfilePopup(
 
                 Button(onClick = {
                     hidePopup()
-                    saveNewChange(value)
+                    saveNewChange(textFieldValue.text)
                 }) {
                     Text(
                         text = stringResource(R.string.save),

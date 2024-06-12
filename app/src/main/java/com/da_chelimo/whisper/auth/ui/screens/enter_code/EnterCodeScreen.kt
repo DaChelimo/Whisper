@@ -26,11 +26,13 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.da_chelimo.whisper.R
-import com.da_chelimo.whisper.auth.ui.components.LoadingSpinner
 import com.da_chelimo.whisper.auth.ui.components.OTPTextField
 import com.da_chelimo.whisper.core.domain.TaskState
+import com.da_chelimo.whisper.core.presentation.ui.AllChats
 import com.da_chelimo.whisper.core.presentation.ui.CreateProfile
+import com.da_chelimo.whisper.core.presentation.ui.Welcome
 import com.da_chelimo.whisper.core.presentation.ui.components.DefaultScreen
+import com.da_chelimo.whisper.core.presentation.ui.components.LoadingSpinner
 import com.da_chelimo.whisper.core.presentation.ui.theme.AppTheme
 import com.da_chelimo.whisper.core.presentation.ui.theme.Poppins
 import com.da_chelimo.whisper.core.utils.getActivity
@@ -55,8 +57,18 @@ fun EnterCodeScreen(navController: NavController, phoneNumberWithCountryCode: St
             )
 
             is TaskState.DONE.SUCCESS -> {
-                navController
-                    .navigate(CreateProfile(phoneNumberWithCountryCode))
+                val isExistingAccount = viewModel.checkIfUserHasExistingAccount()
+                Timber.d("isExistingAccount is $isExistingAccount")
+
+                if (isExistingAccount)
+                    navController.navigate(AllChats) {
+                        popUpTo(Welcome) { inclusive = true }
+                    }
+                else
+                    navController
+                        .navigate(CreateProfile(phoneNumberWithCountryCode))
+
+
                 viewModel.resetTaskState()
             }
 

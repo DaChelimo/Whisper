@@ -8,6 +8,7 @@ import com.da_chelimo.whisper.chats.domain.MessageStatus
 import com.da_chelimo.whisper.chats.repo.chats.ChatRepo
 import com.da_chelimo.whisper.chats.repo.chats.ChatRepoImpl
 import com.da_chelimo.whisper.chats.repo.contacts.ContactsRepo
+import com.da_chelimo.whisper.chats.utils.toActualChatSeparatorTime
 import com.da_chelimo.whisper.core.domain.User
 import com.da_chelimo.whisper.core.repo.user.UserRepo
 import com.da_chelimo.whisper.core.repo.user.UserRepoImpl
@@ -27,6 +28,12 @@ class ActualChatViewModel(
     private val contactsRepo: ContactsRepo
 ) : ViewModel() {
 
+    companion object {
+        // Can either be a Message Or a Long {Representing the interval}
+        data class MessageContainer<T>(val data: T)
+    }
+
+
     private val _textMessage = MutableStateFlow("")
     val textMessage: StateFlow<String> = _textMessage
 
@@ -34,6 +41,8 @@ class ActualChatViewModel(
     private var newContact: String? = null
 
     val messages = mutableStateListOf<Message>()
+
+    val mapOfMessageIDAndDateInString = mutableMapOf<String, String>()
 
     private val _otherUser = MutableStateFlow<User?>(null)
     val otherUser: StateFlow<User?> = _otherUser
@@ -75,6 +84,13 @@ class ActualChatViewModel(
             chatRepo.getMessagesFromChatID(chatID!!)
                 .onEach { // TODO: Improve this coz this is TERRIBLEEEEEE :)
                     Timber.d("chatRepo.getMessagesFromChatID(chatID!!).collect is $it")
+                    it.reversed().forEach {  message ->
+                        val isDateInMap = mapOfMessageIDAndDateInString.values.contains(message.timeSent.toActualChatSeparatorTime())
+
+                        if (!isDateInMap)
+                            mapOfMessageIDAndDateInString[message.messageID] = message.timeSent.toActualChatSeparatorTime()
+                    }
+
                     messages.clear()
                     messages.addAll(it)
                 }
