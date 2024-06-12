@@ -12,9 +12,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -26,7 +23,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.da_chelimo.compose_ccp.components.CCPTextField
-import com.da_chelimo.compose_ccp.model.PickerUtils
 import com.da_chelimo.whisper.R
 import com.da_chelimo.whisper.core.domain.TaskState
 import com.da_chelimo.whisper.core.presentation.ui.EnterCode
@@ -40,6 +36,7 @@ fun EnterNumberScreen(navController: NavController) {
     val viewModel = viewModel<EnterNumberViewModel>()
 
     val number by viewModel.number.collectAsState()
+    val country by viewModel.country.collectAsState()
     val taskState by viewModel.taskState.collectAsState()
     val shouldNavigateToEnterCode by viewModel.shouldNavigateToEnterCode.collectAsState()
 
@@ -68,11 +65,6 @@ fun EnterNumberScreen(navController: NavController) {
                 .padding(top = 8.dp)
         )
 
-
-        var country by remember {
-            mutableStateOf(PickerUtils.allCountries.first())
-        }
-
         CCPTextField(
             modifier = Modifier
                 .padding(top = 20.dp)
@@ -83,7 +75,7 @@ fun EnterNumberScreen(navController: NavController) {
             errorMessage = (taskState as? TaskState.DONE.ERROR)?.errorMessageRes?.let {
                 stringResource(it)
             },
-            onCountryChange = { country = it },
+            onCountryChange = { viewModel.updateCountry(it) },
             onNumberChange = { viewModel.updateNumber(it) }
         )
 

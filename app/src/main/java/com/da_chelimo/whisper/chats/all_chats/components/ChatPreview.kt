@@ -32,7 +32,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.da_chelimo.whisper.chats.domain.Chat
 import com.da_chelimo.whisper.chats.domain.MessageStatus
-import com.da_chelimo.whisper.chats.utils.toHourAndMinute
+import com.da_chelimo.whisper.chats.utils.toChatPreviewTime
 import com.da_chelimo.whisper.core.presentation.ui.components.UserIcon
 import com.da_chelimo.whisper.core.presentation.ui.theme.AppTheme
 import com.da_chelimo.whisper.core.presentation.ui.theme.DarkBlue
@@ -71,19 +71,19 @@ fun ChatPreview(
         ) {
             UserIcon(
                 profilePic = otherUser.profilePic,
-                iconSize = 46.dp,
+                iconSize = 52.dp,
                 onClick = { openProfilePic() }
             )
 
             Column(
                 modifier = Modifier
-                    .padding(start = 12.dp, top = 2.dp)
+                    .padding(start = 16.dp, top = 3.dp)
             ) {
                 Row(Modifier.fillMaxWidth()) {
                     Text(
                         text = otherUser.name,
                         fontFamily = QuickSand,
-                        fontSize = 16.sp,
+                        fontSize = 17.sp,
                         lineHeight = 18.sp,
                         fontWeight = FontWeight.SemiBold,
                         modifier = Modifier.weight(1f),
@@ -91,9 +91,9 @@ fun ChatPreview(
                     )
 
                     Text(
-                        text = chat.timeOfLastMessage.toHourAndMinute(),
+                        text = chat.timeOfLastMessage.toChatPreviewTime(),
                         fontFamily = Montserrat,
-                        fontSize = 12.sp,
+                        fontSize = 13.sp,
                         lineHeight = 18.sp,
                         fontWeight = FontWeight.Light
                     )
@@ -118,7 +118,7 @@ fun ChatPreview(
                     Text(
                         text = chat.lastMessage,
                         fontFamily = Roboto,
-                        fontSize = 14.sp,
+                        fontSize = (14.5).sp,
                         lineHeight = 17.sp,
                         fontWeight = FontWeight.Light,
                         overflow = TextOverflow.Ellipsis,
