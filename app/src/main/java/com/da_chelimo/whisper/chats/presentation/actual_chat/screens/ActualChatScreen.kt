@@ -18,8 +18,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -34,6 +42,7 @@ import com.da_chelimo.whisper.core.presentation.ui.theme.AppTheme
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import org.koin.androidx.compose.koinViewModel
+import timber.log.Timber
 
 @Composable
 fun ActualChatScreen(
@@ -42,8 +51,14 @@ fun ActualChatScreen(
     chatID: String? = null,
     newContact: String? = null
 ) {
+    val clipboardManager = LocalClipboardManager.current
     val composeMessage by viewModel.textMessage.collectAsState()
     val otherUser by viewModel.otherUser.collectAsState()
+
+    val isEditing by viewModel.isEditing.collectAsState()
+    var messageIDInFocus by remember {
+        mutableStateOf<String?>(null)
+    }
 
     LaunchedEffect(key1 = Unit) {
         viewModel.loadOtherUser(chatID, newContact)
@@ -94,14 +109,41 @@ fun ActualChatScreen(
                 verticalArrangement = Arrangement.Bottom,
                 modifier = Modifier
                     .fillMaxSize()
-                    .imePadding(),
+                    .imePadding()
+                    .clickable(null, null, onClick = { messageIDInFocus = null }),
                 reverseLayout = true
             ) {
                 items(viewModel.messages) { message ->
                     if (message.senderID == Firebase.auth.uid)
-                        MyChat(message = message)
+                        MyChat(
+                            message = message,
+                            messageIDInFocus = messageIDInFocus,
+                            toggleOptionsMenuVisibility = { messageIDInFocus = it },
+                            copyToClipboard = { messageText ->
+                                clipboardManager.setText(
+                                    buildAnnotatedString { append(messageText) }
+                                )
+                            },
+                            editMessage = { oldMessage ->
+                                viewModel.launchMessageEditing(message.messageID, oldMessage)
+                            },
+                            unSendMessage = { messageID ->
+                                viewModel.unsendMessage(messageID)
+                                messageIDInFocus = null
+                            }
+                        )
                     else
-                        OtherChat(message = message)
+                        OtherChat(
+                            message = message,
+                            messageIDInFocus = messageIDInFocus,
+                            toggleOptionsMenuVisibility = { messageIDInFocus = it },
+                            copyToClipboard = { messageText ->
+                                clipboardManager.setText(
+                                    buildAnnotatedString { append(messageText) }
+                                )
+                                messageIDInFocus = null
+                            },
+                        )
 
                     Spacer(modifier = Modifier.height(2.dp))
 
@@ -114,12 +156,28 @@ fun ActualChatScreen(
 
         }
 
+        val focusRequester = remember { FocusRequester() }
+        val focusManager = LocalFocusManager.current
+
+        LaunchedEffect(key1 = isEditing) {
+            if (isEditing != null) {
+                Timber.d("isEditing is $isEditing")
+                focusRequester.requestFocus()
+            } else {
+                focusManager.clearFocus(force = true)
+                messageIDInFocus = null
+            }
+        }
 
         TypeMessageBar(
             value = composeMessage,
             onValueChange = { viewModel.updateComposeMessage(it) },
-            sendMessage = { viewModel.sendMessage() },
-            modifier = Modifier.padding(vertical = 16.dp)
+            sendMessage = {
+                viewModel.sendOrEditMessage()
+            },
+            modifier = Modifier
+                .padding(vertical = 16.dp)
+                .focusRequester(focusRequester)
         )
     }
 }

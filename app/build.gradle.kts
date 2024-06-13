@@ -86,8 +86,7 @@ dependencies {
 
     // Compose UI libraries
     implementation(libs.compose.glide)
-    implementation(libs.haze)
-    implementation("com.github.skydoves:cloudy:0.1.2")
+    implementation(libs.cloudy)
     implementation(libs.compose.googleFonts)
 
     // Firebase

@@ -7,6 +7,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -16,6 +17,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -32,7 +35,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.Popup
 import com.da_chelimo.whisper.R
 import com.da_chelimo.whisper.core.presentation.ui.theme.AppTheme
 import com.da_chelimo.whisper.core.presentation.ui.theme.DarkBlue
@@ -125,30 +127,60 @@ private fun PreviewChatDetailsActions() = AppTheme {
 
 @Composable
 fun ComingSoonPopup(modifier: Modifier = Modifier, hidePopup: () -> Unit) {
-    Popup(onDismissRequest = { hidePopup() }, alignment = Alignment.Center) {
-        Column(
-            modifier
-                .padding(horizontal = 12.dp, vertical = 36.dp)
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+            .clickable(null, null, onClick = { hidePopup() }),
+        contentAlignment = Alignment.Center
+    ) {
+        Card(
+            Modifier
                 .fillMaxWidth(0.6f)
-                .background(MaterialTheme.colorScheme.background),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+                .clickable { },
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.background),
+            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
         ) {
-            Image(
-                painter = painterResource(id = R.drawable.work_icon),
-                contentDescription = null,
-                colorFilter = ColorFilter.tint(DarkBlue)
-            )
+            Column(
+                modifier = Modifier
+                    .padding(top = 40.dp, bottom = 8.dp),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.work_icon),
+                    contentDescription = null,
+                    colorFilter = ColorFilter.tint(DarkBlue),
+                )
 
-            Text(
-                text = stringResource(R.string.coming_soon),
-                modifier = Modifier.padding(top = 20.dp).fillMaxWidth(),
-                textAlign = TextAlign.Center,
-                fontFamily = QuickSand,
-                fontSize = 15.sp,
-                lineHeight = 18.sp,
-                fontWeight = FontWeight.Medium
-            )
+                Text(
+                    text = stringResource(R.string.coming_soon),
+                    modifier = Modifier
+                        .padding(top = 20.dp)
+                        .fillMaxWidth(),
+                    textAlign = TextAlign.Center,
+                    fontFamily = QuickSand,
+                    fontSize = 15.sp,
+                    lineHeight = 18.sp,
+                    fontWeight = FontWeight.Medium
+                )
+
+
+                Button(
+                    onClick = { hidePopup() },
+                    modifier = Modifier
+                        .padding(top = 12.dp)
+                        .padding(horizontal = 12.dp)
+                        .fillMaxWidth(),
+                    border = BorderStroke(1.dp, DarkBlue)
+                ) {
+                    Text(
+                        text = stringResource(R.string.close),
+                        fontFamily = QuickSand,
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
+            }
         }
     }
 }
@@ -160,7 +192,8 @@ private fun PreviewComingSoonPopup() = AppTheme {
     Column(
         Modifier
             .fillMaxSize()
-            .background(Color.White)) {
+            .background(Color.White)
+    ) {
         ComingSoonPopup {
 
         }

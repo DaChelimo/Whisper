@@ -30,6 +30,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -42,8 +43,8 @@ import timber.log.Timber
 // TODO: Add drafts as a feature... If user leaves the chat, they can still find the draft
 @Composable
 fun TypeMessageBar(
-    value: String,
-    onValueChange: (String) -> Unit,
+    value: TextFieldValue,
+    onValueChange: (TextFieldValue) -> Unit,
     sendMessage: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -85,7 +86,7 @@ fun TypeMessageBar(
             keyboardOptions = KeyboardOptions.Default.copy(capitalization = KeyboardCapitalization.Sentences)
         )
 
-        IconButton(onClick = { sendMessage(value) }) {
+        IconButton(onClick = { sendMessage(value.text) }) {
             Icon(
                 imageVector = Icons.Default.Search,
                 contentDescription = stringResource(R.string.send_message),
@@ -96,7 +97,7 @@ fun TypeMessageBar(
             )
         }
 
-        IconButton(onClick = { sendMessage(value) }) {
+        IconButton(onClick = { sendMessage(value.text) }) {
             Icon(
                 imageVector = Icons.AutoMirrored.Rounded.Send,
                 contentDescription = stringResource(R.string.send_message),
@@ -114,9 +115,7 @@ fun TypeMessageBar(
 @Preview
 @Composable
 private fun PreviewTypeMessageBar() = AppTheme {
-    var message by remember {
-        mutableStateOf("")
-    }
+    var typedMessage by remember { mutableStateOf(TextFieldValue("")) }
 
     Column(
         Modifier
@@ -126,8 +125,8 @@ private fun PreviewTypeMessageBar() = AppTheme {
     )
     {
         TypeMessageBar(
-            value = message,
-            onValueChange = { message = it },
+            value = typedMessage,
+            onValueChange = { typedMessage = it },
             sendMessage = { })
     }
 }

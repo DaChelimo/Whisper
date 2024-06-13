@@ -42,3 +42,9 @@ fun Long.toHourAndMinute(): String {
     val jodaTime = DateTime(this, DateTimeZone.getDefault())
     return jodaTime.toString("HH:mm")
 }
+
+
+fun Long.toDayMonthAndTime(): String {
+    val jodaTime = DateTime(this, DateTimeZone.getDefault())
+    return jodaTime.toString("dd MMM, HH:mm")
+}

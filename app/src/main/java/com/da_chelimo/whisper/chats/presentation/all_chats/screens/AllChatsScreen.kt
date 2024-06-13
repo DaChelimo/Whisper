@@ -116,7 +116,6 @@ fun AllChatsScreen(
         ControlBlurOnScreen(
             isPictureOnFullScreen = isProfilePicFullScreen != null,
             profilePic = isProfilePicFullScreen,
-            addKeys = false,
             dismissPicture = { isProfilePicFullScreen = null }
         ) {
 
