@@ -50,4 +50,8 @@
     <string name="report_user">Report user</string>
     <string name="coming_soon">Working on this feature {Coming soon}</string>
     <string name="close">Close</string>
+    <string name="reply">Reply</string>
+    <string name="forward">Forward</string>
+    <string name="copy">Copy</string>
+    <string name="unsend">Unsend</string>
 </resources>

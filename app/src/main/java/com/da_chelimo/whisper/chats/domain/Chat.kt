@@ -36,7 +36,7 @@ data class Chat(
             6,
             "Wanna come over for lunch?",
             "0000",
-            MessageStatus.RECEIVED,
+            MessageStatus.SENT,
             1234455
         )
     }

@@ -83,6 +83,15 @@ interface ChatRepo {
     suspend fun sendMessage(chatID: String, message: Message): Boolean
 
     /**
+     * Unsends the message
+     *
+     * PS: Under the hood, deletes the message and checks:
+     * 1) if it was unread. If yes, reduce unreadChatCount by 1
+     * 2) if it was the last message. Update last message in ChatDetails
+     */
+    suspend fun unsendMessage(chatID: String, messageID: String): Boolean
+
+    /**
      * Checks if the current user is the one who has pending unread messages
      *
      * If chats have been opened by the user who had unread messages,

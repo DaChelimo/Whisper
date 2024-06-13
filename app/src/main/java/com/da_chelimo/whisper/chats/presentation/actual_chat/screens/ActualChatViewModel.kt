@@ -5,10 +5,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.da_chelimo.whisper.chats.domain.Message
 import com.da_chelimo.whisper.chats.domain.MessageStatus
+import com.da_chelimo.whisper.chats.presentation.utils.toActualChatSeparatorTime
 import com.da_chelimo.whisper.chats.repo.chats.ChatRepo
 import com.da_chelimo.whisper.chats.repo.chats.ChatRepoImpl
 import com.da_chelimo.whisper.chats.repo.contacts.ContactsRepo
-import com.da_chelimo.whisper.chats.presentation.utils.toActualChatSeparatorTime
 import com.da_chelimo.whisper.core.domain.User
 import com.da_chelimo.whisper.core.repo.user.UserRepo
 import com.da_chelimo.whisper.core.repo.user.UserRepoImpl
@@ -27,11 +27,6 @@ class ActualChatViewModel(
     private val chatRepo: ChatRepo = ChatRepoImpl(),
     private val contactsRepo: ContactsRepo
 ) : ViewModel() {
-
-    companion object {
-        // Can either be a Message Or a Long {Representing the interval}
-        data class MessageContainer<T>(val data: T)
-    }
 
 
     private val _textMessage = MutableStateFlow("")
@@ -132,6 +127,10 @@ class ActualChatViewModel(
         chatRepo.sendMessage(chatID!!, message)
     }
 
+
+    fun unsendMessage(messageID: String) = viewModelScope.launch {
+        chatRepo.unsendMessage(chatID!!, messageID)
+    }
 
     fun updateComposeMessage(newMessage: String) {
         _textMessage.value = newMessage

@@ -18,8 +18,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -42,6 +47,7 @@ fun ActualChatScreen(
     chatID: String? = null,
     newContact: String? = null
 ) {
+    val clipboardManager = LocalClipboardManager.current
     val composeMessage by viewModel.textMessage.collectAsState()
     val otherUser by viewModel.otherUser.collectAsState()
 
@@ -90,18 +96,46 @@ fun ActualChatScreen(
                     .fillMaxWidth()
             )
 
+            var messageIDInFocus by remember {
+                mutableStateOf<String?>(null)
+            }
+
             LazyColumn(
                 verticalArrangement = Arrangement.Bottom,
                 modifier = Modifier
                     .fillMaxSize()
-                    .imePadding(),
+                    .imePadding()
+                    .clickable(null, null, onClick = { messageIDInFocus = null }),
                 reverseLayout = true
             ) {
                 items(viewModel.messages) { message ->
                     if (message.senderID == Firebase.auth.uid)
-                        MyChat(message = message)
+                        MyChat(
+                            message = message,
+                            messageIDInFocus = messageIDInFocus,
+                            onLongPress = { messageIDInFocus = it },
+                            copyToClipboard = { messageText ->
+                                clipboardManager.setText(
+                                    buildAnnotatedString { append(messageText) }
+                                )
+                            },
+                            unSendMessage = { messageID ->
+                                viewModel.unsendMessage(messageID)
+                                messageIDInFocus = null
+                            }
+                        )
                     else
-                        OtherChat(message = message)
+                        OtherChat(
+                            message = message,
+                            messageIDInFocus = messageIDInFocus,
+                            onLongPress = { messageIDInFocus = it },
+                            copyToClipboard = { messageText ->
+                                clipboardManager.setText(
+                                    buildAnnotatedString { append(messageText) }
+                                )
+                                messageIDInFocus = null
+                            },
+                        )
 
                     Spacer(modifier = Modifier.height(2.dp))
 
