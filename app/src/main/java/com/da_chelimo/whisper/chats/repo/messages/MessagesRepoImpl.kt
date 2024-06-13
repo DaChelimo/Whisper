@@ -1,5 +1,6 @@
 package com.da_chelimo.whisper.chats.repo.messages
 
+import androidx.core.net.toUri
 import com.da_chelimo.whisper.chats.domain.Chat
 import com.da_chelimo.whisper.chats.domain.Message
 import com.da_chelimo.whisper.chats.domain.MessageStatus
@@ -8,6 +9,7 @@ import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.toObject
 import com.google.firebase.ktx.Firebase
+import com.google.firebase.storage.ktx.storage
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.callbackFlow
@@ -15,6 +17,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
 import timber.log.Timber
+import java.util.UUID
 
 
 class MessagesRepoImpl(
@@ -24,16 +27,24 @@ class MessagesRepoImpl(
     // chats >> chat1234 >> messages >> messageID
     override suspend fun sendMessage(chatID: String, message: Message): Boolean {
         return try {
+            val imageDownloadUrl = message.messageImage?.toUri()?.let { imageToUpload ->
+                Firebase.storage.getReference("$chatID/${UUID.randomUUID()}")
+                    .putFile(imageToUpload)
+                    .await().storage
+                    .downloadUrl.await().toString()
+            }
+            val actualMessage = message.copy(messageImage = imageDownloadUrl)
+
             ChatRepo.getMessagesCollectionRef(chatID)
-                .document(message.messageID)
-                .set(message)
+                .document(actualMessage.messageID)
+                .set(actualMessage)
                 .addOnCompleteListener {
                     Timber.d("firestore.collection(CHATS_COLLECTION) is ${it.isSuccessful}")
                 }
                 .await()
 
             ChatRepo.getMessagesCollectionRef(chatID)
-                .document(message.messageID)
+                .document(actualMessage.messageID)
                 .update(Message::messageStatus.name, MessageStatus.SENT)
                 .addOnCompleteListener {
                     Timber.d("update(Message::messageStatus.name) is ${it.isSuccessful}")
@@ -45,10 +56,10 @@ class MessagesRepoImpl(
 
             ChatRepo.getChatDetailsRef(chatID).update(
                 mapOf(
-                    Chat::lastMessage.name to message.message,
-                    Chat::lastMessageSender.name to message.senderID,
-                    Chat::timeOfLastMessage.name to message.timeSent,
-                    Chat::lastMessageType.name to message.messageType,
+                    Chat::lastMessage.name to actualMessage.message,
+                    Chat::lastMessageSender.name to actualMessage.senderID,
+                    Chat::timeOfLastMessage.name to actualMessage.timeSent,
+                    Chat::lastMessageType.name to actualMessage.messageType,
                     Chat::lastMessageStatus.name to MessageStatus.SENT,
                     Chat::unreadMessagesCount.name to (chat?.unreadMessagesCount ?: 0) + 1
                 )

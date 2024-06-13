@@ -89,12 +89,13 @@ class ActualChatViewModel(
                 .onEach { // TODO: Improve this coz this is TERRIBLEEEEEE :)
                     Timber.d("chatRepo.getMessagesFromChatID(chatID!!).collect is $it")
                     it.reversed().forEach { message ->
+                        val timeTitle = message.timeSent.toActualChatSeparatorTime() ?: return@forEach
                         val isDateInMap =
-                            mapOfMessageIDAndDateInString.values.contains(message.timeSent.toActualChatSeparatorTime())
+                            mapOfMessageIDAndDateInString.values.contains(timeTitle)
 
                         if (!isDateInMap)
                             mapOfMessageIDAndDateInString[message.messageID] =
-                                message.timeSent.toActualChatSeparatorTime()
+                                timeTitle
                     }
 
                     messages.clear()

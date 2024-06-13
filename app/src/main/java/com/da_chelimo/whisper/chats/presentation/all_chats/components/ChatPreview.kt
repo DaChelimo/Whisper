@@ -93,7 +93,7 @@ fun ChatPreview(
                     )
 
                     Text(
-                        text = chat.timeOfLastMessage.toChatPreviewTime(),
+                        text = chat.timeOfLastMessage.toChatPreviewTime() ?: "",
                         fontFamily = Montserrat,
                         fontSize = 13.sp,
                         lineHeight = 18.sp,
