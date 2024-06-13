@@ -56,4 +56,6 @@
     <string name="unsend">Unsend</string>
     <string name="edited">Edited</string>
     <string name="edit">Edit</string>
+    <string name="open_media">Open media</string>
+    <string name="image">📷 %1$s</string>
 </resources>

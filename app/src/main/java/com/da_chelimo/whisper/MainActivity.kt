@@ -23,6 +23,7 @@ import com.da_chelimo.whisper.auth.ui.screens.create_profile.CreateProfileScreen
 import com.da_chelimo.whisper.auth.ui.screens.enter_code.EnterCodeScreen
 import com.da_chelimo.whisper.auth.ui.screens.enter_number.EnterNumberScreen
 import com.da_chelimo.whisper.chats.presentation.actual_chat.screens.ActualChatScreen
+import com.da_chelimo.whisper.chats.presentation.actual_chat.screens.send_image.SendImageScreen
 import com.da_chelimo.whisper.chats.presentation.all_chats.screens.AllChatsScreen
 import com.da_chelimo.whisper.chats.presentation.chat_details.screens.ChatDetailsScreen
 import com.da_chelimo.whisper.chats.presentation.start_chat.screens.SelectContactScreen
@@ -34,6 +35,7 @@ import com.da_chelimo.whisper.core.presentation.ui.EnterCode
 import com.da_chelimo.whisper.core.presentation.ui.EnterNumber
 import com.da_chelimo.whisper.core.presentation.ui.MyProfile
 import com.da_chelimo.whisper.core.presentation.ui.SelectContact
+import com.da_chelimo.whisper.core.presentation.ui.SendImage
 import com.da_chelimo.whisper.core.presentation.ui.Settings
 import com.da_chelimo.whisper.core.presentation.ui.Welcome
 import com.da_chelimo.whisper.core.presentation.ui.theme.AppTheme
@@ -63,9 +65,7 @@ class MainActivity : ComponentActivity() {
 
                         NavHost(
                             navController = navController,
-                            startDestination = if (Firebase.auth.uid == null) Welcome else AllChats,
-//                            enterTransition = { EnterTransition.None },
-//                            exitTransition = { ExitTransition.None }
+                            startDestination = if (Firebase.auth.uid == null) Welcome else AllChats
                         ) {
 
                             composable<Welcome> {
@@ -138,6 +138,16 @@ class MainActivity : ComponentActivity() {
                                     chatID = args.chatId,
                                     otherUserID = args.otherUserId,
                                     navController = navController
+                                )
+                            }
+
+                            composable<SendImage> {
+                                val args = it.toRoute<SendImage>()
+
+                                SendImageScreen(
+                                    navController = navController,
+                                    chatID = args.chatId,
+                                    imageUri = args.imageUri
                                 )
                             }
                         }

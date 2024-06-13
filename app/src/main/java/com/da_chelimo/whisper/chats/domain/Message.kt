@@ -4,12 +4,14 @@ data class Message(
     val senderID: String,
     val messageID: String,
     var message: String,
+    var messageImage: String? = null,
     var timeSent: Long,
     var messageStatus: MessageStatus,
+    var messageType: MessageType = MessageType.Text,
     var wasEdited: Boolean = false
 ) {
 
-    constructor() : this("", "", "", 0, MessageStatus.SENT)
+    constructor() : this("", "", "", null, 0, MessageStatus.SENT)
 
     companion object {
         val TEST_MY_Message = Message(

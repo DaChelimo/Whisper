@@ -25,13 +25,16 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.da_chelimo.whisper.R
 import com.da_chelimo.whisper.chats.domain.Chat
 import com.da_chelimo.whisper.chats.domain.MessageStatus
+import com.da_chelimo.whisper.chats.domain.MessageType
 import com.da_chelimo.whisper.chats.presentation.utils.toChatPreviewTime
 import com.da_chelimo.whisper.core.presentation.ui.components.UserIcon
 import com.da_chelimo.whisper.core.presentation.ui.theme.AppTheme
@@ -55,7 +58,6 @@ fun ChatPreview(
             .clickable { openChat() },
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.background),
         shape = RoundedCornerShape(4.dp)
-//        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
     ) {
         val otherUser =
             if (chat.firstMiniUser.uid == Firebase.auth.uid)
@@ -91,7 +93,7 @@ fun ChatPreview(
                     )
 
                     Text(
-                        text = chat.timeOfLastMessage.toChatPreviewTime(),
+                        text = chat.timeOfLastMessage.toChatPreviewTime() ?: "",
                         fontFamily = Montserrat,
                         fontSize = 13.sp,
                         lineHeight = 18.sp,
@@ -115,8 +117,17 @@ fun ChatPreview(
                     }
 
 
+                    // If the lastMessage is blank, it means it's an image
+                    val messagePreview =
+                        if (chat.lastMessageType == MessageType.Image)
+                            stringResource(
+                                R.string.image,
+                                chat.lastMessage.ifBlank { "Image" }
+                            )
+                        else chat.lastMessage
+
                     Text(
-                        text = chat.lastMessage,
+                        text = messagePreview,
                         fontFamily = Roboto,
                         fontSize = (14.5).sp,
                         lineHeight = 17.sp,

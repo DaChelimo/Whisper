@@ -1,5 +1,8 @@
 package com.da_chelimo.whisper.chats.presentation.actual_chat.screens
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -34,10 +37,11 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.da_chelimo.whisper.chats.presentation.actual_chat.components.ChatTopBar
 import com.da_chelimo.whisper.chats.presentation.actual_chat.components.DaySeparatorForActualChat
-import com.da_chelimo.whisper.chats.presentation.actual_chat.components.MyChat
-import com.da_chelimo.whisper.chats.presentation.actual_chat.components.OtherChat
 import com.da_chelimo.whisper.chats.presentation.actual_chat.components.TypeMessageBar
+import com.da_chelimo.whisper.chats.presentation.actual_chat.components.messages.MyChat
+import com.da_chelimo.whisper.chats.presentation.actual_chat.components.messages.OtherChat
 import com.da_chelimo.whisper.core.presentation.ui.ChatDetails
+import com.da_chelimo.whisper.core.presentation.ui.SendImage
 import com.da_chelimo.whisper.core.presentation.ui.theme.AppTheme
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
@@ -59,6 +63,8 @@ fun ActualChatScreen(
     var messageIDInFocus by remember {
         mutableStateOf<String?>(null)
     }
+
+
 
     LaunchedEffect(key1 = Unit) {
         viewModel.loadOtherUser(chatID, newContact)
@@ -169,11 +175,30 @@ fun ActualChatScreen(
             }
         }
 
+
+
+        val permissionLauncher = rememberLauncherForActivityResult(contract = ActivityResultContracts.PickVisualMedia()) { imageUri ->
+            if (imageUri != null) {
+                navController.navigate(SendImage(viewModel.chatID!!, imageUri.toString()))
+            }
+        }
+
+        val shouldOpenMediaPicker by viewModel.openMediaPicker.collectAsState()
+        LaunchedEffect(key1 = shouldOpenMediaPicker) {
+            if (shouldOpenMediaPicker)
+                permissionLauncher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+
+            viewModel.updateOpenMediaPicker(false)
+        }
+
         TypeMessageBar(
             value = composeMessage,
             onValueChange = { viewModel.updateComposeMessage(it) },
             sendMessage = {
                 viewModel.sendOrEditMessage()
+            },
+            openMediaSelector = {
+                viewModel.updateOpenMediaPicker(true)
             },
             modifier = Modifier
                 .padding(vertical = 16.dp)

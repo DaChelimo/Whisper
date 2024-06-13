@@ -38,4 +38,5 @@ object AllChats
 data class ActualChat(val chatId: String?, val newContact: String?)
 @Serializable
 data class ChatDetails(val chatId: String, val otherUserId: String)
-
+@Serializable
+data class SendImage(val chatId: String, val imageUri: String)

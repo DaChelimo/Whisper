@@ -14,6 +14,7 @@ data class Chat(
     var lastMessageSender: String,
     val lastMessageStatus: MessageStatus,
     var timeOfLastMessage: Long, // Time in millis when the last text was sent
+    val lastMessageType: MessageType = MessageType.Text
 ) {
 
     constructor() : this(
