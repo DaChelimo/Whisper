@@ -12,19 +12,4 @@ class AllChatsViewModel(
 
     val chats = chatRepo.getChatsForUser(Firebase.auth.uid!!)
 
-//    init {
-//        viewModelScope.launch {
-//            loadChats()
-//        }
-//    }
-//
-//    private suspend fun loadChats() {
-//        Timber.d("uid is ${Firebase.auth.uid}")
-//        Firebase.auth.uid?.let { uid ->
-//            val remoteChats = chatRepo.getChatsForUser(uid)
-//            Timber.d("remoteChats is $remoteChats for uid: $uid")
-//            chats.addAll(remoteChats)
-//        }
-//    }
-
 }

@@ -12,7 +12,6 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.Send
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -27,6 +26,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.KeyboardCapitalization
@@ -45,6 +45,7 @@ import timber.log.Timber
 fun TypeMessageBar(
     value: TextFieldValue,
     onValueChange: (TextFieldValue) -> Unit,
+    openMediaSelector: (() -> Unit)?,
     sendMessage: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -86,15 +87,17 @@ fun TypeMessageBar(
             keyboardOptions = KeyboardOptions.Default.copy(capitalization = KeyboardCapitalization.Sentences)
         )
 
-        IconButton(onClick = { sendMessage(value.text) }) {
-            Icon(
-                imageVector = Icons.Default.Search,
-                contentDescription = stringResource(R.string.send_message),
-                modifier = Modifier
-                    .size(30.dp)
-                    .padding(2.dp),
-                tint = MaterialTheme.colorScheme.onSurface
-            )
+        if (openMediaSelector != null) {
+            IconButton(onClick = { openMediaSelector() }) {
+                Icon(
+                    painter = painterResource(id = R.drawable.open_media),
+                    contentDescription = stringResource(R.string.open_media),
+                    modifier = Modifier
+                        .size(30.dp)
+                        .padding(2.dp),
+                    tint = MaterialTheme.colorScheme.onSurface
+                )
+            }
         }
 
         IconButton(onClick = { sendMessage(value.text) }) {
@@ -127,6 +130,8 @@ private fun PreviewTypeMessageBar() = AppTheme {
         TypeMessageBar(
             value = typedMessage,
             onValueChange = { typedMessage = it },
-            sendMessage = { })
+            sendMessage = { },
+            openMediaSelector = { }
+        )
     }
 }

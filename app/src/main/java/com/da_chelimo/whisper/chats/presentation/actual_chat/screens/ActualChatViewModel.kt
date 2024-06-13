@@ -11,6 +11,8 @@ import com.da_chelimo.whisper.chats.presentation.utils.toActualChatSeparatorTime
 import com.da_chelimo.whisper.chats.repo.chats.ChatRepo
 import com.da_chelimo.whisper.chats.repo.chats.ChatRepoImpl
 import com.da_chelimo.whisper.chats.repo.contacts.ContactsRepo
+import com.da_chelimo.whisper.chats.repo.messages.MessagesRepo
+import com.da_chelimo.whisper.chats.repo.messages.MessagesRepoImpl
 import com.da_chelimo.whisper.core.domain.User
 import com.da_chelimo.whisper.core.repo.user.UserRepo
 import com.da_chelimo.whisper.core.repo.user.UserRepoImpl
@@ -27,6 +29,7 @@ import java.util.UUID
 class ActualChatViewModel(
     private val userRepo: UserRepo = UserRepoImpl(),
     private val chatRepo: ChatRepo = ChatRepoImpl(),
+    private val messagesRepo: MessagesRepo = MessagesRepoImpl(chatRepo),
     private val contactsRepo: ContactsRepo
 ) : ViewModel() {
 
@@ -34,8 +37,8 @@ class ActualChatViewModel(
     private val _textMessage = MutableStateFlow(TextFieldValue(""))
     val textMessage: StateFlow<TextFieldValue> = _textMessage
 
-    private var chatID: String? = null
-    private var newContact: String? = null
+    var chatID: String? = null
+        private set
 
     val messages = mutableStateListOf<Message>()
 
@@ -44,6 +47,8 @@ class ActualChatViewModel(
     private val _otherUser = MutableStateFlow<User?>(null)
     val otherUser: StateFlow<User?> = _otherUser
 
+    private val _openMediaPicker = MutableStateFlow(false)
+    val openMediaPicker: StateFlow<Boolean> = _openMediaPicker
 
     private val _isEditing = MutableStateFlow<String?>(null)
     val isEditing: StateFlow<String?> = _isEditing
@@ -63,11 +68,8 @@ class ActualChatViewModel(
                     else chat?.firstMiniUser
 
                 val remoteUser = userRepo.getUserFromUID(otherUserUID?.uid!!)
-                Timber.d("remoteUser is $remoteUser")
                 remoteUser
             }
-        Timber.d("otherUser.value is ${otherUser.value}")
-        Timber.d("newContact is $newContact")
     }
 
     /**
@@ -83,7 +85,7 @@ class ActualChatViewModel(
         if (chatID != null) {
             Timber.d("chatID is $chatID")
 
-            chatRepo.getMessagesFromChatID(chatID!!)
+            messagesRepo.getMessagesFromChatID(chatID!!)
                 .onEach { // TODO: Improve this coz this is TERRIBLEEEEEE :)
                     Timber.d("chatRepo.getMessagesFromChatID(chatID!!).collect is $it")
                     it.reversed().forEach { message ->
@@ -141,7 +143,7 @@ class ActualChatViewModel(
         )
 
         _textMessage.value = TextFieldValue("")
-        chatRepo.sendMessage(chatID!!, message)
+        messagesRepo.sendMessage(chatID!!, message)
     }
 
     fun launchMessageEditing(messageID: String, oldMessage: String) {
@@ -156,7 +158,7 @@ class ActualChatViewModel(
         _isEditing.value = null
         _textMessage.value = TextFieldValue("")
 
-        chatRepo.editMessage(
+        messagesRepo.editMessage(
             chatID = chatID!!,
             messageID = editedMessageID,
             newMessage = editedMessage
@@ -164,11 +166,14 @@ class ActualChatViewModel(
     }
 
     fun unsendMessage(messageID: String) = viewModelScope.launch {
-        chatRepo.unsendMessage(chatID!!, messageID)
+        messagesRepo.unsendMessage(chatID!!, messageID)
     }
 
     fun updateComposeMessage(newMessage: TextFieldValue) {
         _textMessage.value = newMessage
     }
 
+    fun updateOpenMediaPicker(shouldOpen: Boolean) {
+        _openMediaPicker.value = shouldOpen
+    }
 }
