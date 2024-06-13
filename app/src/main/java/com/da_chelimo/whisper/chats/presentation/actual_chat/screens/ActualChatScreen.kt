@@ -23,7 +23,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -39,6 +42,7 @@ import com.da_chelimo.whisper.core.presentation.ui.theme.AppTheme
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import org.koin.androidx.compose.koinViewModel
+import timber.log.Timber
 
 @Composable
 fun ActualChatScreen(
@@ -50,6 +54,11 @@ fun ActualChatScreen(
     val clipboardManager = LocalClipboardManager.current
     val composeMessage by viewModel.textMessage.collectAsState()
     val otherUser by viewModel.otherUser.collectAsState()
+
+    val isEditing by viewModel.isEditing.collectAsState()
+    var messageIDInFocus by remember {
+        mutableStateOf<String?>(null)
+    }
 
     LaunchedEffect(key1 = Unit) {
         viewModel.loadOtherUser(chatID, newContact)
@@ -96,10 +105,6 @@ fun ActualChatScreen(
                     .fillMaxWidth()
             )
 
-            var messageIDInFocus by remember {
-                mutableStateOf<String?>(null)
-            }
-
             LazyColumn(
                 verticalArrangement = Arrangement.Bottom,
                 modifier = Modifier
@@ -113,11 +118,14 @@ fun ActualChatScreen(
                         MyChat(
                             message = message,
                             messageIDInFocus = messageIDInFocus,
-                            onLongPress = { messageIDInFocus = it },
+                            toggleOptionsMenuVisibility = { messageIDInFocus = it },
                             copyToClipboard = { messageText ->
                                 clipboardManager.setText(
                                     buildAnnotatedString { append(messageText) }
                                 )
+                            },
+                            editMessage = { oldMessage ->
+                                viewModel.launchMessageEditing(message.messageID, oldMessage)
                             },
                             unSendMessage = { messageID ->
                                 viewModel.unsendMessage(messageID)
@@ -128,7 +136,7 @@ fun ActualChatScreen(
                         OtherChat(
                             message = message,
                             messageIDInFocus = messageIDInFocus,
-                            onLongPress = { messageIDInFocus = it },
+                            toggleOptionsMenuVisibility = { messageIDInFocus = it },
                             copyToClipboard = { messageText ->
                                 clipboardManager.setText(
                                     buildAnnotatedString { append(messageText) }
@@ -148,12 +156,28 @@ fun ActualChatScreen(
 
         }
 
+        val focusRequester = remember { FocusRequester() }
+        val focusManager = LocalFocusManager.current
+
+        LaunchedEffect(key1 = isEditing) {
+            if (isEditing != null) {
+                Timber.d("isEditing is $isEditing")
+                focusRequester.requestFocus()
+            } else {
+                focusManager.clearFocus(force = true)
+                messageIDInFocus = null
+            }
+        }
 
         TypeMessageBar(
             value = composeMessage,
             onValueChange = { viewModel.updateComposeMessage(it) },
-            sendMessage = { viewModel.sendMessage() },
-            modifier = Modifier.padding(vertical = 16.dp)
+            sendMessage = {
+                viewModel.sendOrEditMessage()
+            },
+            modifier = Modifier
+                .padding(vertical = 16.dp)
+                .focusRequester(focusRequester)
         )
     }
 }

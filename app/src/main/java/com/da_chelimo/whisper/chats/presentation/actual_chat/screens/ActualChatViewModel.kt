@@ -1,6 +1,8 @@
 package com.da_chelimo.whisper.chats.presentation.actual_chat.screens
 
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.da_chelimo.whisper.chats.domain.Message
@@ -29,8 +31,8 @@ class ActualChatViewModel(
 ) : ViewModel() {
 
 
-    private val _textMessage = MutableStateFlow("")
-    val textMessage: StateFlow<String> = _textMessage
+    private val _textMessage = MutableStateFlow(TextFieldValue(""))
+    val textMessage: StateFlow<TextFieldValue> = _textMessage
 
     private var chatID: String? = null
     private var newContact: String? = null
@@ -41,6 +43,11 @@ class ActualChatViewModel(
 
     private val _otherUser = MutableStateFlow<User?>(null)
     val otherUser: StateFlow<User?> = _otherUser
+
+
+    private val _isEditing = MutableStateFlow<String?>(null)
+    val isEditing: StateFlow<String?> = _isEditing
+
 
     /**
      * Gets the other user's profile either using the chatID (existing chat) or newContact (new chat)
@@ -79,11 +86,13 @@ class ActualChatViewModel(
             chatRepo.getMessagesFromChatID(chatID!!)
                 .onEach { // TODO: Improve this coz this is TERRIBLEEEEEE :)
                     Timber.d("chatRepo.getMessagesFromChatID(chatID!!).collect is $it")
-                    it.reversed().forEach {  message ->
-                        val isDateInMap = mapOfMessageIDAndDateInString.values.contains(message.timeSent.toActualChatSeparatorTime())
+                    it.reversed().forEach { message ->
+                        val isDateInMap =
+                            mapOfMessageIDAndDateInString.values.contains(message.timeSent.toActualChatSeparatorTime())
 
                         if (!isDateInMap)
-                            mapOfMessageIDAndDateInString[message.messageID] = message.timeSent.toActualChatSeparatorTime()
+                            mapOfMessageIDAndDateInString[message.messageID] =
+                                message.timeSent.toActualChatSeparatorTime()
                     }
 
                     messages.clear()
@@ -107,32 +116,58 @@ class ActualChatViewModel(
         }
     }
 
-    fun sendMessage() = viewModelScope.launch {
-        if (textMessage.value.isBlank()) // You can't send an empty message
+
+    fun sendOrEditMessage() = viewModelScope.launch {
+        if (textMessage.value.text.isBlank()) // You can't send an empty message
             return@launch
 
 
+        if (isEditing.value != null)
+            editMessage()
+        else
+            sendMessage()
+    }
+
+    private suspend fun sendMessage() {
         if (chatID == null)            // If it's a new person, create a new chat
             createConversation()
 
         val message = Message(
             senderID = Firebase.auth.uid!!,
             messageID = UUID.randomUUID().toString(),
-            message = textMessage.value,
+            message = textMessage.value.text,
             timeSent = System.currentTimeMillis(),
             messageStatus = MessageStatus.NOT_SENT
         )
 
-        _textMessage.value = ""
+        _textMessage.value = TextFieldValue("")
         chatRepo.sendMessage(chatID!!, message)
     }
 
+    fun launchMessageEditing(messageID: String, oldMessage: String) {
+        _isEditing.value = messageID
+        updateComposeMessage(TextFieldValue(oldMessage, selection = TextRange(index = oldMessage.length)))
+    }
+
+    private suspend fun editMessage() {
+        val editedMessageID = isEditing.value!!
+        val editedMessage = textMessage.value.text
+
+        _isEditing.value = null
+        _textMessage.value = TextFieldValue("")
+
+        chatRepo.editMessage(
+            chatID = chatID!!,
+            messageID = editedMessageID,
+            newMessage = editedMessage
+        )
+    }
 
     fun unsendMessage(messageID: String) = viewModelScope.launch {
         chatRepo.unsendMessage(chatID!!, messageID)
     }
 
-    fun updateComposeMessage(newMessage: String) {
+    fun updateComposeMessage(newMessage: TextFieldValue) {
         _textMessage.value = newMessage
     }
 

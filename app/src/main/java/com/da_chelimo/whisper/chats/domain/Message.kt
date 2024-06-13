@@ -5,7 +5,8 @@ data class Message(
     val messageID: String,
     var message: String,
     var timeSent: Long,
-    var messageStatus: MessageStatus
+    var messageStatus: MessageStatus,
+    var wasEdited: Boolean = false
 ) {
 
     constructor() : this("", "", "", 0, MessageStatus.SENT)

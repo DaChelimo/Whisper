@@ -54,4 +54,6 @@
     <string name="forward">Forward</string>
     <string name="copy">Copy</string>
     <string name="unsend">Unsend</string>
+    <string name="edited">Edited</string>
+    <string name="edit">Edit</string>
 </resources>

@@ -207,6 +207,33 @@ class ChatRepoImpl(private val userRepo: UserRepo = UserRepoImpl()) : ChatRepo {
     }
 
 
+    override suspend fun editMessage(chatID: String, messageID: String, newMessage: String) {
+        val chatMessagesCollection = getMessagesCollectionRef(chatID)
+
+        // Edit the message in the main chats collection
+        chatMessagesCollection.document(messageID).update(
+            mapOf(
+                Message::message.name to newMessage,
+                Message::wasEdited.name to true
+            )
+        )
+
+
+        // Update the last message in chat details
+        val lastMessageID =
+            chatMessagesCollection.orderBy(Message::timeSent.name, Query.Direction.DESCENDING)
+                .limit(1).get().await().toObjects(Message::class.java).firstOrNull()?.messageID
+        val isLastMessage = lastMessageID == messageID
+
+        if (isLastMessage) {
+            getChatDetailsRef(chatID)
+                .update(
+                    Chat::lastMessage.name, newMessage
+                )
+        }
+    }
+
+
     override suspend fun unsendMessage(chatID: String, messageID: String): Boolean {
         val chatMessagesCollection = getMessagesCollectionRef(chatID)
         val lastTwoMessages =
@@ -216,6 +243,7 @@ class ChatRepoImpl(private val userRepo: UserRepo = UserRepoImpl()) : ChatRepo {
 
         val lastMessageID = lastTwoMessages.firstOrNull()?.messageID
 
+        // Deletes the message
         chatMessagesCollection.document(messageID).delete()
 
         // If the message being unsent is not the latest message, we don't have to update ChatDetails

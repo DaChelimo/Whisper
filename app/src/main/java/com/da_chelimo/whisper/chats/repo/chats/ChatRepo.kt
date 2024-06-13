@@ -82,6 +82,12 @@ interface ChatRepo {
      */
     suspend fun sendMessage(chatID: String, message: Message): Boolean
 
+
+    /**
+     * Edit messages
+     */
+    suspend fun editMessage(chatID: String, messageID: String, newMessage: String)
+
     /**
      * Unsends the message
      *

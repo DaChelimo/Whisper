@@ -1,5 +1,6 @@
 package com.da_chelimo.whisper.chats.presentation.actual_chat.components
 
+import androidx.activity.compose.BackHandler
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
@@ -61,8 +62,9 @@ fun MyChat(
     modifier: Modifier = Modifier,
     message: Message,
     messageIDInFocus: String?,
-    onLongPress: (String?) -> Unit,
+    toggleOptionsMenuVisibility: (String?) -> Unit,
     copyToClipboard: (String) -> Unit,
+    editMessage: (String) -> Unit,
     unSendMessage: (String) -> Unit
 ) {
     val cornerSize = 10.dp
@@ -84,8 +86,9 @@ fun MyChat(
         message = message,
         showOptionsMenu = messageIDInFocus == message.messageID,
         isMyChat = true,
-        onLongPress = onLongPress,
+        toggleOptionsMenuVisibility = toggleOptionsMenuVisibility,
         copyToClipboard = copyToClipboard,
+        editMessage = editMessage,
         unSendMessage = unSendMessage
     )
 }
@@ -96,7 +99,7 @@ fun OtherChat(
     modifier: Modifier = Modifier,
     message: Message,
     messageIDInFocus: String?,
-    onLongPress: (String?) -> Unit,
+    toggleOptionsMenuVisibility: (String?) -> Unit,
     copyToClipboard: (String) -> Unit,
 ) {
     val cornerSize = 10.dp
@@ -118,8 +121,9 @@ fun OtherChat(
         message = message,
         showOptionsMenu = messageIDInFocus == message.messageID,
         isMyChat = false,
-        onLongPress = onLongPress,
+        toggleOptionsMenuVisibility = toggleOptionsMenuVisibility,
         copyToClipboard = copyToClipboard,
+        editMessage = null,
         unSendMessage = null
     )
 }
@@ -135,8 +139,9 @@ fun ChatMessage(
     showOptionsMenu: Boolean,
     isMyChat: Boolean,
     modifier: Modifier = Modifier,
-    onLongPress: (String?) -> Unit,
+    toggleOptionsMenuVisibility: (String?) -> Unit,
     copyToClipboard: (String) -> Unit,
+    editMessage: ((String) -> Unit)?,
     unSendMessage: ((String) -> Unit)?
 ) {
     Card(
@@ -155,9 +160,11 @@ fun ChatMessage(
                     null,
                     null,
                     onLongClick = {
-                        onLongPress(message.messageID)
+                        toggleOptionsMenuVisibility(message.messageID)
                     },
-                    onClick = {}
+                    onClick = {
+                        toggleOptionsMenuVisibility(null)
+                    }
                 ),
             horizontalAlignment = chatAlignment
         ) {
@@ -183,7 +190,17 @@ fun ChatMessage(
                 modifier = Modifier.align(chatAlignment),
                 verticalAlignment = Alignment.CenterVertically
             ) {
+
                 if (!showOptionsMenu) {
+                    if (isMyChat && message.wasEdited)
+                        Text(
+                            text = stringResource(R.string.edited),
+                            fontSize = 11.sp,
+                            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
+                            modifier = Modifier.padding(horizontal = 2.dp),
+                            fontFamily = Poppins
+                        )
+
                     Text(
                         text = message.timeSent.toHourAndMinute(),
                         modifier = Modifier.padding(horizontal = if (isMyChat) 4.dp else 2.dp),
@@ -191,6 +208,15 @@ fun ChatMessage(
                         color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
                         fontFamily = Poppins
                     )
+
+                    if (!isMyChat && message.wasEdited)
+                        Text(
+                            text = stringResource(R.string.edited),
+                            fontSize = 11.sp,
+                            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
+                            modifier = Modifier.padding(horizontal = 2.dp),
+                            fontFamily = Poppins
+                        )
                 }
 
                 if (isMyChat) {
@@ -213,16 +239,25 @@ fun ChatMessage(
                     Modifier
                         .fillMaxWidth()
                         .padding(top = 4.dp, bottom = 8.dp)
-                        .clickable { onLongPress(null) }) {
+                        .clickable { toggleOptionsMenuVisibility(null) }) {
                     MessageOptions(
                         modifier = Modifier
                             .align(chatAlignment),
                         message = message,
                         copyToClipboard = copyToClipboard,
+                        editMessage = {
+                            if (editMessage != null) {
+                                editMessage(message.message)
+                            }
+                        },
                         unSendMessage = unSendMessage
                     )
                 }
         }
+    }
+
+    BackHandler(enabled = showOptionsMenu) {
+        toggleOptionsMenuVisibility(null)
     }
 }
 
@@ -249,13 +284,15 @@ fun MessageOptions(
     message: Message,
     modifier: Modifier = Modifier,
     copyToClipboard: (String) -> Unit,
+    editMessage: (() -> Unit)?,
     unSendMessage: ((String) -> Unit)?
 ) {
     Card(
         modifier = modifier
             .background(Color.White)
             .fillMaxWidth(0.5f)
-            .clickable { }.padding(vertical = 2.dp),
+            .clickable { }
+            .padding(vertical = 2.dp),
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.background
@@ -273,11 +310,17 @@ fun MessageOptions(
                 icon = R.drawable.reply,
                 name = stringResource(R.string.reply),
                 onOptionSelected = { })
-
             MessageOption(
                 icon = R.drawable.forward,
                 name = stringResource(R.string.forward),
                 onOptionSelected = { })
+
+            if (editMessage != null) {
+                MessageOption(
+                    icon = R.drawable.edit,
+                    name = stringResource(R.string.edit),
+                    onOptionSelected = { editMessage() })
+            }
 
             MessageOption(
                 icon = R.drawable.copy,
@@ -307,7 +350,7 @@ fun MessageOption(
         modifier = modifier
             .padding(vertical = 8.dp)
             .fillMaxWidth()
-            .clickable { onOptionSelected() },
+            .clickable(onClick = { onOptionSelected() }),
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Text(text = name, fontSize = 14.sp, color = tint, fontFamily = QuickSand)
@@ -337,48 +380,25 @@ private fun PreviewChats() = AppTheme {
 
         MyChat(
             message = Message.TEST_MY_Message, messageIDInFocus = chatIDInFocus,
-            onLongPress = { chatIDInFocus = it },
+            toggleOptionsMenuVisibility = { chatIDInFocus = it },
             copyToClipboard = { },
-            unSendMessage = { })
+            unSendMessage = { }, editMessage = {})
         Spacer(modifier = Modifier.height(4.dp))
 
         OtherChat(message = Message.TEST_MY_Message, messageIDInFocus = chatIDInFocus,
-            onLongPress = { chatIDInFocus = it },
+            toggleOptionsMenuVisibility = { chatIDInFocus = it },
             copyToClipboard = { })
 
         MyChat(message = Message.LONG_TEST_MY_Message, messageIDInFocus = chatIDInFocus,
-            onLongPress = { chatIDInFocus = it },
+            toggleOptionsMenuVisibility = { chatIDInFocus = it },
             copyToClipboard = { },
-            unSendMessage = { })
+            unSendMessage = { }, editMessage = { })
 
         Spacer(modifier = Modifier.height(4.dp))
 
         OtherChat(message = Message.LONG_TEST_MY_Message, messageIDInFocus = chatIDInFocus,
-            onLongPress = { chatIDInFocus = it },
+            toggleOptionsMenuVisibility = { chatIDInFocus = it },
             copyToClipboard = { })
 
     }
 }
-
-//@Preview
-//@Composable
-//private fun PreviewMyChat() = AppTheme {
-//    Column(
-//        Modifier
-//            .fillMaxWidth()
-//            .background(LightWhite)
-//            .padding(vertical = 20.dp)
-//    ) {
-//        var chatIDInFocus by remember {
-//            mutableStateOf<String?>(null)
-//        }
-//
-//        MyChat(message = Message.TEST_MY_Message, chatIDInFocus = chatIDInFocus)
-//        Spacer(modifier = Modifier.height(4.dp))
-//        MyChat(message = Message.LONG_TEST_MY_Message, chatIDInFocus = chatIDInFocus)
-//        MyChat(
-//            message = Message.TEST_MY_Message.copy(messageStatus = MessageStatus.SENT),
-//            chatIDInFocus = chatIDInFocus
-//        )
-//    }
-//}
