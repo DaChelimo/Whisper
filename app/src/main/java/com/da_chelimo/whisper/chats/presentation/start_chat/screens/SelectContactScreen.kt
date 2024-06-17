@@ -25,10 +25,11 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.da_chelimo.whisper.R
-import com.da_chelimo.whisper.core.presentation.ui.components.LoadingSpinner
 import com.da_chelimo.whisper.chats.presentation.start_chat.components.ContactPreview
 import com.da_chelimo.whisper.core.presentation.ui.AllChats
 import com.da_chelimo.whisper.core.presentation.ui.components.DefaultScreen
+import com.da_chelimo.whisper.core.presentation.ui.components.LoadingSpinner
+import com.da_chelimo.whisper.core.presentation.ui.navigateSafelyAndPopTo
 import com.da_chelimo.whisper.core.presentation.ui.theme.QuickSand
 import org.koin.androidx.compose.koinViewModel
 import timber.log.Timber
@@ -48,11 +49,11 @@ fun SelectContactScreen(
 
     LaunchedEffect(key1 = shouldNavigateToActualChat) {
         if (shouldNavigateToActualChat != null) {
-            navController.navigate(shouldNavigateToActualChat!!) {
-                popUpTo(AllChats) {
-                    inclusive = false
-                }
-            }
+            navController.navigateSafelyAndPopTo(
+                route = shouldNavigateToActualChat!!,
+                popTo = AllChats,
+                isInclusive = false
+            )
             viewModel.resetShouldNavigateToActualChat()
         }
     }

@@ -88,6 +88,8 @@ dependencies {
     implementation(libs.compose.glide)
     implementation(libs.cloudy)
     implementation(libs.compose.googleFonts)
+    implementation(libs.compose.imageCropper)
+
 
     // Firebase
     implementation(platform(libs.firebase.bom))

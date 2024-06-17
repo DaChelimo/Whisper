@@ -2,7 +2,7 @@ package com.da_chelimo.whisper.chats.repo.chats
 
 import com.da_chelimo.whisper.chats.domain.Chat
 import com.da_chelimo.whisper.chats.domain.MessageStatus
-import com.da_chelimo.whisper.core.domain.User
+import com.da_chelimo.whisper.core.domain.MiniUser
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.flow.Flow
@@ -45,7 +45,7 @@ interface ChatRepo {
      *
      * @return String: The chatID of the new conversation
      */
-    suspend fun createConversation(newContact: User): String
+    suspend fun createConversation(newContact: MiniUser): String
 
 
     /**
@@ -57,8 +57,20 @@ interface ChatRepo {
     /**
      * Gets all the chats of the user, given the userID
      */
-    fun getChatsForUser(userID: String): Flow<List<Chat>>
+    fun getChatsForUser(userID: String): Flow<List<Chat>?>
 
+    /**
+     * Disables all the user's chats
+     * Process:
+     * 1) Fetches all the chatIDs of the user
+     * 2) Disables each of them
+     */
+    suspend fun disableChatsForUser(userID: String)
+
+    /**
+     * Disables a specific chat
+     */
+    fun disableChat(chatID: String)
 
     /**
      * Checks if the current user is the one who has pending unread messages

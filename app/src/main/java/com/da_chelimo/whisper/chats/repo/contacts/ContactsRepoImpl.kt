@@ -101,7 +101,8 @@ class ContactsRepoImpl(
             )
         }
 
-        localContactDao.insertData(contactsOnWhisper.toLocalContacts())
+        localContactDao.refreshContacts(contactsOnWhisper.toLocalContacts())
+
         Timber.d("contactsOnWhisper is $contactsOnWhisper")
     }
 

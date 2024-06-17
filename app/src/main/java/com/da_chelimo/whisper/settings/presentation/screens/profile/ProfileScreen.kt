@@ -1,8 +1,6 @@
 package com.da_chelimo.whisper.settings.presentation.screens.profile
 
 import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.PickVisualMediaRequest
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -23,7 +21,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
@@ -35,10 +32,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.canhub.cropper.CropImageContract
+import com.canhub.cropper.CropImageContractOptions
+import com.canhub.cropper.CropImageOptions
+import com.canhub.cropper.CropImageView
 import com.da_chelimo.whisper.R
-import com.da_chelimo.whisper.core.presentation.ui.components.LoadingSpinnerWithProgress
+import com.da_chelimo.whisper.chats.presentation.view_profile_pic.ControlBlurOnScreen
 import com.da_chelimo.whisper.core.domain.TaskState
 import com.da_chelimo.whisper.core.presentation.ui.components.DefaultScreen
+import com.da_chelimo.whisper.core.presentation.ui.components.LoadingSpinner
 import com.da_chelimo.whisper.core.presentation.ui.components.UserIcon
 import com.da_chelimo.whisper.core.presentation.ui.theme.AppTheme
 import com.da_chelimo.whisper.core.presentation.ui.theme.DarkBlue
@@ -54,105 +56,130 @@ fun ProfileScreen(
     val user by viewModel.user.collectAsState(null)
     val taskState by viewModel.taskState.collectAsState()
 
-    val focusRequester = remember { FocusRequester() }
     var showNamePopup by remember { mutableStateOf(false) }
     var showBioPopup by remember { mutableStateOf(false) }
 
     var showProfilePicPopup by remember { mutableStateOf(false) }
+    var previewProfilePicFullScreen by remember {
+        mutableStateOf<String?>(null)
+    }
 
-    Box(modifier = Modifier.fillMaxSize()) {
-        DefaultScreen(
-            navController = navController,
-            appBarText = stringResource(R.string.profile)
-        ) {
+    ControlBlurOnScreen(
+        isPictureOnFullScreen = previewProfilePicFullScreen != null,
+        profilePic = previewProfilePicFullScreen,
+        dismissPicture = { previewProfilePicFullScreen = null }) {
 
-            Box(
-                Modifier
-                    .padding(vertical = 30.dp)
-                    .align(Alignment.CenterHorizontally)
+        Box(modifier = Modifier.fillMaxSize()) {
+            DefaultScreen(
+                navController = navController,
+                appBarText = stringResource(R.string.profile)
             ) {
-                UserIcon(profilePic = user?.profilePic, iconSize = 180.dp, onClick = { /*TODO*/ })
 
-                Image(
-                    painter = painterResource(id = R.drawable.camera),
-                    contentDescription = null,
-                    modifier = Modifier
-                        .size(48.dp)
-                        .clip(CircleShape)
-                        .clickable { showProfilePicPopup = true }
-                        .background(DarkBlue)
-                        .padding(9.dp)
-                        .align(Alignment.BottomEnd),
-                    colorFilter = ColorFilter.tint(Color.White)
+                Box(
+                    Modifier
+                        .padding(vertical = 30.dp)
+                        .align(Alignment.CenterHorizontally)
+                ) {
+                    UserIcon(profilePic = user?.profilePic, iconSize = 180.dp,
+                        borderIfUsingDefaultPic = 2.dp, onClick = {
+                            previewProfilePicFullScreen = user?.profilePic ?: ""
+                        })
+
+                    Image(
+                        painter = painterResource(id = R.drawable.camera),
+                        contentDescription = null,
+                        modifier = Modifier
+                            .size(48.dp)
+                            .clip(CircleShape)
+                            .clickable { showProfilePicPopup = true }
+                            .background(DarkBlue)
+                            .padding(9.dp)
+                            .align(Alignment.BottomEnd),
+                        colorFilter = ColorFilter.tint(Color.White)
+                    )
+                }
+
+
+                Column(Modifier.padding(horizontal = 12.dp)) {
+                    ProfileItem(
+                        modifier = Modifier.padding(vertical = 12.dp),
+                        startIcon = Icons.Outlined.Person,
+                        title = stringResource(R.string.name),
+                        data = user?.name ?: "",
+                        textStyle = TextStyle(fontSize = 17.sp, fontWeight = FontWeight.Medium),
+                        onEditClicked = { showNamePopup = true }
+                    )
+
+                    ProfileItem(
+                        modifier = Modifier.padding(vertical = 12.dp),
+                        startIcon = Icons.Outlined.Person,
+                        title = stringResource(R.string.about),
+                        data = user?.bio ?: "",
+                        textStyle = TextStyle(fontSize = 16.sp, fontWeight = FontWeight.W400),
+                        onEditClicked = { showBioPopup = true }
+                    )
+
+                    ProfileItem(
+                        modifier = Modifier.padding(vertical = 12.dp),
+                        startIcon = Icons.Outlined.Person,
+                        title = stringResource(R.string.phone),
+                        data = user?.number ?: "",
+                        textStyle = TextStyle(fontSize = 16.sp, fontWeight = FontWeight.Medium),
+                        onEditClicked = null
+                    )
+                }
+            }
+
+
+            if (showNamePopup) {
+                EditProfilePopup(
+                    popupTitle = stringResource(id = R.string.enter_your_name),
+                    popupData = user?.name ?: "",
+                    hidePopup = { showNamePopup = false },
+                    saveNewChange = { newName -> viewModel.updateName(newName) }
+                )
+            }
+            if (showBioPopup) {
+                EditProfilePopup(
+                    popupTitle = stringResource(id = R.string.enter_your_bio),
+                    popupData = user?.bio ?: "",
+                    hidePopup = { showBioPopup = false },
+                    saveNewChange = { newBio -> viewModel.updateBio(newBio) }
                 )
             }
 
 
-            Column(Modifier.padding(horizontal = 12.dp)) {
-                ProfileItem(
-                    modifier = Modifier.padding(vertical = 12.dp),
-                    startIcon = Icons.Outlined.Person,
-                    title = stringResource(R.string.name),
-                    data = user?.name ?: "",
-                    textStyle = TextStyle(fontSize = 17.sp, fontWeight = FontWeight.Medium),
-                    onEditClicked = { showNamePopup = true }
-                )
-
-                ProfileItem(
-                    modifier = Modifier.padding(vertical = 12.dp),
-                    startIcon = Icons.Outlined.Person,
-                    title = stringResource(R.string.about),
-                    data = user?.bio ?: "",
-                    textStyle = TextStyle(fontSize = 16.sp, fontWeight = FontWeight.W400),
-                    onEditClicked = { showBioPopup = true }
-                )
-
-                ProfileItem(
-                    modifier = Modifier.padding(vertical = 12.dp),
-                    startIcon = Icons.Outlined.Person,
-                    title = stringResource(R.string.phone),
-                    data = user?.number ?: "",
-                    textStyle = TextStyle(fontSize = 16.sp, fontWeight = FontWeight.Medium),
-                    onEditClicked = null
-                )
+            if (taskState is TaskState.LOADING) {
+                (taskState as TaskState.LOADING).progress?.let { progress ->
+                    LoadingSpinner(modifier = Modifier.align(Alignment.Center))
+                }
             }
+
+            val pickImageLauncher =
+                rememberLauncherForActivityResult(contract = CropImageContract()) { imageURI ->
+                    Timber.d("imageURI.uriContent is ${imageURI.uriContent}")
+
+                    imageURI.uriContent?.let { uri ->
+                        viewModel.updateProfilePic(uri)
+                    }
+                    showProfilePicPopup = false
+                }
+
+            if (showProfilePicPopup)
+                pickImageLauncher.launch(
+                    CropImageContractOptions(
+                        null,
+                        CropImageOptions(
+                            imageSourceIncludeCamera = true,
+                            imageSourceIncludeGallery = true,
+                            cropShape = CropImageView.CropShape.OVAL,
+                            aspectRatioX = 1,
+                            aspectRatioY = 1,
+                            fixAspectRatio = true
+                        )
+                    )
+                )
         }
-
-
-        if (showNamePopup) {
-            EditProfilePopup(
-                popupTitle = stringResource(id = R.string.enter_your_name),
-                popupData = user?.name ?: "",
-                hidePopup = { showNamePopup = false },
-                saveNewChange = { newName -> viewModel.updateName(newName) }
-            )
-        }
-        if (showBioPopup) {
-            EditProfilePopup(
-                popupTitle = stringResource(id = R.string.enter_your_bio),
-                popupData = user?.bio ?: "",
-                hidePopup = { showBioPopup = false },
-                saveNewChange = { newBio -> viewModel.updateBio(newBio) }
-            )
-        }
-
-
-        if (taskState is TaskState.LOADING) {
-            (taskState as TaskState.LOADING).progress?.let { progress ->
-                LoadingSpinnerWithProgress(progress, modifier = Modifier.align(Alignment.Center))
-            }
-        }
-
-
-        val pickImageLauncher =
-            rememberLauncherForActivityResult(contract = ActivityResultContracts.PickVisualMedia()) { imageUri ->
-                Timber.d("imageUri is $imageUri")
-                if (imageUri != null)
-                    viewModel.updateProfilePic(localUri = imageUri)
-                showProfilePicPopup = false
-            }
-        if (showProfilePicPopup)
-            pickImageLauncher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
     }
 }
 

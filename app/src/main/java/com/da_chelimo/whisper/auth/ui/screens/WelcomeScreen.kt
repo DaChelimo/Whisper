@@ -26,6 +26,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.da_chelimo.whisper.R
 import com.da_chelimo.whisper.core.presentation.ui.EnterNumber
+import com.da_chelimo.whisper.core.presentation.ui.navigateSafely
 import com.da_chelimo.whisper.core.presentation.ui.theme.AppTheme
 import com.da_chelimo.whisper.core.presentation.ui.theme.Poppins
 import com.da_chelimo.whisper.core.presentation.ui.theme.QuickSand
@@ -59,7 +60,7 @@ fun WelcomeScreen(navController: NavController) {
 
         Button(
             onClick = {
-                      navController.navigate(EnterNumber)
+                      navController.navigateSafely(EnterNumber)
             },
             modifier = Modifier
                 .align(Alignment.BottomCenter)

@@ -1,7 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
 
     <style name="Theme.App" parent="android:Theme.Material.Light.NoActionBar" />
+
+    <style name="CropImageTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+        <item name="android:colorPrimary">@color/dark_blue</item>
+        <item name="android:colorSecondary" tools:targetApi="n_mr1">@color/dark_blue</item>
+
+        <item name="android:textColor">@color/black</item>
+    </style>
 
 
     <style name="App.Splash" parent="Theme.SplashScreen">

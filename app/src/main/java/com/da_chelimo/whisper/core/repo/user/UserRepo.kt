@@ -28,7 +28,7 @@ interface UserRepo {
     /**
      * Creates the user
      */
-    suspend fun createUser(name: String, phoneNumber: String, profilePicLocalUri: Uri?, onComplete: (TaskState) -> Unit)
+    suspend fun createUser(name: String, bio: String, phoneNumber: String, profilePicLocalUri: Uri?, onComplete: (TaskState) -> Unit)
 
 
 
@@ -40,4 +40,8 @@ interface UserRepo {
     suspend fun getUserFromUID(uid: String): User?
 
 
+    /**
+     * Deletes the user's account
+     */
+    suspend fun deleteUser(uid: String): Boolean
 }

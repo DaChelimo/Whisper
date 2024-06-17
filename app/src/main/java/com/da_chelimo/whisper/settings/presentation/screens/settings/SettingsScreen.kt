@@ -1,6 +1,7 @@
 package com.da_chelimo.whisper.settings.presentation.screens.settings
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -11,6 +12,11 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -27,67 +33,100 @@ import com.da_chelimo.whisper.core.presentation.ui.AllChats
 import com.da_chelimo.whisper.core.presentation.ui.MyProfile
 import com.da_chelimo.whisper.core.presentation.ui.Welcome
 import com.da_chelimo.whisper.core.presentation.ui.components.DefaultScreen
+import com.da_chelimo.whisper.core.presentation.ui.components.LoadingSpinner
 import com.da_chelimo.whisper.core.presentation.ui.components.TintedAppBarIcon
+import com.da_chelimo.whisper.core.presentation.ui.navigateSafely
+import com.da_chelimo.whisper.core.presentation.ui.navigateSafelyAndPopTo
 import com.da_chelimo.whisper.core.presentation.ui.theme.AppTheme
 import com.da_chelimo.whisper.core.presentation.ui.theme.LightWhite
 import com.da_chelimo.whisper.core.presentation.ui.theme.QuickSand
+import com.da_chelimo.whisper.settings.presentation.components.AreYouSurePopup
 
 @Composable
 fun SettingsScreen(navController: NavController) {
-
     val viewModel = viewModel<SettingsViewModel>()
+    val isDeleting by viewModel.isDeletingAccount.collectAsState()
 
-    DefaultScreen(
-        backgroundColor = LightWhite,
-        appBar = {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 12.dp)
-                    .padding(vertical = 12.dp),
-                contentAlignment = Alignment.CenterStart
-            ) {
-                TintedAppBarIcon(
-                    modifier = Modifier.align(Alignment.CenterStart),
-                    imageVector = Icons.AutoMirrored.Rounded.KeyboardArrowLeft,
-                    contentDescription = stringResource(R.string.back_button),
-                    onClick = {
-                        navController.popBackStack()
-                    }
-                )
+    var showAreYouSurePopup by remember {
+        mutableStateOf(false)
+    }
 
-                Text(
-                    text = stringResource(id = R.string.settings),
-                    fontFamily = QuickSand,
-                    fontSize = 17.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    modifier = Modifier.align(Alignment.Center)
-                )
-            }
-        }) {
+    Box(modifier = Modifier.fillMaxSize()) {
+        DefaultScreen(
+            backgroundColor = LightWhite,
+            appBar = {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 12.dp)
+                        .padding(vertical = 12.dp),
+                    contentAlignment = Alignment.CenterStart
+                ) {
+                    TintedAppBarIcon(
+                        modifier = Modifier.align(Alignment.CenterStart),
+                        imageVector = Icons.AutoMirrored.Rounded.KeyboardArrowLeft,
+                        contentDescription = stringResource(R.string.back_button),
+                        onClick = {
+                            navController.popBackStack()
+                        }
+                    )
 
-        SettingsOption(
-            name = stringResource(R.string.my_profile),
-            modifier = Modifier,
-            onOptionSelected = {
-                navController.navigate(MyProfile)
-            }
-        )
-
-        SettingsOption(
-            name = stringResource(R.string.sign_out),
-            modifier = Modifier,
-            onOptionSelected = {
-                viewModel.signOut()
-                navController.navigate(Welcome) {
-                    popUpTo(AllChats) {
-                        inclusive = true
-                    }
+                    Text(
+                        text = stringResource(id = R.string.settings),
+                        fontFamily = QuickSand,
+                        fontSize = 17.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.align(Alignment.Center)
+                    )
                 }
-            }
-        )
+            }) {
 
+            SettingsOption(
+                name = stringResource(R.string.my_profile),
+                modifier = Modifier,
+                onOptionSelected = {
+                    navController.navigateSafely(MyProfile)
+                }
+            )
+
+            SettingsOption(
+                name = stringResource(R.string.sign_out),
+                modifier = Modifier,
+                onOptionSelected = {
+                    viewModel.signOut()
+                    navController.navigateSafelyAndPopTo(
+                        route = Welcome,
+                        popTo = AllChats,
+                        isInclusive = true
+                    )
+                }
+            )
+
+            SettingsOption(
+                name = stringResource(R.string.delete_account),
+                modifier = Modifier,
+                onOptionSelected = {
+                    showAreYouSurePopup = true
+                }
+            )
+        }
+
+        if (showAreYouSurePopup)
+            AreYouSurePopup(
+                dismissPopup = { showAreYouSurePopup = false },
+                deleteAccount = {
+                    viewModel.deleteAccount()
+                    navController.navigateSafelyAndPopTo(
+                        route = Welcome,
+                        popTo = AllChats,
+                        isInclusive = true
+                    )
+                }
+            )
+
+
+        if (isDeleting) LoadingSpinner(modifier = Modifier.align(Alignment.Center))
     }
 }
 

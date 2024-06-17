@@ -58,4 +58,12 @@
     <string name="edit">Edit</string>
     <string name="open_media">Open media</string>
     <string name="image">📷 %1$s</string>
+    <string name="select_profile_picture_from_galley">Select profile picture from galley</string>
+    <string name="click_the_button_to_start_a_conversation">Click the + button to start a conversation</string>
+    <string name="delete_account">Delete account</string>
+    <string name="are_you_sure_you_want_to_delete_your_account">Are you sure you want to delete your account</string>
+    <string name="you_will_lose_all_your_existing_chats">You will lose all your existing chats</string>
+    <string name="no">No</string>
+    <string name="yes">Yes</string>
+    <string name="download">Download</string>
 </resources>

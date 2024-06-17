@@ -2,18 +2,25 @@ package com.da_chelimo.whisper.auth.ui.screens.create_profile
 
 import android.annotation.SuppressLint
 import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.PickVisualMediaRequest
-import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.selection.TextSelectionColors
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -25,9 +32,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -35,15 +46,18 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.canhub.cropper.CropImageContract
 import com.da_chelimo.whisper.R
-import com.da_chelimo.whisper.core.presentation.ui.components.LoadingSpinner
 import com.da_chelimo.whisper.core.domain.TaskState
 import com.da_chelimo.whisper.core.presentation.ui.AllChats
 import com.da_chelimo.whisper.core.presentation.ui.components.DefaultScreen
+import com.da_chelimo.whisper.core.presentation.ui.components.LoadingSpinner
 import com.da_chelimo.whisper.core.presentation.ui.components.UserIcon
+import com.da_chelimo.whisper.core.presentation.ui.navigateSafelyAndPopTo
 import com.da_chelimo.whisper.core.presentation.ui.theme.AppTheme
 import com.da_chelimo.whisper.core.presentation.ui.theme.DarkBlue
 import com.da_chelimo.whisper.core.presentation.ui.theme.Poppins
+import com.da_chelimo.whisper.core.presentation.ui.theme.QuickSand
 import com.da_chelimo.whisper.core.presentation.ui.theme.SelectionBlue
 import kotlinx.coroutines.flow.collectLatest
 
@@ -53,31 +67,44 @@ fun CreateProfileScreen(
     snackbarHostState: SnackbarHostState,
     phoneNumber: String
 ) {
-    DefaultScreen(
-        navController = navController,
-        modifier = Modifier
-            .padding(top = 12.dp)
-            .padding(horizontal = 8.dp)
+    val viewModel = viewModel<CreateProfileViewModel>()
+    val taskState by viewModel.taskState.collectAsState()
+
+    Box(
+        Modifier
+            .fillMaxSize()
     ) {
+        DefaultScreen(
+            navController = navController,
+            modifier = Modifier
+                .padding(top = 4.dp)
+                .padding(horizontal = 8.dp)
+                .imePadding()
+        ) {
 
-        val viewModel = viewModel<CreateProfileViewModel>()
+            val name by viewModel.name.collectAsState()
+            val bio by viewModel.bio.collectAsState()
+            val profilePic by viewModel.profilePic.collectAsState()
 
-        val taskState by viewModel.taskState.collectAsState()
-        val name by viewModel.name.collectAsState()
-        val profilePic by viewModel.profilePic.collectAsState()
+            val cropImageContract = remember { viewModel.cropImageContract }
 
-
-        val launcher =
-            rememberLauncherForActivityResult(contract = ActivityResultContracts.PickVisualMedia()) { imageUri ->
-                imageUri?.let {
-                    viewModel.updateProfilePic(newPic = it)
+            val launcher =
+                rememberLauncherForActivityResult(contract = CropImageContract()) { imageURI ->
+                    imageURI.uriContent?.let { uri ->
+                        viewModel.updateProfilePic(uri)
+                    }
                 }
-            }
 
 
+            val scrollState = rememberScrollState()
 
-        Row(Modifier.fillMaxSize()) {
-            Column(Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
+            Column(
+                Modifier
+                    .fillMaxSize()
+                    .verticalScroll(scrollState),
+                horizontalAlignment = Alignment.CenterHorizontally
+            )
+            {
 
                 Text(
                     text = stringResource(R.string.profile_info),
@@ -90,55 +117,52 @@ fun CreateProfileScreen(
                     fontFamily = Poppins,
                     fontSize = 14.sp,
                     modifier = Modifier
-                        .padding(top = 12.dp)
+                        .padding(top = 6.dp)
                 )
 
-                UserIcon(
-                    profilePic = profilePic?.toString(),
-                    iconSize = 140.dp,
-                    modifier = Modifier.padding(top = 16.dp),
-                    onClick = { launcher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) }
-                )
+                Box(Modifier) {
+                    UserIcon(
+                        profilePic = profilePic?.toString(),
+                        iconSize = 120.dp,
+                        modifier = Modifier.padding(top = 8.dp),
+                        borderIfUsingDefaultPic = 2.dp,
+                        onClick = {
+                            launcher.launch(cropImageContract)
+                        }
+                    )
 
-                val indicatorColor = MaterialTheme.colorScheme.surface
-                OutlinedTextField(
+                    IconButton(
+                        onClick = { launcher.launch(cropImageContract) },
+                        modifier = Modifier.align(Alignment.BottomEnd),
+                        colors = IconButtonDefaults.iconButtonColors(
+                            containerColor = DarkBlue,
+                            contentColor = Color.White
+                        )
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.Add,
+                            contentDescription = stringResource(R.string.select_profile_picture_from_galley),
+                            modifier = Modifier.size(26.dp)
+                        )
+                    }
+                }
+
+                CreateProfileTextField(
+                    modifier = Modifier.padding(top = 20.dp),
                     value = name,
+                    placeHolderText = stringResource(R.string.enter_your_name),
                     onValueChange = {
                         viewModel.updateName(it)
-                    },
-                    singleLine = true,
-                    colors = TextFieldDefaults.colors(
-                        unfocusedContainerColor = MaterialTheme.colorScheme.background,
-                        focusedContainerColor = MaterialTheme.colorScheme.background,
+                    }
+                )
 
-                        focusedTextColor = MaterialTheme.colorScheme.onBackground,
-                        unfocusedTextColor = MaterialTheme.colorScheme.onBackground,
-
-                        cursorColor = DarkBlue,
-                        selectionColors = TextSelectionColors(
-                            handleColor = MaterialTheme.colorScheme.surface,
-                            backgroundColor = SelectionBlue
-                        ),
-
-                        unfocusedSupportingTextColor = indicatorColor,
-                        focusedSupportingTextColor = indicatorColor,
-
-                        unfocusedIndicatorColor = indicatorColor,
-                        focusedIndicatorColor = indicatorColor
-                    ),
-                    keyboardOptions = KeyboardOptions.Default.copy(
-                        keyboardType = KeyboardType.Text,
-                        showKeyboardOnFocus = false
-                    ),
-                    placeholder = {
-                        Text(
-                            stringResource(R.string.enter_your_name),
-                            color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f)
-                        )
-                    },
-                    modifier = Modifier
-                        .padding(top = 32.dp)
-                        .fillMaxWidth(),
+                CreateProfileTextField(
+                    modifier = Modifier.padding(top = 12.dp),
+                    value = bio,
+                    placeHolderText = stringResource(id = R.string.enter_your_bio),
+                    onValueChange = {
+                        viewModel.updateBio(it)
+                    }
                 )
 
 
@@ -148,7 +172,11 @@ fun CreateProfileScreen(
                 LaunchedEffect(key1 = Unit) {
                     viewModel.taskState.collectLatest {
                         if (it is TaskState.DONE.SUCCESS)
-                            navController.navigate(AllChats)
+                            navController.navigateSafelyAndPopTo(
+                                route = AllChats,
+                                popTo = AllChats,
+                                isInclusive = true
+                            )
                         else if (it is TaskState.DONE.ERROR)
                             snackbarHostState.showSnackbar("Error occurred")
                     }
@@ -179,11 +207,64 @@ fun CreateProfileScreen(
                     )
                 }
             }
-
-            if (taskState is TaskState.LOADING)
-                LoadingSpinner()
         }
+
+
+        if (taskState !is TaskState.NONE)
+            LoadingSpinner(modifier = Modifier.align(Alignment.Center))
     }
+}
+
+@Composable
+fun CreateProfileTextField(
+    value: String,
+    placeHolderText: String,
+    modifier: Modifier = Modifier,
+    onValueChange: (String) -> Unit,
+) {
+    val indicatorColor = MaterialTheme.colorScheme.surface
+    OutlinedTextField(
+        value = value,
+        onValueChange = onValueChange,
+        singleLine = true,
+        colors = TextFieldDefaults.colors(
+            unfocusedContainerColor = MaterialTheme.colorScheme.background,
+            focusedContainerColor = MaterialTheme.colorScheme.background,
+
+            focusedTextColor = MaterialTheme.colorScheme.onBackground,
+            unfocusedTextColor = MaterialTheme.colorScheme.onBackground,
+
+            cursorColor = DarkBlue,
+            selectionColors = TextSelectionColors(
+                handleColor = MaterialTheme.colorScheme.surface,
+                backgroundColor = SelectionBlue
+            ),
+
+            unfocusedSupportingTextColor = indicatorColor,
+            focusedSupportingTextColor = indicatorColor,
+
+            unfocusedIndicatorColor = indicatorColor,
+            focusedIndicatorColor = indicatorColor
+        ),
+        keyboardOptions = KeyboardOptions.Default.copy(
+            keyboardType = KeyboardType.Text,
+            showKeyboardOnFocus = false
+        ),
+        textStyle = TextStyle(
+            fontFamily = QuickSand,
+            fontSize = 17.sp,
+            fontWeight = FontWeight.Medium,
+            color = MaterialTheme.colorScheme.onBackground
+        ),
+        placeholder = {
+            Text(
+                placeHolderText,
+                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f)
+            )
+        },
+        modifier = modifier
+            .fillMaxWidth(),
+    )
 }
 
 

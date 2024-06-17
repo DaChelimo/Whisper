@@ -47,6 +47,7 @@ fun ContactPreview(
             profilePic = contact.profilePic,
             iconSize = 48.dp,
             modifier = Modifier.align(Alignment.CenterVertically),
+            borderIfUsingDefaultPic = 1.dp,
             onClick = {
                 openProfilePic()
             }

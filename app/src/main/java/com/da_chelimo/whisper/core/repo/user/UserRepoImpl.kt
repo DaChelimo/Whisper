@@ -15,6 +15,7 @@ class UserRepoImpl : UserRepo {
 
     override suspend fun createUser(
         name: String,
+        bio: String,
         phoneNumber: String,
         profilePicLocalUri: Uri?,
         onComplete: (TaskState) -> Unit
@@ -30,7 +31,7 @@ class UserRepoImpl : UserRepo {
             uid = Firebase.auth.uid
                 ?: throw NullPointerException("Firebase.auth.uid is ${Firebase.auth.uid}"),
             name = name,
-            bio = "Da Chelimo is awesome",
+            bio = bio,
             number = phoneNumber,
             profilePic = profilePicRemoteUrl?.toString()
         )
@@ -51,5 +52,9 @@ class UserRepoImpl : UserRepo {
         getUserProfileReference(uid)
             .get().await()
             .toObject<User>()
+
+
+    override suspend fun deleteUser(uid: String) =
+        getUserProfileReference(uid).delete().isSuccessful
 
 }
