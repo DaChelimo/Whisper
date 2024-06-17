@@ -11,5 +11,15 @@ object AppRipple : RippleTheme {
 
     @Composable
     override fun rippleAlpha(): RippleAlpha =
-        RippleAlpha(0f, 0f, 0f, 0.4f)
+        RippleAlpha(0f, 0f, 0f, 0.075f)
+}
+
+
+object DisabledRipple : RippleTheme {
+    @Composable
+    override fun defaultColor(): Color = Color.Transparent
+
+    @Composable
+    override fun rippleAlpha(): RippleAlpha =
+        RippleAlpha(0f, 0f, 0f, 0f)
 }

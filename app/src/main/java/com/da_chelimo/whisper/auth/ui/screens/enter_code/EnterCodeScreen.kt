@@ -33,6 +33,8 @@ import com.da_chelimo.whisper.core.presentation.ui.CreateProfile
 import com.da_chelimo.whisper.core.presentation.ui.Welcome
 import com.da_chelimo.whisper.core.presentation.ui.components.DefaultScreen
 import com.da_chelimo.whisper.core.presentation.ui.components.LoadingSpinner
+import com.da_chelimo.whisper.core.presentation.ui.navigateSafely
+import com.da_chelimo.whisper.core.presentation.ui.navigateSafelyAndPopTo
 import com.da_chelimo.whisper.core.presentation.ui.theme.AppTheme
 import com.da_chelimo.whisper.core.presentation.ui.theme.Poppins
 import com.da_chelimo.whisper.core.utils.getActivity
@@ -58,12 +60,10 @@ fun EnterCodeScreen(navController: NavController, phoneNumberWithCountryCode: St
                 val isExistingAccount = viewModel.checkIfUserHasExistingAccount()
 
                 if (isExistingAccount)
-                    navController.navigate(AllChats) {
-                        popUpTo(Welcome) { inclusive = true }
-                    }
+                    navController.navigateSafelyAndPopTo(AllChats, Welcome, true)
                 else
                     navController
-                        .navigate(CreateProfile(phoneNumberWithCountryCode))
+                        .navigateSafely(CreateProfile(phoneNumberWithCountryCode))
 
 
                 viewModel.resetTaskState()
@@ -129,7 +129,7 @@ fun EnterCodeScreen(navController: NavController, phoneNumberWithCountryCode: St
                     disabledContentColor = MaterialTheme.colorScheme.onSurface.copy(0.75f),
                     disabledContainerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.75f)
                 ),
-                enabled = code.length == EnterCodeViewModel.CODE_LENGTH,
+                enabled = code.length == EnterCodeViewModel.CODE_LENGTH && taskState is TaskState.NONE,
                 shape = MaterialTheme.shapes.medium
             ) {
                 Text(

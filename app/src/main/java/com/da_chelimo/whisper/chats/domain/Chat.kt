@@ -14,7 +14,13 @@ data class Chat(
     var lastMessageSender: String,
     val lastMessageStatus: MessageStatus,
     var timeOfLastMessage: Long, // Time in millis when the last text was sent
-    val lastMessageType: MessageType = MessageType.Text
+    val lastMessageType: MessageType = MessageType.Text,
+
+    /** Chat can be disabled if:
+     * 1) Either user deletes their account
+     * 2) Either user blocks the chat { in which case, it can be unblocked in future }
+     */
+    var isDisabled: Boolean = false
 ) {
 
     constructor() : this(

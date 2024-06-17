@@ -27,6 +27,7 @@ import com.da_chelimo.whisper.R
 import com.da_chelimo.whisper.core.domain.TaskState
 import com.da_chelimo.whisper.core.presentation.ui.EnterCode
 import com.da_chelimo.whisper.core.presentation.ui.components.DefaultScreen
+import com.da_chelimo.whisper.core.presentation.ui.navigateSafely
 import com.da_chelimo.whisper.core.presentation.ui.theme.AppTheme
 import com.da_chelimo.whisper.core.presentation.ui.theme.Poppins
 import com.da_chelimo.whisper.core.presentation.ui.theme.QuickSand
@@ -84,7 +85,7 @@ fun EnterNumberScreen(navController: NavController) {
 
         LaunchedEffect(shouldNavigateToEnterCode) {
             if (shouldNavigateToEnterCode) {
-                navController.navigate(EnterCode(viewModel.numberWithCountryCode.value))
+                navController.navigateSafely(EnterCode(viewModel.numberWithCountryCode.value))
                 viewModel.resetShouldNavigate()
             }
         }

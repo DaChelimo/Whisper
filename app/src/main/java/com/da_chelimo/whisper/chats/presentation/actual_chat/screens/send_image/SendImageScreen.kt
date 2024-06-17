@@ -28,6 +28,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
+import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.da_chelimo.whisper.R
 import com.da_chelimo.whisper.chats.presentation.actual_chat.components.TypeMessageBar
 import com.da_chelimo.whisper.core.domain.TaskState
@@ -79,7 +80,10 @@ fun SendImageScreen(navController: NavController, chatID: String, imageUri: Stri
                     .padding(vertical = 12.dp)
                     .weight(1f)
                     .clip(RoundedCornerShape(16.dp)),
-                contentScale = ContentScale.Inside
+                contentScale = ContentScale.Inside,
+                requestBuilderTransform = {
+                    it.diskCacheStrategy(DiskCacheStrategy.AUTOMATIC)
+                }
             )
 
             TypeMessageBar(

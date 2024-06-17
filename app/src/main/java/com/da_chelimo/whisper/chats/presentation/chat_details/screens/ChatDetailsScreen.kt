@@ -70,6 +70,7 @@ fun ChatDetailsScreen(chatID: String, otherUserID: String, navController: NavCon
                             modifier = Modifier.padding(top = 24.dp, bottom = 16.dp),
                             profilePic = otherUser?.profilePic,
                             iconSize = 120.dp,
+                            borderIfUsingDefaultPic = 2.dp,
                             onClick = {
                             isProfilePicFullScreen = true
                             }

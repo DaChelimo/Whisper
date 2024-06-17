@@ -5,6 +5,7 @@ import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.da_chelimo.whisper.chats.domain.Chat
 import com.da_chelimo.whisper.chats.domain.Message
 import com.da_chelimo.whisper.chats.domain.MessageStatus
 import com.da_chelimo.whisper.chats.presentation.utils.toActualChatSeparatorTime
@@ -13,7 +14,8 @@ import com.da_chelimo.whisper.chats.repo.chats.ChatRepoImpl
 import com.da_chelimo.whisper.chats.repo.contacts.ContactsRepo
 import com.da_chelimo.whisper.chats.repo.messages.MessagesRepo
 import com.da_chelimo.whisper.chats.repo.messages.MessagesRepoImpl
-import com.da_chelimo.whisper.core.domain.User
+import com.da_chelimo.whisper.core.domain.MiniUser
+import com.da_chelimo.whisper.core.domain.toMiniUser
 import com.da_chelimo.whisper.core.repo.user.UserRepo
 import com.da_chelimo.whisper.core.repo.user.UserRepoImpl
 import com.google.firebase.auth.ktx.auth
@@ -28,11 +30,10 @@ import java.util.UUID
 
 class ActualChatViewModel(
     private val userRepo: UserRepo = UserRepoImpl(),
-    private val chatRepo: ChatRepo = ChatRepoImpl(),
+    private val chatRepo: ChatRepo = ChatRepoImpl(userRepo),
     private val messagesRepo: MessagesRepo = MessagesRepoImpl(chatRepo),
     private val contactsRepo: ContactsRepo
 ) : ViewModel() {
-
 
     private val _textMessage = MutableStateFlow(TextFieldValue(""))
     val textMessage: StateFlow<TextFieldValue> = _textMessage
@@ -40,12 +41,15 @@ class ActualChatViewModel(
     var chatID: String? = null
         private set
 
+
+    val chat = MutableStateFlow<Chat?>(null)
     val messages = mutableStateListOf<Message>()
 
     val mapOfMessageIDAndDateInString = mutableMapOf<String, String>()
 
-    private val _otherUser = MutableStateFlow<User?>(null)
-    val otherUser: StateFlow<User?> = _otherUser
+
+    private val _otherUser = MutableStateFlow<MiniUser?>(null)
+    val otherUser: StateFlow<MiniUser?> = _otherUser
 
     private val _openMediaPicker = MutableStateFlow(false)
     val openMediaPicker: StateFlow<Boolean> = _openMediaPicker
@@ -53,23 +57,35 @@ class ActualChatViewModel(
     private val _isEditing = MutableStateFlow<String?>(null)
     val isEditing: StateFlow<String?> = _isEditing
 
+    val doesOtherUserAccountExist = MutableStateFlow(true)
+
+    suspend fun loadChat(chatID: String?) {
+        if (chatID != null) {
+            chat.value = chatRepo.getChatFromChatID(chatID)
+            Timber.d("chat.value is ${chat.value}")
+            Timber.d("chat.value?.isDisabled is ${chat.value?.isDisabled}")
+        }
+    }
 
     /**
      * Gets the other user's profile either using the chatID (existing chat) or newContact (new chat)
      */
     suspend fun loadOtherUser(chatID: String?, newContactUID: String?) {
+        Timber.d("chatID in loadOtherUser is $chatID")
         _otherUser.value =
-            if (chatID == null)
-                contactsRepo.getContactFromUID(newContactUID!!)
-            else {
-                val chat = chatRepo.getChatFromChatID(chatID)
-                val otherUserUID =
-                    if (chat?.firstMiniUser?.uid == Firebase.auth.uid) chat?.secondMiniUser
-                    else chat?.firstMiniUser
-
-                val remoteUser = userRepo.getUserFromUID(otherUserUID?.uid!!)
-                remoteUser
+            if (chatID == null) {
+                contactsRepo.getContactFromUID(newContactUID!!)?.toMiniUser()
             }
+            else {
+                val chat = chat.value
+
+                if (chat?.firstMiniUser?.uid == Firebase.auth.uid) chat?.secondMiniUser
+                else chat?.firstMiniUser
+            }
+
+        Timber.d("otherUser.value is ${otherUser.value}")
+        val otherUserID = otherUser.value?.uid
+        doesOtherUserAccountExist.value = otherUserID?.let { userRepo.getUserFromUID(it) } != null
     }
 
     /**
@@ -79,7 +95,7 @@ class ActualChatViewModel(
      *                  Therefore, we need to generate a chatID and update it on the personalized chats in Fire DB
      *                  if chatID != null, this is an existing conversation, so you can fetch the messages.
      */
-    suspend fun fetchChats(paramChatID: String?) {
+    fun fetchChats(paramChatID: String?) = viewModelScope.launch {
         chatID = paramChatID
 
         if (chatID != null) {
@@ -89,7 +105,8 @@ class ActualChatViewModel(
                 .onEach { // TODO: Improve this coz this is TERRIBLEEEEEE :)
                     Timber.d("chatRepo.getMessagesFromChatID(chatID!!).collect is $it")
                     it.reversed().forEach { message ->
-                        val timeTitle = message.timeSent.toActualChatSeparatorTime() ?: return@forEach
+                        val timeTitle =
+                            message.timeSent.toActualChatSeparatorTime() ?: return@forEach
                         val isDateInMap =
                             mapOfMessageIDAndDateInString.values.contains(timeTitle)
 
@@ -135,21 +152,31 @@ class ActualChatViewModel(
         if (chatID == null)            // If it's a new person, create a new chat
             createConversation()
 
-        val message = Message(
-            senderID = Firebase.auth.uid!!,
-            messageID = UUID.randomUUID().toString(),
-            message = textMessage.value.text,
-            timeSent = System.currentTimeMillis(),
-            messageStatus = MessageStatus.NOT_SENT
-        )
+        if (chat.value?.isDisabled == true) { // Chat disabled; do not send & clear message bar
+            _textMessage.value = TextFieldValue("")
+        }
+        else {
+            val message = Message(
+                senderID = Firebase.auth.uid!!,
+                messageID = UUID.randomUUID().toString(),
+                message = textMessage.value.text,
+                timeSent = System.currentTimeMillis(),
+                messageStatus = MessageStatus.NOT_SENT
+            )
 
-        _textMessage.value = TextFieldValue("")
-        messagesRepo.sendMessage(chatID!!, message)
+            _textMessage.value = TextFieldValue("")
+            messagesRepo.sendMessage(chatID!!, message)
+        }
     }
 
     fun launchMessageEditing(messageID: String, oldMessage: String) {
         _isEditing.value = messageID
-        updateComposeMessage(TextFieldValue(oldMessage, selection = TextRange(index = oldMessage.length)))
+        updateComposeMessage(
+            TextFieldValue(
+                oldMessage,
+                selection = TextRange(index = oldMessage.length)
+            )
+        )
     }
 
     private suspend fun editMessage() {
@@ -176,5 +203,16 @@ class ActualChatViewModel(
 
     fun updateOpenMediaPicker(shouldOpen: Boolean) {
         _openMediaPicker.value = shouldOpen
+    }
+
+
+    private fun resetUnreadMessagesCountOnChatExit() = viewModelScope.launch {
+        chatID?.let { chatRepo.resetUnreadMessagesCount(it) }
+    }
+
+    override fun onCleared() {
+        resetUnreadMessagesCountOnChatExit()
+
+        super.onCleared()
     }
 }

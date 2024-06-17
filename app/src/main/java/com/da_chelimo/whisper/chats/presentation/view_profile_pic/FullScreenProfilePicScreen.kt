@@ -1,7 +1,9 @@
 package com.da_chelimo.whisper.chats.presentation.view_profile_pic
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
@@ -20,14 +22,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
 import com.bumptech.glide.integration.compose.placeholder
+import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.da_chelimo.whisper.R
 import com.da_chelimo.whisper.core.presentation.ui.theme.AppTheme
+import com.da_chelimo.whisper.core.presentation.ui.theme.DarkBlue
 import com.skydoves.cloudy.Cloudy
 import kotlinx.coroutines.launch
 
@@ -44,7 +49,7 @@ fun ControlBlurOnScreen(
     isPictureOnFullScreen: Boolean,
     profilePic: String?,
     dismissPicture: () -> Unit,
-    content: @Composable (BoxScope) -> Unit
+    content: @Composable BoxScope.() -> Unit
 ) {
     Box(Modifier.fillMaxSize()) {
         if (isPictureOnFullScreen) {
@@ -62,8 +67,7 @@ fun ControlBlurOnScreen(
             ) {
                 content(this)
             }
-        }
-        else
+        } else
             content(this)
 
 
@@ -99,16 +103,30 @@ fun FullScreenProfilePicScreen(
                 onClick = { dismissProfilePic() }
             )
     ) {
-        GlideImage(
-            model = profilePic,
-            contentDescription = stringResource(R.string.change_profile_picture),
-            modifier = modifier
-                .size(275.dp)
-                .clip(CircleShape)
-                .clickable { },
-            failure = placeholder(R.drawable.alien),
-            contentScale = ContentScale.Crop
-        )
+        if (profilePic.isNotBlank())
+            GlideImage(
+                model = profilePic,
+                contentDescription = stringResource(R.string.change_profile_picture),
+                modifier = modifier
+                    .size(275.dp)
+                    .clip(CircleShape)
+                    .clickable { },
+                failure = placeholder(R.drawable.young_man_anim),
+                contentScale = ContentScale.Crop,
+                requestBuilderTransform = {
+                    it.diskCacheStrategy(DiskCacheStrategy.AUTOMATIC)
+                }
+            )
+        else
+            Image(painter = painterResource(id = R.drawable.young_man_anim),
+                contentDescription = null,
+                modifier = modifier
+                    .size(275.dp)
+                    .clip(CircleShape)
+                    .border(1.dp, DarkBlue, CircleShape)
+                    .clickable { },
+                contentScale = ContentScale.Crop
+            )
     }
 }
 

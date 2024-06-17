@@ -6,16 +6,17 @@ import com.da_chelimo.whisper.chats.repo.chats.ChatRepo.Companion.CHAT_DETAILS
 import com.da_chelimo.whisper.chats.repo.chats.ChatRepo.Companion.getChatDetailsRef
 import com.da_chelimo.whisper.chats.repo.chats.ChatRepo.Companion.getPersonalizedChatsFirebaseRef
 import com.da_chelimo.whisper.core.domain.MiniUser
-import com.da_chelimo.whisper.core.domain.User
 import com.da_chelimo.whisper.core.repo.user.UserRepo
 import com.da_chelimo.whisper.core.repo.user.UserRepoImpl
 import com.google.firebase.auth.ktx.auth
+import com.google.firebase.firestore.ListenerRegistration
 import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.firestore.toObject
 import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.tasks.await
 import timber.log.Timber
 import java.util.UUID
@@ -24,6 +25,7 @@ class ChatRepoImpl(private val userRepo: UserRepo = UserRepoImpl()) : ChatRepo {
 
     private val firestore = Firebase.firestore
 
+
     override suspend fun getChatFromChatID(chatID: String): Chat? =
         getChatDetailsRef(chatID)
             .get()
@@ -31,43 +33,55 @@ class ChatRepoImpl(private val userRepo: UserRepo = UserRepoImpl()) : ChatRepo {
             .toObject<Chat>()
 
 
+    // In case the user gets a new chat while in the AllChatsScreen
+    private fun getChatIdsForUser(userID: String) = callbackFlow {
+        val chatIdListener = getPersonalizedChatsFirebaseRef(userID)
+            .addSnapshotListener { value, _ ->
+                val listOfChatIDs =
+                    value?.toObjects(ChatRepo.PersonalizedChat::class.java)?.map { it.chatID }
+                        ?: listOf()
+                trySend(listOfChatIDs)
+            }
 
-    override fun getChatsForUser(userID: String) = callbackFlow<List<Chat>> {
-        val listOfChatIDs = getPersonalizedChatsFirebaseRef(userID)
-            .get()
-            .await()
-            .toObjects(ChatRepo.PersonalizedChat::class.java)
-            .map { it.chatID }
+        awaitClose {
+            chatIdListener.remove()
+        }
+    }
 
-        if (listOfChatIDs.isEmpty())
-            trySend(emptyList())
+    override fun getChatsForUser(userID: String) = callbackFlow<List<Chat>?> {
+        var chatListener: ListenerRegistration? = null
 
-        Timber.d("listOfChatIDs is $listOfChatIDs")
+        getChatIdsForUser(userID).collectLatest { listOfChatIDs ->
+            if (listOfChatIDs.isEmpty())
+                trySend(null)
 
-        if (listOfChatIDs.isNotEmpty()) {
-            val chatsListener = firestore.collection(CHAT_DETAILS)
-                .whereIn(Chat::chatID.name, listOfChatIDs)
-                .orderBy(Chat::timeOfLastMessage.name, Query.Direction.DESCENDING)
-                .addSnapshotListener { value, error ->
-                    val chats = value?.toObjects(Chat::class.java)
-                    Timber.e(error)
-                    Timber.d("chats in addSnapshotListener() are $chats")
+            Timber.d("listOfChatIDs is $listOfChatIDs")
 
-                    trySend(chats ?: listOf())
-                }
+            if (listOfChatIDs.isNotEmpty()) {
+                chatListener = firestore.collection(CHAT_DETAILS)
+                    .whereIn(Chat::chatID.name, listOfChatIDs)
+                    .orderBy(Chat::timeOfLastMessage.name, Query.Direction.DESCENDING)
+                    .addSnapshotListener { value, error ->
+                        val chats = value?.toObjects(Chat::class.java)
+                        Timber.e(error)
+                        Timber.d("chats in addSnapshotListener() are $chats")
+
+                        trySend(chats ?: listOf())
+                    }
 
 
-            awaitClose {
-                chatsListener.remove()
+//                awaitClose {
+//                    chatsListener.remove()
+//                }
             }
         }
 
         awaitClose {
-
+            chatListener?.remove()
         }
     }
 
-    override suspend fun createConversation(newContact: User): String {
+    override suspend fun createConversation(newContact: MiniUser): String {
         val chatID = UUID.randomUUID().toString()
         val currentUser = userRepo.getUserFromUID(Firebase.auth.uid!!)
 
@@ -75,7 +89,7 @@ class ChatRepoImpl(private val userRepo: UserRepo = UserRepoImpl()) : ChatRepo {
             chatID = chatID,
 
             firstMiniUser = MiniUser(currentUser!!.name, currentUser.uid, currentUser.profilePic),
-            secondMiniUser = MiniUser(newContact.name, newContact.uid, newContact.profilePic),
+            secondMiniUser = newContact,
 
             unreadMessagesCount = 0,
 
@@ -107,6 +121,32 @@ class ChatRepoImpl(private val userRepo: UserRepo = UserRepoImpl()) : ChatRepo {
         return chatID
     }
 
+    override suspend fun disableChatsForUser(userID: String) {
+        val chatIDs = getPersonalizedChatsFirebaseRef(userID)
+            .get().await().toObjects(ChatRepo.PersonalizedChat::class.java)
+            .map { it.chatID }
+        Timber.d("chatIDs to disable are: $chatIDs")
+
+        chatIDs.forEach { chatID -> disableChat(chatID) }
+
+        // Remove the list of personalized chats he/she used to have {prevents space wastage}
+        val listOfPersonalizedIDs = getPersonalizedChatsFirebaseRef(userID).get()
+            .await().toObjects(ChatRepo.PersonalizedChat::class.java).map { it.chatID }
+
+            listOfPersonalizedIDs.forEach { chatID ->
+                getPersonalizedChatsFirebaseRef(userID).document(chatID).delete()
+            }
+    }
+
+
+    override fun disableChat(chatID: String) {
+        val disableChat = getChatDetailsRef(chatID)
+            .update(Chat::isDisabled.name, true)
+            .isSuccessful
+
+        Timber.d("disableChat.isSuccessful is $disableChat")
+    }
+
 
     override suspend fun resetUnreadMessagesCount(chatID: String) {
         val chat = getChatFromChatID(chatID)
@@ -114,7 +154,6 @@ class ChatRepoImpl(private val userRepo: UserRepo = UserRepoImpl()) : ChatRepo {
         val myUID = Firebase.auth.uid
         val isOtherUser = myUID != lastMessageSender
 
-        Timber.d("Is other user: $isOtherUser")
 
         if (isOtherUser)
             getChatDetailsRef(chatID).update(

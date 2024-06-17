@@ -1,5 +1,6 @@
 [versions]
 agp = "8.4.1"
+androidImageCropper = "4.5.0"
 cloudy = "0.1.2"
 kotlin = "1.9.0"
 coreKtx = "1.13.1"
@@ -64,6 +65,7 @@ firebase-storage = { group = "com.google.firebase", name = "firebase-storage" }
 compose-googleFonts = { group = "androidx.compose.ui", name = "ui-text-google-fonts", version.ref = "googlefonts-compose" }
 compose-glide = { group = "com.github.bumptech.glide", name = "compose", version.ref = "glide-compose" }
 compose-countrycode = { group = "io.github.joelkanyi", name = "komposecountrycodepicker", version = "1.2.0" }
+compose-imageCropper = { module = "com.vanniktech:android-image-cropper", version.ref = "androidImageCropper" }
 
 
 koin-bom = { group = "io.insert-koin", name = "koin-bom", version.ref = "koin-bom" }

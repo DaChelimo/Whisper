@@ -45,6 +45,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
+import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.da_chelimo.whisper.R
 import com.da_chelimo.whisper.chats.domain.Message
 import com.da_chelimo.whisper.chats.domain.MessageStatus
@@ -62,6 +63,7 @@ fun MyChat(
     messageIDInFocus: String?,
     toggleOptionsMenuVisibility: (String?) -> Unit,
     copyToClipboard: (String) -> Unit,
+    openImage: (String) -> Unit,
     editMessage: (String) -> Unit,
     unSendMessage: (String) -> Unit
 ) {
@@ -86,6 +88,7 @@ fun MyChat(
         isMyChat = true,
         toggleOptionsMenuVisibility = toggleOptionsMenuVisibility,
         copyToClipboard = copyToClipboard,
+        openImage = openImage,
         editMessage = editMessage,
         unSendMessage = unSendMessage
     )
@@ -97,6 +100,7 @@ fun OtherChat(
     modifier: Modifier = Modifier,
     message: Message,
     messageIDInFocus: String?,
+    openImage: (String) -> Unit,
     toggleOptionsMenuVisibility: (String?) -> Unit,
     copyToClipboard: (String) -> Unit,
 ) {
@@ -120,6 +124,7 @@ fun OtherChat(
         showOptionsMenu = messageIDInFocus == message.messageID,
         isMyChat = false,
         toggleOptionsMenuVisibility = toggleOptionsMenuVisibility,
+        openImage = openImage,
         copyToClipboard = copyToClipboard,
         editMessage = null,
         unSendMessage = null
@@ -138,6 +143,7 @@ fun ChatMessage(
     isMyChat: Boolean,
     modifier: Modifier = Modifier,
     toggleOptionsMenuVisibility: (String?) -> Unit,
+    openImage: (String) -> Unit,
     copyToClipboard: (String) -> Unit,
     editMessage: ((String) -> Unit)?,
     unSendMessage: ((String) -> Unit)?
@@ -183,6 +189,12 @@ fun ChatMessage(
                             .padding(vertical = 4.dp, horizontal = 4.dp)
                             .clip(RoundedCornerShape(8.dp))
                             .aspectRatio((4 / 3).toFloat())
+                            .clickable {
+                                openImage(message.messageImage!!)
+                            },
+                        requestBuilderTransform = {
+                            it.diskCacheStrategy(DiskCacheStrategy.AUTOMATIC)
+                        }
                     )
                 }
 
@@ -310,22 +322,22 @@ private fun PreviewChats() = AppTheme {
             message = Message.TEST_MY_Message, messageIDInFocus = chatIDInFocus,
             toggleOptionsMenuVisibility = { chatIDInFocus = it },
             copyToClipboard = { },
-            unSendMessage = { }, editMessage = {})
+            unSendMessage = { }, openImage = {}, editMessage = {})
         Spacer(modifier = Modifier.height(4.dp))
 
         OtherChat(message = Message.TEST_MY_Message, messageIDInFocus = chatIDInFocus,
-            toggleOptionsMenuVisibility = { chatIDInFocus = it },
+            toggleOptionsMenuVisibility = { chatIDInFocus = it }, openImage = {},
             copyToClipboard = { })
 
         MyChat(message = Message.LONG_TEST_MY_Message, messageIDInFocus = chatIDInFocus,
             toggleOptionsMenuVisibility = { chatIDInFocus = it },
             copyToClipboard = { },
-            unSendMessage = { }, editMessage = { })
+            unSendMessage = { }, openImage = {}, editMessage = { })
 
         Spacer(modifier = Modifier.height(4.dp))
 
         OtherChat(message = Message.LONG_TEST_MY_Message, messageIDInFocus = chatIDInFocus,
-            toggleOptionsMenuVisibility = { chatIDInFocus = it },
+            toggleOptionsMenuVisibility = { chatIDInFocus = it }, openImage = {},
             copyToClipboard = { })
 
     }
