@@ -94,7 +94,7 @@ fun ChatPreview(
                     )
 
                     Text(
-                        text = chat.timeOfLastMessage.toChatPreviewTime() ?: "",
+                        text = chat.timeOfLastMessage?.toChatPreviewTime() ?: "",
                         fontFamily = Montserrat,
                         fontSize = 13.sp,
                         lineHeight = 18.sp,
@@ -120,12 +120,14 @@ fun ChatPreview(
 
                     // If the lastMessage is blank, it means it's an image
                     val messagePreview =
-                        if (chat.lastMessageType == MessageType.Image)
-                            stringResource(
-                                R.string.image,
-                                chat.lastMessage.ifBlank { "Image" }
-                            )
-                        else chat.lastMessage
+                        chat.lastMessage?.let { lastMessage ->
+
+                            if (chat.lastMessageType == MessageType.Image)
+                                lastMessage.ifBlank { stringResource(R.string.image, "Image") }
+                            else chat.lastMessage
+
+                        } ?: ""
+
 
                     Text(
                         text = messagePreview,

@@ -62,11 +62,13 @@ class ChatRepoImpl(private val userRepo: UserRepo = UserRepoImpl()) : ChatRepo {
                     .whereIn(Chat::chatID.name, listOfChatIDs)
                     .orderBy(Chat::timeOfLastMessage.name, Query.Direction.DESCENDING)
                     .addSnapshotListener { value, error ->
-                        val chats = value?.toObjects(Chat::class.java)
-                        Timber.e(error)
-                        Timber.d("chats in addSnapshotListener() are $chats")
+                        try {
+                            val chats = value?.toObjects(Chat::class.java)
+                            Timber.e(error)
+                            Timber.d("chats in addSnapshotListener() are $chats")
 
-                        trySend(chats ?: listOf())
+                            trySend(chats ?: listOf())
+                        } catch (e: Exception) { Timber.e(e) }
                     }
 
 

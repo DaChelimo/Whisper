@@ -10,10 +10,10 @@ data class Chat(
 
     var unreadMessagesCount: Int,
 
-    var lastMessage: String,
-    var lastMessageSender: String,
-    val lastMessageStatus: MessageStatus,
-    var timeOfLastMessage: Long, // Time in millis when the last text was sent
+    var lastMessage: String?,
+    var lastMessageSender: String?,
+    val lastMessageStatus: MessageStatus?,
+    var timeOfLastMessage: Long?, // Time in millis when the last text was sent
     val lastMessageType: MessageType = MessageType.Text,
 
     /** Chat can be disabled if:
