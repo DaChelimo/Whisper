@@ -75,8 +75,7 @@ class ActualChatViewModel(
         _otherUser.value =
             if (chatID == null) {
                 contactsRepo.getContactFromUID(newContactUID!!)?.toMiniUser()
-            }
-            else {
+            } else {
                 val chat = chat.value
 
                 if (chat?.firstMiniUser?.uid == Firebase.auth.uid) chat?.secondMiniUser
@@ -154,8 +153,7 @@ class ActualChatViewModel(
 
         if (chat.value?.isDisabled == true) { // Chat disabled; do not send & clear message bar
             _textMessage.value = TextFieldValue("")
-        }
-        else {
+        } else {
             val message = Message(
                 senderID = Firebase.auth.uid!!,
                 messageID = UUID.randomUUID().toString(),
@@ -206,13 +204,8 @@ class ActualChatViewModel(
     }
 
 
-    private fun resetUnreadMessagesCountOnChatExit() = viewModelScope.launch {
+    fun resetUnreadMessagesCountOnChatExit() = viewModelScope.launch{
+        Timber.d("resetUnreadMessagesCountOnChatExit with chatID as $chatID")
         chatID?.let { chatRepo.resetUnreadMessagesCount(it) }
-    }
-
-    override fun onCleared() {
-        resetUnreadMessagesCountOnChatExit()
-
-        super.onCleared()
     }
 }

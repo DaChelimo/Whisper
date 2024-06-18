@@ -156,6 +156,7 @@ class ChatRepoImpl(private val userRepo: UserRepo = UserRepoImpl()) : ChatRepo {
         val myUID = Firebase.auth.uid
         val isOtherUser = myUID != lastMessageSender
 
+        Timber.d("isOtherUser is $isOtherUser")
 
         if (isOtherUser)
             getChatDetailsRef(chatID).update(
