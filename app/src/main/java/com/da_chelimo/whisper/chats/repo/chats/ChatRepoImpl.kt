@@ -40,6 +40,7 @@ class ChatRepoImpl(private val userRepo: UserRepo = UserRepoImpl()) : ChatRepo {
                 val listOfChatIDs =
                     value?.toObjects(ChatRepo.PersonalizedChat::class.java)?.map { it.chatID }
                         ?: listOf()
+
                 trySend(listOfChatIDs)
             }
 
@@ -53,7 +54,7 @@ class ChatRepoImpl(private val userRepo: UserRepo = UserRepoImpl()) : ChatRepo {
 
         getChatIdsForUser(userID).collectLatest { listOfChatIDs ->
             if (listOfChatIDs.isEmpty())
-                trySend(null)
+                trySend(listOf())
 
             Timber.d("listOfChatIDs is $listOfChatIDs")
 

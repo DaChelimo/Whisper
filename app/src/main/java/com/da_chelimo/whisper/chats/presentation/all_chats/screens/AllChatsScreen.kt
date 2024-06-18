@@ -179,7 +179,7 @@ fun AllChatsScreen(
                     }
                 }
 
-                
+
                 val permissionRequestLauncher = rememberLauncherForActivityResult(
                     contract = ActivityResultContracts.RequestPermission()
                 ) { isGranted ->
