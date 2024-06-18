@@ -27,7 +27,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.da_chelimo.whisper.R
 import com.da_chelimo.whisper.core.presentation.ui.theme.AppTheme
@@ -35,7 +34,7 @@ import com.da_chelimo.whisper.core.presentation.ui.theme.QuickSand
 
 @Composable
 fun ChatTopBar(
-    navController: NavController,
+    onBackPress: () -> Unit,
     otherPersonName: String?,
     modifier: Modifier = Modifier,
     onVoiceCall: () -> Unit,
@@ -55,7 +54,8 @@ fun ChatTopBar(
         ) {
             IconButton(
                 modifier = Modifier.align(Alignment.CenterStart),
-                onClick = { navController.popBackStack() }) {
+                onClick = onBackPress
+            ) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Default.KeyboardArrowLeft,
                     contentDescription = stringResource(id = R.string.back_button),
@@ -99,9 +99,11 @@ fun ChatTopBar(
 @Preview
 @Composable
 private fun PreviewChatTopBar() = AppTheme {
+    val navController = rememberNavController()
+
     Column(Modifier.background(Color.White)) {
         ChatTopBar(
-            navController = rememberNavController(),
+            onBackPress = { navController.popBackStack() },
             otherPersonName = "Andrew Chelimo",
             onVoiceCall = {},
             onVideoCall = {})

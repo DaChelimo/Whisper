@@ -1,6 +1,7 @@
 package com.da_chelimo.whisper.chats.domain
 
 import com.da_chelimo.whisper.core.domain.MiniUser
+import java.util.UUID
 
 data class Chat(
     val chatID: String,
@@ -37,14 +38,14 @@ data class Chat(
 
     companion object {
         val TEST_CHAT = Chat(
-            "chat1234",
+            UUID.randomUUID().toString(),
             MiniUser("Andrew", "1234", null),
             MiniUser("Diana", "0000", null),
             6,
             "Wanna come over for lunch?",
             "0000",
             MessageStatus.SENT,
-            1234455
+            System.currentTimeMillis()
         )
     }
 }

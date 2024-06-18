@@ -1,12 +1,14 @@
 package com.da_chelimo.whisper.chats.presentation.actual_chat.screens
 
 import android.annotation.SuppressLint
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -48,6 +50,7 @@ import com.da_chelimo.whisper.chats.presentation.actual_chat.components.DaySepar
 import com.da_chelimo.whisper.chats.presentation.actual_chat.components.TypeMessageBar
 import com.da_chelimo.whisper.chats.presentation.actual_chat.components.messages.MyChat
 import com.da_chelimo.whisper.chats.presentation.actual_chat.components.messages.OtherChat
+import com.da_chelimo.whisper.chats.presentation.chat_details.components.ComingSoonPopup
 import com.da_chelimo.whisper.core.presentation.ui.ChatDetails
 import com.da_chelimo.whisper.core.presentation.ui.SendImage
 import com.da_chelimo.whisper.core.presentation.ui.ViewImage
@@ -79,6 +82,9 @@ fun ActualChatScreen(
         mutableStateOf<String?>(null)
     }
 
+    var showComingSoonPopup by remember {
+        mutableStateOf(false)
+    }
 
 
     LaunchedEffect(key1 = Unit) {
@@ -87,166 +93,194 @@ fun ActualChatScreen(
         viewModel.fetchChats(chatID)
     }
 
-    Column(
-        Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.surface)
-            .imePadding()
-    ) {
-        val bottomRoundedShape = RoundedCornerShape(
-            topStartPercent = 0,
-            topEndPercent = 0,
-            bottomEndPercent = 5,
-            bottomStartPercent = 5
-        )
 
+    BackHandler {
+        viewModel.resetUnreadMessagesCountOnChatExit()
+        navController.popBackStack()
+    }
+
+
+    Box {
         Column(
             Modifier
-                .weight(1f)
-                .fillMaxWidth()
-                .clip(bottomRoundedShape)
-                .background(MaterialTheme.colorScheme.background)
-                .padding(bottom = 6.dp)
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.surface)
+                .imePadding()
         ) {
-
-            ChatTopBar(
-                navController = navController,
-                otherPersonName = otherUser?.name,
-                modifier = Modifier.clickable {
-                    val otherUID = otherUser?.uid
-                    if (viewModel.chatID != null && otherUID != null)
-                        navController.navigateSafely(ChatDetails(viewModel.chatID!!, otherUID))
-                },
-                onVoiceCall = {},
-                onVideoCall = {}
+            val bottomRoundedShape = RoundedCornerShape(
+                topStartPercent = 0,
+                topEndPercent = 0,
+                bottomEndPercent = 5,
+                bottomStartPercent = 5
             )
 
-            Spacer(
-                modifier = Modifier
-                    .height(1.dp)
-                    .fillMaxWidth()
-            )
-
-            val openImage: (String) -> Unit = { imageUrl ->
-                navController.navigateSafely(ViewImage(imageUrl))
-            }
-
-            LazyColumn(
-                verticalArrangement = Arrangement.Bottom,
-                modifier = Modifier
-                    .fillMaxWidth()
+            Column(
+                Modifier
                     .weight(1f)
-                    .imePadding()
-                    .clickable(null, null, onClick = { messageIDInFocus = null }),
-                reverseLayout = true
+                    .fillMaxWidth()
+                    .clip(bottomRoundedShape)
+                    .background(MaterialTheme.colorScheme.background)
+                    .padding(bottom = 6.dp)
             ) {
-                items(viewModel.messages) { message ->
-                    if (message.senderID == Firebase.auth.uid)
-                        MyChat(
-                            message = message,
-                            messageIDInFocus = messageIDInFocus,
-                            toggleOptionsMenuVisibility = { messageIDInFocus = it },
-                            copyToClipboard = { messageText ->
-                                clipboardManager.setText(
-                                    buildAnnotatedString { append(messageText) }
-                                )
-                            },
-                            editMessage = { oldMessage ->
-                                viewModel.launchMessageEditing(message.messageID, oldMessage)
-                            },
-                            unSendMessage = { messageID ->
-                                viewModel.unsendMessage(messageID)
-                                messageIDInFocus = null
-                            },
-                            openImage = { openImage(it) }
-                        )
-                    else
-                        OtherChat(
-                            message = message,
-                            messageIDInFocus = messageIDInFocus,
-                            toggleOptionsMenuVisibility = { messageIDInFocus = it },
-                            copyToClipboard = { messageText ->
-                                clipboardManager.setText(
-                                    buildAnnotatedString { append(messageText) }
-                                )
-                                messageIDInFocus = null
-                            },
-                            openImage = { openImage(it) }
-                        )
 
-                    Spacer(modifier = Modifier.height(2.dp))
+                ChatTopBar(
+                    onBackPress = {
+                        viewModel.resetUnreadMessagesCountOnChatExit()
+                        navController.popBackStack()
+                    },
+                    otherPersonName = otherUser?.name,
+                    modifier = Modifier.clickable {
+                        val otherUID = otherUser?.uid
+                        if (viewModel.chatID != null && otherUID != null)
+                            navController.navigateSafely(ChatDetails(viewModel.chatID!!, otherUID))
+                    },
+                    onVoiceCall = {
+                        showComingSoonPopup = true
+                    },
+                    onVideoCall = {
+                        showComingSoonPopup = true
+                    }
+                )
 
-                    DaySeparatorForActualChat(
-                        mapOfMessageIDAndDateInString = viewModel.mapOfMessageIDAndDateInString,
-                        message = message
+                Spacer(
+                    modifier = Modifier
+                        .height(1.dp)
+                        .fillMaxWidth()
+                )
+
+                val openImage: (String) -> Unit = { imageUrl ->
+                    navController.navigateSafely(ViewImage(imageUrl))
+                }
+
+                LazyColumn(
+                    verticalArrangement = Arrangement.Bottom,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f)
+                        .imePadding()
+                        .clickable(null, null, onClick = { messageIDInFocus = null }),
+                    reverseLayout = true
+                ) {
+                    items(viewModel.messages) { message ->
+                        if (message.senderID == Firebase.auth.uid)
+                            MyChat(
+                                message = message,
+                                messageIDInFocus = messageIDInFocus,
+                                toggleOptionsMenuVisibility = { messageIDInFocus = it },
+                                copyToClipboard = { messageText ->
+                                    clipboardManager.setText(
+                                        buildAnnotatedString { append(messageText) }
+                                    )
+                                },
+                                editMessage = { oldMessage ->
+                                    viewModel.launchMessageEditing(message.messageID, oldMessage)
+                                },
+                                unSendMessage = { messageID ->
+                                    viewModel.unsendMessage(messageID)
+                                    messageIDInFocus = null
+                                },
+                                openImage = { openImage(it) }
+                            )
+                        else
+                            OtherChat(
+                                message = message,
+                                messageIDInFocus = messageIDInFocus,
+                                toggleOptionsMenuVisibility = { messageIDInFocus = it },
+                                copyToClipboard = { messageText ->
+                                    clipboardManager.setText(
+                                        buildAnnotatedString { append(messageText) }
+                                    )
+                                    messageIDInFocus = null
+                                },
+                                openImage = { openImage(it) }
+                            )
+
+                        Spacer(modifier = Modifier.height(2.dp))
+
+                        DaySeparatorForActualChat(
+                            mapOfMessageIDAndDateInString = viewModel.mapOfMessageIDAndDateInString,
+                            message = message
+                        )
+                    }
+                }
+
+                if (chat?.isDisabled == true) {
+                    val errorMessage =
+                        if (doesOtherUserAccountExist) // The other user deleted his/her account
+                            "Chat has been disabled"
+                        else
+                            "The other user's account no longer exists"
+
+                    Timber.d("errorMessage is $errorMessage")
+                    Text(
+                        text = errorMessage,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 24.dp),
+                        textAlign = TextAlign.Center,
+                        fontFamily = QuickSand,
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 16.sp,
+                        color = ErrorRed
                     )
                 }
             }
 
-            if (chat?.isDisabled == true) {
-                val errorMessage =
-                    if (doesOtherUserAccountExist) // The other user deleted his/her account
-                        "Chat has been disabled"
-                    else
-                        "The other user's account no longer exists"
+            val focusRequester = remember { FocusRequester() }
+            val focusManager = LocalFocusManager.current
 
-                Timber.d("errorMessage is $errorMessage")
-                Text(
-                    text = errorMessage,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 24.dp),
-                    textAlign = TextAlign.Center,
-                    fontFamily = QuickSand,
-                    fontWeight = FontWeight.SemiBold,
-                    fontSize = 16.sp,
-                    color = ErrorRed
-                )
-            }
-        }
-
-        val focusRequester = remember { FocusRequester() }
-        val focusManager = LocalFocusManager.current
-
-        LaunchedEffect(key1 = isEditing) {
-            if (isEditing != null) {
-                Timber.d("isEditing is $isEditing")
-                focusRequester.requestFocus()
-            } else {
-                focusManager.clearFocus(force = true)
-                messageIDInFocus = null
-            }
-        }
-
-
-        val permissionLauncher =
-            rememberLauncherForActivityResult(contract = ActivityResultContracts.PickVisualMedia()) { imageUri ->
-                if (imageUri != null) {
-                    navController.navigateSafely(SendImage(viewModel.chatID!!, imageUri.toString()))
+            LaunchedEffect(key1 = isEditing) {
+                if (isEditing != null) {
+                    Timber.d("isEditing is $isEditing")
+                    focusRequester.requestFocus()
+                } else {
+                    focusManager.clearFocus(force = true)
+                    messageIDInFocus = null
                 }
             }
 
-        val shouldOpenMediaPicker by viewModel.openMediaPicker.collectAsState()
-        LaunchedEffect(key1 = shouldOpenMediaPicker) {
-            if (shouldOpenMediaPicker)
-                permissionLauncher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
 
-            viewModel.updateOpenMediaPicker(false)
+            val permissionLauncher =
+                rememberLauncherForActivityResult(contract = ActivityResultContracts.PickVisualMedia()) { imageUri ->
+                    if (imageUri != null) {
+                        navController.navigateSafely(
+                            SendImage(
+                                viewModel.chatID!!,
+                                imageUri.toString()
+                            )
+                        )
+                    }
+                }
+
+            val shouldOpenMediaPicker by viewModel.openMediaPicker.collectAsState()
+            LaunchedEffect(key1 = shouldOpenMediaPicker) {
+                if (shouldOpenMediaPicker)
+                    permissionLauncher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+
+                viewModel.updateOpenMediaPicker(false)
+            }
+
+            TypeMessageBar(
+                value = composeMessage,
+                onValueChange = { viewModel.updateComposeMessage(it) },
+                sendMessage = {
+                    viewModel.sendOrEditMessage()
+                },
+                openMediaSelector = {
+                    viewModel.updateOpenMediaPicker(true)
+                },
+                modifier = Modifier
+                    .padding(vertical = 16.dp)
+                    .focusRequester(focusRequester)
+            )
         }
 
-        TypeMessageBar(
-            value = composeMessage,
-            onValueChange = { viewModel.updateComposeMessage(it) },
-            sendMessage = {
-                viewModel.sendOrEditMessage()
-            },
-            openMediaSelector = {
-                viewModel.updateOpenMediaPicker(true)
-            },
-            modifier = Modifier
-                .padding(vertical = 16.dp)
-                .focusRequester(focusRequester)
-        )
+        if (showComingSoonPopup)
+            ComingSoonPopup(
+                hidePopup = {
+                    showComingSoonPopup = false
+                }
+            )
     }
 }
 

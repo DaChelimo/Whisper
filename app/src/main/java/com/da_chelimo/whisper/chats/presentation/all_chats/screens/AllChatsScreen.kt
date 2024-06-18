@@ -131,7 +131,8 @@ fun AllChatsScreen(
                     .fillMaxSize()
                     .background(MaterialTheme.colorScheme.background)
             ) {
-                if (chats == null) {
+                // The user has NO CHATS
+                if (chats?.isEmpty() == true) {
                     Column(Modifier.align(Alignment.Center)) {
                         Image(
                             painter = painterResource(id = R.drawable.start_chat),
@@ -151,8 +152,10 @@ fun AllChatsScreen(
                             lineHeight = 18.sp
                         )
                     }
+                }
 
-                } else {
+                // The user has CHATS
+                else if (chats?.isNotEmpty() == true) {
                     LazyColumn(
                         modifier = Modifier
                             .padding(bottom = 4.dp)
@@ -176,7 +179,7 @@ fun AllChatsScreen(
                     }
                 }
 
-
+                
                 val permissionRequestLauncher = rememberLauncherForActivityResult(
                     contract = ActivityResultContracts.RequestPermission()
                 ) { isGranted ->

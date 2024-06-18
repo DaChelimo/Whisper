@@ -105,9 +105,9 @@ dependencies {
     implementation(libs.koin.compose)
 
     // Network library
-    implementation(libs.retrofit)
-    implementation(libs.retrofit.moshiconverter)
-    implementation(libs.retrofit.okhttp.logger)
+//    implementation(libs.retrofit)
+//    implementation(libs.retrofit.moshiconverter)
+//    implementation(libs.retrofit.okhttp.logger)
 
     // Serialization
     implementation(libs.kotlin.serialization)
@@ -122,7 +122,7 @@ dependencies {
 
     // Others
     implementation(libs.logging.timber)
-    implementation(libs.permissionX)
+//    implementation(libs.permissionX)
     implementation(libs.jodaTime)
 
 
