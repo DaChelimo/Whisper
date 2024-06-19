@@ -14,8 +14,7 @@ class App: Application() {
 
     /**
      * TODO
-     * 1) Keyboard in CreateProfile blocking the textfields
-     * 4) Add ViewImageSentScreen and allow user to download (or better yet.. download automatically)
+     * 1) Dark mode support
      */
 
     override fun onCreate() {

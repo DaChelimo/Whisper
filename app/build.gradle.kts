@@ -21,7 +21,7 @@ android {
     defaultConfig {
         val majorRelease = 1
         val defaultRelease = 0
-        val minorRelease = 0
+        val minorRelease = 1
 
         applicationId = "com.da_chelimo.whisper"
         minSdk = 24
