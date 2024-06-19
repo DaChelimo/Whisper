@@ -26,7 +26,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.TextStyle
@@ -42,6 +41,7 @@ import com.da_chelimo.whisper.R
 import com.da_chelimo.whisper.core.presentation.ui.theme.AppTheme
 import com.da_chelimo.whisper.core.presentation.ui.theme.Cabin
 import com.da_chelimo.whisper.core.presentation.ui.theme.DarkBlue
+import com.da_chelimo.whisper.core.presentation.ui.theme.LocalAppColors
 import com.da_chelimo.whisper.core.presentation.ui.theme.QuickSand
 
 @Composable
@@ -63,7 +63,7 @@ fun EditProfilePopup(
         Column(
             modifier
                 .fillMaxWidth()
-                .background(MaterialTheme.colorScheme.background)
+                .background(LocalAppColors.current.mainBackground)
                 .padding(12.dp)
                 .imePadding()
         ) {
@@ -122,7 +122,7 @@ fun EditProfilePopup(
                         text = stringResource(R.string.cancel),
                         fontSize = 14.sp,
                         fontFamily = QuickSand,
-                        color = DarkBlue,
+                        color = LocalAppColors.current.appThemeTextColor,
                         fontWeight = FontWeight.Medium
                     )
                 }
@@ -135,7 +135,7 @@ fun EditProfilePopup(
                         text = stringResource(R.string.save),
                         fontSize = 14.sp,
                         fontFamily = QuickSand,
-                        color = DarkBlue,
+                        color = LocalAppColors.current.appThemeTextColor,
                         fontWeight = FontWeight.Medium
                     )
                 }
@@ -151,11 +151,11 @@ fun EditProfilePopup(
 
 @Preview
 @Composable
-private fun PreviewEditProfilePopup() = AppTheme {
+private fun PreviewEditProfilePopup() = AppTheme(darkTheme = true) {
     Column(
         Modifier
             .fillMaxSize()
-            .background(Color.White)
+            .background(LocalAppColors.current.mainBackground)
     ) {
         EditProfilePopup(
             popupTitle = stringResource(id = R.string.enter_your_name),

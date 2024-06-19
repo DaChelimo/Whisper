@@ -29,6 +29,7 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -37,6 +38,8 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -58,8 +61,9 @@ import com.da_chelimo.whisper.core.presentation.ui.components.DefaultScreen
 import com.da_chelimo.whisper.core.presentation.ui.components.TintedAppBarIcon
 import com.da_chelimo.whisper.core.presentation.ui.navigateSafely
 import com.da_chelimo.whisper.core.presentation.ui.theme.AppTheme
-import com.da_chelimo.whisper.core.presentation.ui.theme.LightWhite
+import com.da_chelimo.whisper.core.presentation.ui.theme.LocalAppColors
 import com.da_chelimo.whisper.core.presentation.ui.theme.QuickSand
+import com.da_chelimo.whisper.core.presentation.ui.theme.StatusBars
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
@@ -67,7 +71,8 @@ import kotlinx.coroutines.launch
 fun AllChatsScreen(
     navController: NavController,
     snackbarHostState: SnackbarHostState,
-    coroutineScope: CoroutineScope
+    coroutineScope: CoroutineScope,
+    updateStatusBar: (StatusBars) -> Unit
 ) {
     val viewModel = viewModel<AllChatsViewModel>()
     val context = LocalContext.current
@@ -76,6 +81,15 @@ fun AllChatsScreen(
     var isProfilePicFullScreen by remember {
         mutableStateOf<String?>(null)
     }
+
+
+    val appColors = LocalAppColors.current
+
+    // Reset the status bar color to the background color
+    LaunchedEffect(key1 = Unit) {
+        updateStatusBar(StatusBars(appColors.blueCardColor, false))
+    }
+
 
     DefaultScreen(
         appBar = {
@@ -117,7 +131,7 @@ fun AllChatsScreen(
 //                )
             }
         },
-        backgroundColor = LightWhite
+        backgroundColor = LocalAppColors.current.lighterMainBackground
     ) {
 
         ControlBlurOnScreen(
@@ -139,7 +153,8 @@ fun AllChatsScreen(
                             contentDescription = null,
                             modifier = Modifier
                                 .size(60.dp)
-                                .align(Alignment.CenterHorizontally)
+                                .align(Alignment.CenterHorizontally),
+                            colorFilter = ColorFilter.tint(LocalAppColors.current.appThemeTextColor)
                         )
 
                         Text(
@@ -203,8 +218,8 @@ fun AllChatsScreen(
                         },
                     shape = RoundedCornerShape(12.dp),
                     colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceDim,
-                        contentColor = MaterialTheme.colorScheme.onSurface
+                        containerColor = LocalAppColors.current.fabContainerColor,
+                        contentColor = Color.White
                     ),
                     elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                 ) {
@@ -225,7 +240,7 @@ fun AllChatsScreen(
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Preview
 @Composable
-private fun PreviewAllChatsScreen() = AppTheme {
+private fun PreviewAllChatsScreen() = AppTheme(darkTheme = true) {
     val snackbarHostState = SnackbarHostState()
 
     Scaffold(snackbarHost = { SnackbarHost(hostState = snackbarHostState) }) {
@@ -233,6 +248,6 @@ private fun PreviewAllChatsScreen() = AppTheme {
             navController = rememberNavController(),
             snackbarHostState = snackbarHostState,
             coroutineScope = rememberCoroutineScope()
-        )
+        ) {}
     }
 }

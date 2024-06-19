@@ -51,6 +51,9 @@ fun CCPTextField(
     number: String,
     isValid: Boolean,
     errorMessage: String?,
+    textColor: Color,
+    containerColor: Color,
+    defaultIndicatorColor: Color,
     onCountryChange: (Country) -> Unit,
     onNumberChange: (String) -> Unit,
     modifier: Modifier = Modifier
@@ -60,7 +63,9 @@ fun CCPTextField(
         mutableStateOf(false)
     }
     val indicatorColor =
-        if (isValid) CorrectGreen else MaterialTheme.colorScheme.surface
+        if (isValid) CorrectGreen else defaultIndicatorColor
+    val isError =
+        !isValid && number.isNotBlank() && number.isNotEmpty() && errorMessage != null
 
     Row(modifier.fillMaxWidth()) {
         OutlinedTextField(
@@ -69,18 +74,18 @@ fun CCPTextField(
             modifier = Modifier
                 .fillMaxWidth(),
             colors = TextFieldDefaults.colors(
-                unfocusedContainerColor = MaterialTheme.colorScheme.background,
-                focusedContainerColor = MaterialTheme.colorScheme.background,
-                errorContainerColor = MaterialTheme.colorScheme.background,
+                unfocusedContainerColor = containerColor,
+                focusedContainerColor = containerColor,
+                errorContainerColor = containerColor,
 
-                focusedTextColor = MaterialTheme.colorScheme.onBackground,
-                unfocusedTextColor = MaterialTheme.colorScheme.onBackground,
-                errorTextColor = MaterialTheme.colorScheme.onBackground,
+                focusedTextColor = textColor,
+                unfocusedTextColor = textColor,
+                errorTextColor = textColor,
 
                 cursorColor = DarkBlue,
                 selectionColors = TextSelectionColors(
                     handleColor = MaterialTheme.colorScheme.surface,
-                    backgroundColor = SelectionBlue
+                    backgroundColor = SelectionBlue.copy(alpha = 0.4f)
                 ),
 
                 unfocusedSupportingTextColor = indicatorColor,
@@ -114,13 +119,14 @@ fun CCPTextField(
                             .clip(RoundedCornerShape(4.dp)),
                         contentScale = ContentScale.Crop
                     )
+
                     Text(
                         text = country.phoneNoCode,
                         fontWeight = FontWeight.Medium,
                         modifier = Modifier.padding(start = 8.dp),
                         fontSize = 15.sp,
                         fontFamily = QuickSand,
-                        color = Color.Black
+                        color = textColor
                     )
                 }
             },
@@ -134,15 +140,15 @@ fun CCPTextField(
             placeholder = {
                 Text(
                     text = "722123456",
-                    color = Color.DarkGray.copy(alpha = 0.8f),
+                    color = textColor.copy(alpha = 0.7f),
                     fontSize = 15.sp,
                     fontFamily = QuickSand
                 )
             },
-            isError = !isValid && number.isNotBlank(),
+            isError = isError,
             supportingText = {
-                if (!isValid && !errorMessage.isNullOrBlank())
-                    Text(errorMessage)
+                if (isError)
+                    Text(errorMessage!!)
             }
         )
     }
@@ -157,6 +163,9 @@ fun CCPTextField(
     if (showDialog)
         CountrySelectCountryDialog(
             modifier = Modifier,
+            textColor = textColor,
+            containerColor = containerColor,
+            indicatorColor = indicatorColor,
             onHideDialog = {
                 if (it != null)
                     onCountryChange(it)
@@ -183,6 +192,9 @@ private fun PreviewCCPTextField() {
             country = country,
             number = number,
             isValid = false,
+            containerColor = MaterialTheme.colorScheme.background,
+            textColor = MaterialTheme.colorScheme.surface,
+            defaultIndicatorColor = DarkBlue,
             errorMessage = "Enter valid number",
             onCountryChange = { country = it },
             onNumberChange = { number = it }

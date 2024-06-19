@@ -32,7 +32,7 @@ fun CardPopup(
                 .fillMaxWidth(width)
                 .clickable { },
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.background),
-            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+            elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
         ) {
 
             content()

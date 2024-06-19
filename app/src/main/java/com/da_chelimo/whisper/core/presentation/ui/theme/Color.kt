@@ -2,10 +2,10 @@ package com.da_chelimo.whisper.core.presentation.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-val LightWhite = Color(0xFFF1F1F1)
+val LightWhite = Color(0xFFFCFCFC)
 
 val DarkBlack = Color(0xFF141414)
-val LightBlack = Color(0xFF292929)
+val LightBlack = Color(0xFF151515)
 
 val DarkBlue = Color(0xFF1c2e46)
 val DarkerBlue = Color(0xFF0E1D31)
