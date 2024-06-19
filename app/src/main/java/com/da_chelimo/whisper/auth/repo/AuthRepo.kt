@@ -9,6 +9,9 @@ interface AuthRepo {
 
     /**
      * Authenticates using the phone number provided
+     *
+     *
+     * If the method had already been called, the forceResendingToken which is stored in the AuthRepoImpl is used
      */
     fun authenticateWithNumber(
         phoneNumber: String,

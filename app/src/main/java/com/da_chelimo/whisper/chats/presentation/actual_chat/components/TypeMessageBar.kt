@@ -1,6 +1,7 @@
 package com.da_chelimo.whisper.chats.presentation.actual_chat.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -15,6 +16,7 @@ import androidx.compose.material.icons.automirrored.rounded.Send
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
@@ -29,6 +31,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
@@ -39,6 +42,7 @@ import com.da_chelimo.whisper.R
 import com.da_chelimo.whisper.core.presentation.ui.theme.AppTheme
 import com.da_chelimo.whisper.core.presentation.ui.theme.LocalAppColors
 import com.da_chelimo.whisper.core.presentation.ui.theme.QuickSand
+import com.da_chelimo.whisper.core.presentation.ui.theme.TypingBarBlack
 import timber.log.Timber
 
 // TODO: Add drafts as a feature... If user leaves the chat, they can still find the draft
@@ -50,13 +54,14 @@ fun TypeMessageBar(
     sendMessage: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val containerColor = if (isSystemInDarkTheme()) TypingBarBlack else DarkBlue
 
     Row(
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 8.dp)
             .clip(RoundedCornerShape(16.dp))
-            .background(DarkBlue),
+            .background(containerColor),
         verticalAlignment = Alignment.CenterVertically
     ) {
         TextField(
@@ -67,7 +72,8 @@ fun TypeMessageBar(
                 .padding(horizontal = 4.dp),
             textStyle = TextStyle.Default.copy(
                 fontSize = 15.sp,
-                fontFamily = QuickSand
+                fontFamily = QuickSand,
+                fontWeight = FontWeight.W500
             ),
             maxLines = 4,
             colors = TextFieldDefaults.colors(
@@ -79,13 +85,20 @@ fun TypeMessageBar(
                 focusedIndicatorColor = Color.Transparent,
                 unfocusedIndicatorColor = Color.Transparent,
 
-                unfocusedContainerColor = DarkBlue,
-                focusedContainerColor = DarkBlue
+                unfocusedContainerColor = Color.Transparent,
+                focusedContainerColor = Color.Transparent
             ),
             keyboardActions = KeyboardActions(
                 onDone = { Timber.d("OnDone called") }
             ),
-            keyboardOptions = KeyboardOptions.Default.copy(capitalization = KeyboardCapitalization.Sentences)
+            keyboardOptions = KeyboardOptions.Default.copy(capitalization = KeyboardCapitalization.Sentences),
+            placeholder = {
+                Text(
+                    text = stringResource(R.string.message_placeholder),
+                    color = Color.White.copy(alpha = 0.75f),
+                    fontSize = 15.sp
+                )
+            }
         )
 
         if (openMediaSelector != null) {

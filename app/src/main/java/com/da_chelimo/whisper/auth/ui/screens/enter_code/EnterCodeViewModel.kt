@@ -1,6 +1,7 @@
 package com.da_chelimo.whisper.auth.ui.screens.enter_code
 
 import android.app.Activity
+import android.os.CountDownTimer
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.da_chelimo.whisper.R
@@ -12,8 +13,12 @@ import com.da_chelimo.whisper.core.repo.user.UserRepoImpl
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import org.joda.time.Duration
 import timber.log.Timber
 
 class EnterCodeViewModel(
@@ -27,8 +32,22 @@ class EnterCodeViewModel(
     private val _taskState = MutableStateFlow<TaskState>(TaskState.NONE)
     val taskState: StateFlow<TaskState> = _taskState
 
+    private val _timeLeftInMillis = MutableStateFlow(SMS_TIMEOUT)
+    val timeLeftInMillis: StateFlow<Long> = _timeLeftInMillis
+
+    val formattedTimeLeft = timeLeftInMillis.map { millisLeft ->
+        val duration = Duration(millisLeft)
+        val mins = duration.standardMinutes.let { if (it.toString().length == 1) "0$it" else it }
+        val secs = duration.standardSeconds.let { if (it.toString().length == 1) "0$it" else it }
+
+        "$mins:$secs"
+    }.stateIn(viewModelScope, SharingStarted.Eagerly, "")
+
     companion object {
         const val CODE_LENGTH = 6
+
+        const val SECOND_IN_MILLIS = 1000.toLong()
+        const val SMS_TIMEOUT = 30 * SECOND_IN_MILLIS
     }
 
     fun updateCode(newCode: String) {
@@ -36,7 +55,24 @@ class EnterCodeViewModel(
     }
 
 
+    private fun startTimer() {
+        // Reset timer
+        _timeLeftInMillis.value = SMS_TIMEOUT
+
+        val timer = object : CountDownTimer(SMS_TIMEOUT, SECOND_IN_MILLIS) {
+            override fun onTick(millisUntilFinished: Long) {
+                _timeLeftInMillis.value = millisUntilFinished
+            }
+
+            override fun onFinish() {}
+        }
+        timer.start()
+    }
+
+
     fun authenticateWithNumber(phoneNumber: String, activity: Activity?) {
+        startTimer()
+
         authRepo.authenticateWithNumber(
             phoneNumber = phoneNumber,
             activity = activity!!,
@@ -54,9 +90,9 @@ class EnterCodeViewModel(
     }
 
     fun submitCode() {
-        viewModelScope.launch {
-            _taskState.value = TaskState.LOADING()
+        _taskState.value = TaskState.LOADING()
 
+        viewModelScope.launch {
             authRepo.submitSMSCode(code.value) { isSuccess ->
                 Timber.d("isSuccess in authRepo.submitSMSCode(code.value) is $isSuccess")
 
@@ -71,8 +107,8 @@ class EnterCodeViewModel(
         }
     }
 
-
     fun resetTaskState() {
         _taskState.value = TaskState.NONE
     }
+
 }
