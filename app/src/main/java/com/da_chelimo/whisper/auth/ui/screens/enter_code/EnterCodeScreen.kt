@@ -1,5 +1,6 @@
 package com.da_chelimo.whisper.auth.ui.screens.enter_code
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -10,11 +11,15 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -36,11 +41,16 @@ import com.da_chelimo.whisper.core.presentation.ui.components.LoadingSpinner
 import com.da_chelimo.whisper.core.presentation.ui.navigateSafely
 import com.da_chelimo.whisper.core.presentation.ui.navigateSafelyAndPopTo
 import com.da_chelimo.whisper.core.presentation.ui.theme.AppTheme
+import com.da_chelimo.whisper.core.presentation.ui.theme.LocalAppColors
 import com.da_chelimo.whisper.core.presentation.ui.theme.Poppins
 import com.da_chelimo.whisper.core.utils.getActivity
 
 @Composable
-fun EnterCodeScreen(navController: NavController, phoneNumberWithCountryCode: String) {
+fun EnterCodeScreen(
+    navController: NavController,
+    phoneNumberWithCountryCode: String,
+    snackbarHostState: SnackbarHostState
+) {
 
     val viewModel = viewModel<EnterCodeViewModel>()
     val code by viewModel.code.collectAsState()
@@ -69,9 +79,12 @@ fun EnterCodeScreen(navController: NavController, phoneNumberWithCountryCode: St
                 viewModel.resetTaskState()
             }
 
-            else -> {
-
+            is TaskState.DONE.ERROR -> {
+                snackbarHostState.showSnackbar("Error occurred")
+                viewModel.resetTaskState()
             }
+
+            else -> {}
         }
     }
 
@@ -98,7 +111,8 @@ fun EnterCodeScreen(navController: NavController, phoneNumberWithCountryCode: St
                 modifier = Modifier
                     .padding(top = 18.dp)
                     .align(Alignment.CenterHorizontally),
-                style = MaterialTheme.typography.titleLarge
+                style = MaterialTheme.typography.titleLarge,
+                color = LocalAppColors.current.plainTextColorOnMainBackground
             )
 
 
@@ -144,8 +158,22 @@ fun EnterCodeScreen(navController: NavController, phoneNumberWithCountryCode: St
 }
 
 
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Preview
 @Composable
 private fun PreviewEnterCodeScreen() = AppTheme {
-    EnterCodeScreen(navController = rememberNavController(), "")
+    val snackbarHostState = remember {
+        SnackbarHostState()
+    }
+    Scaffold(
+        modifier = Modifier.fillMaxSize(),
+        snackbarHost = {
+            SnackbarHost(hostState = snackbarHostState)
+        }
+    ) {
+        EnterCodeScreen(navController = rememberNavController(),
+            phoneNumberWithCountryCode = "",
+            snackbarHostState = snackbarHostState
+        )
+    }
 }

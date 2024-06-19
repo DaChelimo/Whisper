@@ -52,7 +52,7 @@ import com.da_chelimo.whisper.chats.domain.MessageStatus
 import com.da_chelimo.whisper.chats.presentation.utils.toHourAndMinute
 import com.da_chelimo.whisper.core.presentation.ui.theme.AppTheme
 import com.da_chelimo.whisper.core.presentation.ui.theme.Cabin
-import com.da_chelimo.whisper.core.presentation.ui.theme.LightWhite
+import com.da_chelimo.whisper.core.presentation.ui.theme.LocalAppColors
 import com.da_chelimo.whisper.core.presentation.ui.theme.Poppins
 
 
@@ -153,7 +153,7 @@ fun ChatMessage(
             if (showOptionsMenu) 4.dp else 0.dp
         ),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.background
+            containerColor = Color.Transparent
         )
     ) {
         Column(
@@ -291,7 +291,7 @@ fun ChatMessage(
 @Composable
 fun RoundedSingleTick(
     modifier: Modifier = Modifier,
-    color: Color = MaterialTheme.colorScheme.surface
+    color: Color =  LocalAppColors.current.appThemeTextColor//MaterialTheme.colorScheme.surface
 ) {
     Image(
         imageVector = Icons.Default.CheckCircle,
@@ -307,11 +307,11 @@ fun RoundedSingleTick(
 
 @Preview
 @Composable
-private fun PreviewChats() = AppTheme {
+private fun PreviewChats() = AppTheme(darkTheme = true) {
     Column(
         Modifier
             .fillMaxWidth()
-            .background(LightWhite)
+            .background(LocalAppColors.current.lighterMainBackground)
             .padding(vertical = 20.dp)
     ) {
         var chatIDInFocus by remember {

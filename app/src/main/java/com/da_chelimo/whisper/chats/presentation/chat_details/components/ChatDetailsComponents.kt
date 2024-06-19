@@ -18,7 +18,6 @@ import androidx.compose.material.ripple.LocalRippleTheme
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -26,7 +25,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
@@ -42,6 +40,7 @@ import com.da_chelimo.whisper.core.presentation.ui.theme.AppTheme
 import com.da_chelimo.whisper.core.presentation.ui.theme.DarkBlue
 import com.da_chelimo.whisper.core.presentation.ui.theme.DisabledRipple
 import com.da_chelimo.whisper.core.presentation.ui.theme.ErrorRed
+import com.da_chelimo.whisper.core.presentation.ui.theme.LocalAppColors
 import com.da_chelimo.whisper.core.presentation.ui.theme.QuickSand
 
 
@@ -104,7 +103,7 @@ fun ChatDetailAction(
             painter = painterResource(id = actionIcon),
             contentDescription = null,
             modifier = Modifier.size(20.dp),
-            tint = DarkBlue
+            tint = LocalAppColors.current.appThemeTextColor
         )
 
         Text(
@@ -112,7 +111,8 @@ fun ChatDetailAction(
             modifier = Modifier.padding(top = 5.dp),
             fontFamily = QuickSand,
             fontWeight = FontWeight.Medium,
-            fontSize = 14.sp
+            fontSize = 14.sp,
+            color = LocalAppColors.current.plainTextColorOnMainBackground
         )
 
     }
@@ -121,8 +121,11 @@ fun ChatDetailAction(
 
 @Preview
 @Composable
-private fun PreviewChatDetailsActions() = AppTheme {
-    Column(Modifier.fillMaxWidth()) {
+private fun PreviewChatDetailsActions() = AppTheme(darkTheme = true) {
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .background(LocalAppColors.current.mainBackground)) {
         ChatDetailActions(Modifier, {}, {}, {})
     }
 }
@@ -192,7 +195,7 @@ private fun PreviewComingSoonPopup() = AppTheme {
     Column(
         Modifier
             .fillMaxSize()
-            .background(Color.White)
+            .background(LocalAppColors.current.mainBackground)
     ) {
         ComingSoonPopup {
 
@@ -210,8 +213,8 @@ fun RedBorderButton(name: String, modifier: Modifier = Modifier, onOptionSelecte
             .fillMaxWidth(),
         shape = RoundedCornerShape(6.dp),
         colors = ButtonDefaults.buttonColors(
-            containerColor = MaterialTheme.colorScheme.background,
-            contentColor = MaterialTheme.colorScheme.surface
+            containerColor = LocalAppColors.current.mainBackground,
+            contentColor = LocalAppColors.current.appThemeTextColor
         ),
         border = BorderStroke(1.dp, ErrorRed)
     ) {

@@ -6,24 +6,24 @@ import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.da_chelimo.whisper.core.presentation.ui.theme.AppTheme
+import com.da_chelimo.whisper.core.presentation.ui.theme.DarkPreviewMode
+import com.da_chelimo.whisper.core.presentation.ui.theme.LocalAppColors
 
 @Composable
 fun DefaultScreen(
     navController: NavController,
     modifier: Modifier = Modifier,
     appBarText: String? = null,
-    surfaceColor: Color = MaterialTheme.colorScheme.surface,
-    backgroundColor: Color = MaterialTheme.colorScheme.background,
+    surfaceColor: Color = LocalAppColors.current.blueCardColor,
+    backgroundColor: Color = LocalAppColors.current.mainBackground,
     content: @Composable ColumnScope.() -> Unit
 ) {
     DefaultScreen(
@@ -41,8 +41,8 @@ fun DefaultScreen(
 fun DefaultScreen(
     modifier: Modifier = Modifier,
     appBar: @Composable () -> Unit,
-    surfaceColor: Color = MaterialTheme.colorScheme.surface,
-    backgroundColor: Color = MaterialTheme.colorScheme.background,
+    surfaceColor: Color = LocalAppColors.current.blueCardColor,
+    backgroundColor: Color = LocalAppColors.current.mainBackground,
     content: @Composable() (ColumnScope.() -> Unit)
 ) {
     Column(
@@ -69,7 +69,7 @@ fun DefaultScreen(
     }
 }
 
-@Preview
+@DarkPreviewMode
 @Composable
 private fun PreviewDefaultScreen() {
     val navController = rememberNavController()

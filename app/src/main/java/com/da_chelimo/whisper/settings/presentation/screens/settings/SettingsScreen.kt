@@ -9,7 +9,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowLeft
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -19,6 +18,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -38,7 +38,7 @@ import com.da_chelimo.whisper.core.presentation.ui.components.TintedAppBarIcon
 import com.da_chelimo.whisper.core.presentation.ui.navigateSafely
 import com.da_chelimo.whisper.core.presentation.ui.navigateSafelyAndPopTo
 import com.da_chelimo.whisper.core.presentation.ui.theme.AppTheme
-import com.da_chelimo.whisper.core.presentation.ui.theme.LightWhite
+import com.da_chelimo.whisper.core.presentation.ui.theme.LocalAppColors
 import com.da_chelimo.whisper.core.presentation.ui.theme.QuickSand
 import com.da_chelimo.whisper.settings.presentation.components.AreYouSurePopup
 
@@ -53,7 +53,7 @@ fun SettingsScreen(navController: NavController) {
 
     Box(modifier = Modifier.fillMaxSize()) {
         DefaultScreen(
-            backgroundColor = LightWhite,
+            backgroundColor = LocalAppColors.current.lighterMainBackground,
             appBar = {
                 Box(
                     modifier = Modifier
@@ -76,7 +76,7 @@ fun SettingsScreen(navController: NavController) {
                         fontFamily = QuickSand,
                         fontSize = 17.sp,
                         fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.onSurface,
+                        color = Color.White,
                         modifier = Modifier.align(Alignment.Center)
                     )
                 }
@@ -145,8 +145,8 @@ fun SettingsOption(
             .fillMaxWidth(),
         shape = RoundedCornerShape(6.dp),
         colors = ButtonDefaults.buttonColors(
-            containerColor = MaterialTheme.colorScheme.background,
-            contentColor = MaterialTheme.colorScheme.surface
+            containerColor = LocalAppColors.current.mainBackground,
+            contentColor = LocalAppColors.current.appThemeTextColor
         ),
         elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp)
     ) {

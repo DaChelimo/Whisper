@@ -36,6 +36,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.da_chelimo.whisper.core.presentation.ui.theme.AppTheme
+import com.da_chelimo.whisper.core.presentation.ui.theme.LocalAppColors
 
 @Composable
 fun CodeField(
@@ -88,7 +89,7 @@ fun CodeField(
                                 .size(38.dp)
                                 .border(
                                     width = 1.dp,
-                                    color = if (currentChar != null) MaterialTheme.colorScheme.surface else MaterialTheme.colorScheme.surfaceVariant,
+                                    color = if (currentChar != null) LocalAppColors.current.blueCardColor else MaterialTheme.colorScheme.surfaceVariant,
                                     shape = RoundedCornerShape(8.dp),
                                 )
                         ) {
@@ -97,7 +98,8 @@ fun CodeField(
                                     modifier = Modifier.align(Alignment.Center),
                                     text = currentChar.toString(),
                                     textAlign = TextAlign.Center,
-                                    fontSize = 18.sp
+                                    fontSize = 18.sp,
+                                    color = LocalAppColors.current.plainTextColorOnMainBackground
                                 )
                             }
                         }

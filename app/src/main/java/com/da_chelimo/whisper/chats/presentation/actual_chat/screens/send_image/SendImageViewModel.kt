@@ -12,6 +12,9 @@ import com.da_chelimo.whisper.chats.repo.messages.MessagesRepoImpl
 import com.da_chelimo.whisper.core.domain.TaskState
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -31,6 +34,7 @@ class SendImageViewModel(
         _typedMessage.value = newMessage
     }
 
+    @OptIn(DelicateCoroutinesApi::class)
     fun sendMessage(chatID: String, imageUri: String) = viewModelScope.launch {
         if (sendImageState.value is TaskState.LOADING) return@launch
 
@@ -46,7 +50,11 @@ class SendImageViewModel(
             messageType = MessageType.Image
         )
 
-        messagesRepo.sendMessage(chatID, message)
+        GlobalScope.launch {
+            messagesRepo.sendMessage(chatID, message)
+        }
+
+        delay(1000)
         _sendImageState.value = TaskState.DONE.SUCCESS
     }
 

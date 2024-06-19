@@ -40,12 +40,16 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.da_chelimo.compose_ccp.R
 import com.da_chelimo.compose_ccp.model.PickerUtils
+import com.da_chelimo.compose_ccp.theme.DarkBlue
 import com.da_chelimo.compose_ccp.theme.QuickSand
 import com.da_chelimo.compose_countrycodepicker.libs.Country
 
 
 @Composable
 fun CountrySelectCountryDialog(
+    textColor: Color,
+    containerColor: Color,
+    indicatorColor: Color,
     modifier: Modifier = Modifier,
     titleStyle: TextStyle =
         TextStyle.Default.copy(fontSize = 17.sp,
@@ -67,8 +71,8 @@ fun CountrySelectCountryDialog(
                     .clip(RoundedCornerShape(8.dp))
                     .padding(bottom = 4.dp),
                 colors = CardDefaults.cardColors(
-                    containerColor = Color.White,
-                    contentColor = Color.Black
+                    containerColor = containerColor,
+                    contentColor = textColor
                 ),
                 elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
             ) {
@@ -85,14 +89,14 @@ fun CountrySelectCountryDialog(
                         modifier = Modifier.padding(vertical = 12.dp)
                             .fillMaxWidth(),
                         colors = TextFieldDefaults.colors(
-                            focusedContainerColor = MaterialTheme.colorScheme.background,
-                            unfocusedContainerColor = MaterialTheme.colorScheme.background,
-                            focusedTextColor = MaterialTheme.colorScheme.onBackground,
-                            unfocusedTextColor = MaterialTheme.colorScheme.onBackground,
-                            unfocusedPlaceholderColor = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.8f),
-                            focusedPlaceholderColor = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.8f),
-                            unfocusedIndicatorColor = MaterialTheme.colorScheme.surface,
-                            focusedIndicatorColor = MaterialTheme.colorScheme.surface
+                            focusedContainerColor = containerColor,
+                            unfocusedContainerColor = containerColor,
+                            focusedTextColor = textColor,
+                            unfocusedTextColor = textColor,
+                            unfocusedPlaceholderColor = textColor.copy(alpha = 0.7f),
+                            focusedPlaceholderColor = textColor.copy(alpha = 0.7f),
+                            unfocusedIndicatorColor = indicatorColor,
+                            focusedIndicatorColor = indicatorColor
                         ),
                         textStyle = TextStyle.Default.copy(fontFamily = QuickSand, fontSize = 14.sp, fontWeight = FontWeight.Medium),
                         keyboardOptions = KeyboardOptions.Default.copy(capitalization = KeyboardCapitalization.Words),
@@ -101,7 +105,7 @@ fun CountrySelectCountryDialog(
                                 text = stringResource(R.string.search_country_name),
                                 fontSize = 14.sp,
                                 fontFamily = QuickSand,
-                                color = Color.Black.copy(alpha = 0.8f)
+                                color = textColor.copy(alpha = 0.7f)
                             )
                         }
                     )
@@ -130,6 +134,7 @@ fun CountrySelectCountryDialog(
                                     fontSize = 15.sp,
                                     fontFamily = QuickSand,
                                     fontWeight = FontWeight.Medium,
+                                    color = textColor,
                                     modifier = Modifier
                                         .padding(start = 12.dp)
                                         .weight(1f)
@@ -139,6 +144,7 @@ fun CountrySelectCountryDialog(
                                     text = country.phoneNoCode,
                                     fontSize = 15.sp,
                                     fontFamily = QuickSand,
+                                    color = textColor,
                                     fontWeight = FontWeight.Medium,
                                     modifier = Modifier.padding(end = 12.dp)
                                 )
@@ -155,7 +161,11 @@ fun CountrySelectCountryDialog(
 @Composable
 private fun PreviewCountrySelectCountryDialog() {
     Column(Modifier.fillMaxSize()) {
-        CountrySelectCountryDialog {
+        CountrySelectCountryDialog(
+            textColor = MaterialTheme.colorScheme.onBackground,
+            containerColor = MaterialTheme.colorScheme.background,
+            indicatorColor = DarkBlue
+        ) {
 
         }
     }

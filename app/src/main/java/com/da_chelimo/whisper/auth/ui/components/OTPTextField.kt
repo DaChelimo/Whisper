@@ -35,6 +35,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.da_chelimo.whisper.core.presentation.ui.theme.AppTheme
 import com.da_chelimo.whisper.core.presentation.ui.theme.Cabin
+import com.da_chelimo.whisper.core.presentation.ui.theme.LocalAppColors
 
 @Composable
 fun OTPTextField(
@@ -101,7 +102,7 @@ fun OTPDigit(char: String?, isFocused: Boolean, modifier: Modifier = Modifier) {
                 BorderStroke(
                     if (isFocused) 2.dp else 1.dp,
                     if (isFocused)
-                        MaterialTheme.colorScheme.surface
+                        LocalAppColors.current.blueCardColor
                     else MaterialTheme.colorScheme.surface.copy(alpha = 0.6f)
                 ),
                 RoundedCornerShape(10.dp)
@@ -113,7 +114,8 @@ fun OTPDigit(char: String?, isFocused: Boolean, modifier: Modifier = Modifier) {
                 text = char,
                 modifier = Modifier.align(Alignment.Center),
                 fontFamily = Cabin,
-                fontWeight = FontWeight.SemiBold
+                fontWeight = FontWeight.SemiBold,
+                color = LocalAppColors.current.plainTextColorOnMainBackground
             )
         }
     }

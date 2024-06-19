@@ -5,6 +5,7 @@ package com.da_chelimo.whisper.chats.presentation.actual_chat.screens.send_image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -79,8 +80,10 @@ fun SendImageScreen(navController: NavController, chatID: String, imageUri: Stri
                 modifier = Modifier
                     .padding(vertical = 12.dp)
                     .weight(1f)
+                    .fillMaxWidth()
+                    .padding(horizontal = 4.dp)
                     .clip(RoundedCornerShape(16.dp)),
-                contentScale = ContentScale.Inside,
+                contentScale = ContentScale.FillWidth,
                 requestBuilderTransform = {
                     it.diskCacheStrategy(DiskCacheStrategy.AUTOMATIC)
                 }

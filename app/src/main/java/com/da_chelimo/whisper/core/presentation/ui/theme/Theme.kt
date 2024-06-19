@@ -1,6 +1,9 @@
 package com.da_chelimo.whisper.core.presentation.ui.theme
 
+import android.content.res.Configuration
 import android.os.Build
+import android.view.View
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material.ripple.LocalRippleTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
@@ -14,14 +17,18 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.view.WindowCompat
 import com.da_chelimo.whisper.core.utils.getActivity
 
 private val DarkColorScheme = darkColorScheme(
     primary = DarkBlack,
     secondary = LightBlack,
-    surface = LightBlack,
     background = DarkBlack,
+
+    surface = DarkBlue,
+    surfaceDim = DarkBlue,
+    tertiary = DarkBlue,
 
     onPrimary = Color.White,
     onSecondary = Color.White,
@@ -32,11 +39,13 @@ private val DarkColorScheme = darkColorScheme(
 private val LightColorScheme = lightColorScheme(
     primary = Color.White,
     secondary = Color.White,
-    tertiary = Color.White,
     background = Color.White,
+    surfaceVariant = DarkBlue.copy(0.6f),
+
+
     surface = DarkBlue,
     surfaceDim = DarkerBlue,
-    surfaceVariant = DarkBlue.copy(0.6f),
+    tertiary = DarkBlue,
 
     onPrimary = DarkBlack,
     onSecondary = DarkBlack,
@@ -44,11 +53,14 @@ private val LightColorScheme = lightColorScheme(
     onBackground = DarkBlack
 )
 
+
+
+
 @Composable
 fun AppTheme(
-    darkTheme: Boolean = false, // TODO : Modify for dark mode too : isSystemInDarkTheme(),
+    darkTheme: Boolean = isSystemInDarkTheme(),
     // Dynamic color is available on Android 12+
-    dynamicColor: Boolean = false, // true
+    dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
     val colorScheme = when {
@@ -77,9 +89,31 @@ fun AppTheme(
         colorScheme = colorScheme,
         typography = Typography,
         content = {
-            CompositionLocalProvider(LocalRippleTheme provides AppRipple) {
+            CompositionLocalProvider(
+                LocalRippleTheme provides AppRipple,
+                LocalAppColors provides if (darkTheme) DarkAppColors else LightAppColors
+            ) {
                 content()
             }
         }
     )
 }
+
+data class StatusBars(val barColor: Color, val useDarkIcons: Boolean)
+
+fun changeStatusBarColor(view: View, barColor: Color?, isDarkIcons: Boolean?) {
+    val window = view.context.getActivity()?.window ?: return
+
+    if (barColor != null && isDarkIcons != null) {
+        window.statusBarColor = barColor.toArgb()
+        WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = isDarkIcons
+    }
+}
+
+
+@Preview(uiMode = Configuration.UI_MODE_NIGHT_NO)
+annotation class LightPreviewMode
+
+@Preview(uiMode = Configuration.UI_MODE_NIGHT_YES)
+annotation class DarkPreviewMode
+

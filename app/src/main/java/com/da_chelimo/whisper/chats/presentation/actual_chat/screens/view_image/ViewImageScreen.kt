@@ -13,13 +13,14 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -31,6 +32,7 @@ import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.da_chelimo.whisper.R
+import com.da_chelimo.whisper.core.presentation.ui.theme.LocalAppColors
 
 @Composable
 fun ViewImageScreen(
@@ -43,25 +45,35 @@ fun ViewImageScreen(
     Column(
         Modifier
             .fillMaxSize()
-            .background(Color.White)
+            .background(LocalAppColors.current.mainBackground)
     ) {
-        Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxWidth()) {
-            IconButton(onClick = { navController.popBackStack() }) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Default.KeyboardArrowLeft,
-                    contentDescription = stringResource(id = R.string.back_button),
-                    modifier = Modifier
-                        .size(32.dp)
-                )
-            }
+        Card(
+            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+            shape = RoundedCornerShape(0.dp, 0.dp, 8.dp, 8.dp),
+            modifier = Modifier.fillMaxWidth(),
+            colors = CardDefaults.cardColors(containerColor = LocalAppColors.current.mainBackground)
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 2.dp),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                IconButton(onClick = { navController.popBackStack() }) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Default.KeyboardArrowLeft,
+                        contentDescription = stringResource(id = R.string.back_button),
+                        modifier = Modifier.size(32.dp)
+                    )
+                }
 
-            IconButton(onClick = { viewModel.downloadImage(imageUrl, context) }) {
-                Icon(
-                    painter = painterResource(id = R.drawable.download),
-                    contentDescription = stringResource(R.string.download),
-                    modifier = Modifier
-                        .size(20.dp)
-                )
+                IconButton(onClick = { viewModel.downloadImage(imageUrl, context) }) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.download),
+                        contentDescription = stringResource(R.string.download),
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
             }
         }
 
@@ -70,6 +82,7 @@ fun ViewImageScreen(
                 .fillMaxWidth()
                 .weight(1f)
                 .padding(horizontal = 12.dp)
+                .padding(top = 8.dp)
                 .padding(bottom = 8.dp)
                 .clip(RoundedCornerShape(16.dp))
                 .align(Alignment.CenterHorizontally)

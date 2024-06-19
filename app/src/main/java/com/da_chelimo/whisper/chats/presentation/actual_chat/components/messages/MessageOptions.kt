@@ -1,7 +1,6 @@
 package com.da_chelimo.whisper.chats.presentation.actual_chat.components.messages
 
 import androidx.annotation.DrawableRes
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -25,8 +24,8 @@ import androidx.compose.ui.unit.sp
 import com.da_chelimo.whisper.R
 import com.da_chelimo.whisper.chats.domain.Message
 import com.da_chelimo.whisper.chats.presentation.utils.toDayMonthAndTime
-import com.da_chelimo.whisper.core.presentation.ui.theme.DarkBlue
 import com.da_chelimo.whisper.core.presentation.ui.theme.ErrorRed
+import com.da_chelimo.whisper.core.presentation.ui.theme.LocalAppColors
 import com.da_chelimo.whisper.core.presentation.ui.theme.QuickSand
 
 
@@ -40,13 +39,13 @@ fun MessageOptions(
 ) {
     Card(
         modifier = modifier
-            .background(Color.White)
             .fillMaxWidth(0.5f)
             .clickable { }
             .padding(vertical = 2.dp),
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.background
+            containerColor = MaterialTheme.colorScheme.background,
+            contentColor = LocalAppColors.current.appThemeTextColor
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
     ) {
@@ -94,7 +93,7 @@ fun MessageOption(
     @DrawableRes icon: Int,
     name: String,
     modifier: Modifier = Modifier,
-    tint: Color = DarkBlue,
+    tint: Color = LocalAppColors.current.appThemeTextColor,
     onOptionSelected: () -> Unit
 ) {
     Row(

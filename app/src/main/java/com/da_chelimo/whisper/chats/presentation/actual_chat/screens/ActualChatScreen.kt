@@ -7,6 +7,7 @@ import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -19,7 +20,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -57,18 +57,25 @@ import com.da_chelimo.whisper.core.presentation.ui.ViewImage
 import com.da_chelimo.whisper.core.presentation.ui.navigateSafely
 import com.da_chelimo.whisper.core.presentation.ui.theme.AppTheme
 import com.da_chelimo.whisper.core.presentation.ui.theme.ErrorRed
+import com.da_chelimo.whisper.core.presentation.ui.theme.LocalAppColors
 import com.da_chelimo.whisper.core.presentation.ui.theme.QuickSand
+import com.da_chelimo.whisper.core.presentation.ui.theme.StatusBars
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import org.koin.androidx.compose.koinViewModel
 import timber.log.Timber
 
+/**
+ *
+ * @param updateStatusBar - Color, Color is Bar Color and useDarkIcons
+ */
 @Composable
 fun ActualChatScreen(
     navController: NavController,
     viewModel: ActualChatViewModel = koinViewModel(),
     chatID: String? = null,
-    newContact: String? = null
+    newContact: String? = null,
+    updateStatusBar: (StatusBars) -> Unit
 ) {
     val clipboardManager = LocalClipboardManager.current
     val composeMessage by viewModel.textMessage.collectAsState()
@@ -87,6 +94,14 @@ fun ActualChatScreen(
     }
 
 
+    val appColors = LocalAppColors.current
+    val isDarkIcons = !isSystemInDarkTheme()
+
+    // Reset the status bar color to the background color
+    LaunchedEffect(key1 = Unit) {
+        updateStatusBar(StatusBars(appColors.mainBackground, isDarkIcons))
+    }
+
     LaunchedEffect(key1 = Unit) {
         viewModel.loadChat(chatID)
         viewModel.loadOtherUser(chatID, newContact)
@@ -104,7 +119,7 @@ fun ActualChatScreen(
         Column(
             Modifier
                 .fillMaxSize()
-                .background(MaterialTheme.colorScheme.surface)
+                .background(LocalAppColors.current.mainBackground)
                 .imePadding()
         ) {
             val bottomRoundedShape = RoundedCornerShape(
@@ -119,7 +134,7 @@ fun ActualChatScreen(
                     .weight(1f)
                     .fillMaxWidth()
                     .clip(bottomRoundedShape)
-                    .background(MaterialTheme.colorScheme.background)
+                    .background(LocalAppColors.current.lighterMainBackground)
                     .padding(bottom = 6.dp)
             ) {
 
@@ -298,6 +313,6 @@ private fun PreviewActualChatScreen() = AppTheme {
             SnackbarHost(hostState = snackbarHostState)
         }
     ) {
-        ActualChatScreen(rememberNavController())
+        ActualChatScreen(rememberNavController()) { }
     }
 }

@@ -34,9 +34,10 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.da_chelimo.compose_ccp.theme.DarkBlue
 import com.da_chelimo.whisper.R
 import com.da_chelimo.whisper.core.presentation.ui.theme.AppTheme
-import com.da_chelimo.whisper.core.presentation.ui.theme.LightBlack
+import com.da_chelimo.whisper.core.presentation.ui.theme.LocalAppColors
 import com.da_chelimo.whisper.core.presentation.ui.theme.QuickSand
 import timber.log.Timber
 
@@ -55,7 +56,7 @@ fun TypeMessageBar(
             .fillMaxWidth()
             .padding(horizontal = 8.dp)
             .clip(RoundedCornerShape(16.dp))
-            .background(MaterialTheme.colorScheme.surfaceDim),
+            .background(DarkBlue),
         verticalAlignment = Alignment.CenterVertically
     ) {
         TextField(
@@ -72,14 +73,14 @@ fun TypeMessageBar(
             colors = TextFieldDefaults.colors(
                 cursorColor = Color.White,
                 selectionColors = TextSelectionColors(
-                    LightBlack,
-                    MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
+                    handleColor = LocalAppColors.current.appThemeTextColor,
+                    backgroundColor = LocalAppColors.current.selectionColor
                 ),
                 focusedIndicatorColor = Color.Transparent,
                 unfocusedIndicatorColor = Color.Transparent,
 
-                unfocusedContainerColor = MaterialTheme.colorScheme.surfaceDim,
-                focusedContainerColor = MaterialTheme.colorScheme.surfaceDim
+                unfocusedContainerColor = DarkBlue,
+                focusedContainerColor = DarkBlue
             ),
             keyboardActions = KeyboardActions(
                 onDone = { Timber.d("OnDone called") }
@@ -90,10 +91,10 @@ fun TypeMessageBar(
         if (openMediaSelector != null) {
             IconButton(onClick = { openMediaSelector() }) {
                 Icon(
-                    painter = painterResource(id = R.drawable.open_media),
+                    painter = painterResource(id = R.drawable.attach_file),
                     contentDescription = stringResource(R.string.open_media),
                     modifier = Modifier
-                        .size(30.dp)
+                        .size(28.dp)
                         .padding(2.dp),
                     tint = MaterialTheme.colorScheme.onSurface
                 )

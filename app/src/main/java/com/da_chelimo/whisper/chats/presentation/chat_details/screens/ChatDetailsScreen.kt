@@ -34,10 +34,15 @@ import com.da_chelimo.whisper.chats.presentation.view_profile_pic.ControlBlurOnS
 import com.da_chelimo.whisper.core.presentation.ui.components.DefaultScreen
 import com.da_chelimo.whisper.core.presentation.ui.components.UserIcon
 import com.da_chelimo.whisper.core.presentation.ui.theme.AppTheme
+import com.da_chelimo.whisper.core.presentation.ui.theme.LocalAppColors
 import com.da_chelimo.whisper.core.presentation.ui.theme.QuickSand
+import com.da_chelimo.whisper.core.presentation.ui.theme.StatusBars
 
 @Composable
-fun ChatDetailsScreen(chatID: String, otherUserID: String, navController: NavController) {
+fun ChatDetailsScreen(
+    chatID: String, otherUserID: String, navController: NavController,
+    updateStatusBar: (StatusBars) -> Unit
+) {
     val viewModel = viewModel<ChatDetailsViewModel>()
 
     val otherUser by viewModel.otherUser.collectAsState(initial = null)
@@ -48,10 +53,19 @@ fun ChatDetailsScreen(chatID: String, otherUserID: String, navController: NavCon
         mutableStateOf(false)
     }
 
+
+    val appColors = LocalAppColors.current
+
+    // Reset the status bar color to the background color
+    LaunchedEffect(key1 = Unit) {
+        updateStatusBar(StatusBars(appColors.blueCardColor, false))
+    }
+
+
+
     LaunchedEffect(key1 = Unit) {
         viewModel.loadOtherUser(otherUserID)
     }
-
 
     ControlBlurOnScreen(
         isPictureOnFullScreen = isProfilePicFullScreen,
@@ -72,7 +86,7 @@ fun ChatDetailsScreen(chatID: String, otherUserID: String, navController: NavCon
                             iconSize = 120.dp,
                             borderIfUsingDefaultPic = 2.dp,
                             onClick = {
-                            isProfilePicFullScreen = true
+                                isProfilePicFullScreen = true
                             }
                         )
 
@@ -152,5 +166,5 @@ fun ChatDetailsScreen(chatID: String, otherUserID: String, navController: NavCon
 @Preview
 @Composable
 private fun PreviewChatDetailsScreen() = AppTheme {
-    ChatDetailsScreen("", "lCfSU1UMWOh2LFsDA1bpEE8nGSx2", navController = rememberNavController())
+    ChatDetailsScreen("", "lCfSU1UMWOh2LFsDA1bpEE8nGSx2", navController = rememberNavController()) {}
 }

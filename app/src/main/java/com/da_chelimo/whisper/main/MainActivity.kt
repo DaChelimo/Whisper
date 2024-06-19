@@ -12,15 +12,18 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
-import com.da_chelimo.whisper.auth.ui.screens.WelcomeScreen
+import com.da_chelimo.whisper.welcome.WelcomeScreen
 import com.da_chelimo.whisper.auth.ui.screens.create_profile.CreateProfileScreen
 import com.da_chelimo.whisper.auth.ui.screens.enter_code.EnterCodeScreen
 import com.da_chelimo.whisper.auth.ui.screens.enter_number.EnterNumberScreen
@@ -44,6 +47,7 @@ import com.da_chelimo.whisper.core.presentation.ui.ViewImage
 import com.da_chelimo.whisper.core.presentation.ui.Welcome
 import com.da_chelimo.whisper.core.presentation.ui.navigateSafely
 import com.da_chelimo.whisper.core.presentation.ui.theme.AppTheme
+import com.da_chelimo.whisper.core.presentation.ui.theme.changeStatusBarColor
 import com.da_chelimo.whisper.settings.presentation.screens.profile.ProfileScreen
 import com.da_chelimo.whisper.settings.presentation.screens.settings.SettingsScreen
 import com.google.firebase.auth.ktx.auth
@@ -63,6 +67,13 @@ class MainActivity : ComponentActivity() {
 
                 val coroutineScope = rememberCoroutineScope()
                 val navController = rememberNavController()
+
+                // Controls the status bars
+                val statusBars by viewModel.statusBars.collectAsState()
+                val view = LocalView.current
+                LaunchedEffect(key1 = statusBars) {
+                    changeStatusBarColor(view, statusBars?.barColor, statusBars?.useDarkIcons)
+                }
 
 
                 LaunchedEffect(key1 = Unit) {
@@ -89,11 +100,11 @@ class MainActivity : ComponentActivity() {
                         ) {
 
                             composable<Welcome> {
-                                WelcomeScreen(navController = navController)
+                                WelcomeScreen(navController = navController, viewModel::updateStatusBar)
                             }
 
                             composable<EnterNumber> {
-                                EnterNumberScreen(navController)
+                                EnterNumberScreen(navController, viewModel::updateStatusBar)
                             }
 
                             composable<EnterCode> {
@@ -101,7 +112,8 @@ class MainActivity : ComponentActivity() {
 
                                 EnterCodeScreen(
                                     navController = navController,
-                                    phoneNumberWithCountryCode = args.phoneNumberWithCountryCode
+                                    phoneNumberWithCountryCode = args.phoneNumberWithCountryCode,
+                                    snackbarHostState = snackbarHostState
                                 )
                             }
 
@@ -136,7 +148,8 @@ class MainActivity : ComponentActivity() {
                                 AllChatsScreen(
                                     navController = navController,
                                     snackbarHostState = snackbarHostState,
-                                    coroutineScope = coroutineScope
+                                    coroutineScope = coroutineScope,
+                                    updateStatusBar = viewModel::updateStatusBar
                                 )
                             }
 
@@ -146,7 +159,8 @@ class MainActivity : ComponentActivity() {
                                 ActualChatScreen(
                                     navController = navController,
                                     chatID = args.chatId,
-                                    newContact = args.newContact
+                                    newContact = args.newContact,
+                                    updateStatusBar = viewModel::updateStatusBar
                                 )
                             }
 
@@ -157,7 +171,8 @@ class MainActivity : ComponentActivity() {
                                 ChatDetailsScreen(
                                     chatID = args.chatId,
                                     otherUserID = args.otherUserId,
-                                    navController = navController
+                                    navController = navController,
+                                    updateStatusBar = viewModel::updateStatusBar
                                 )
                             }
 
