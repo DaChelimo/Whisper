@@ -14,7 +14,7 @@ class App: Application() {
 
     /**
      * TODO
-     * 1) Dark mode support
+     * 
      */
 
     override fun onCreate() {

@@ -202,7 +202,7 @@ fun ChatMessage(
                     Text(
                         text = message.message,
                         fontFamily = Cabin,
-                        fontSize = 14.sp,
+                        fontSize = (14.25).sp,
                         lineHeight = 20.sp,
                         modifier = Modifier
                             .padding(horizontal = 12.dp)

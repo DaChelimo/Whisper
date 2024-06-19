@@ -67,4 +67,7 @@
     <string name="yes">Yes</string>
     <string name="download">Download</string>
     <string name="none_of_your_contacts_is_on_whisper">None of your contacts is on Whisper</string>
+    <string name="message_placeholder">Message...</string>
+    <string name="resend_code">Resend Code</string>
+    <string name="resend_code_in">Resend code in %1$s</string>
 </resources>

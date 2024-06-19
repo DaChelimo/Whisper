@@ -3,6 +3,8 @@ package com.da_chelimo.whisper.auth.ui.screens.enter_code
 import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -24,6 +26,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -43,6 +46,7 @@ import com.da_chelimo.whisper.core.presentation.ui.navigateSafelyAndPopTo
 import com.da_chelimo.whisper.core.presentation.ui.theme.AppTheme
 import com.da_chelimo.whisper.core.presentation.ui.theme.LocalAppColors
 import com.da_chelimo.whisper.core.presentation.ui.theme.Poppins
+import com.da_chelimo.whisper.core.presentation.ui.theme.QuickSand
 import com.da_chelimo.whisper.core.utils.getActivity
 
 @Composable
@@ -55,6 +59,9 @@ fun EnterCodeScreen(
     val viewModel = viewModel<EnterCodeViewModel>()
     val code by viewModel.code.collectAsState()
     val taskState by viewModel.taskState.collectAsState()
+
+    val timeLeftInMillis by viewModel.timeLeftInMillis.collectAsState()
+    val formattedTimeLeft by viewModel.formattedTimeLeft.collectAsState()
 
     val activity = LocalContext.current.getActivity()
 
@@ -94,18 +101,7 @@ fun EnterCodeScreen(
             .padding(horizontal = 8.dp, vertical = 8.dp)
             .imePadding()
     ) {
-
-        if (taskState is TaskState.LOADING) {
-
-            Column(
-                Modifier.fillMaxSize(),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                LoadingSpinner()
-            }
-
-        } else {
+        if (taskState is TaskState.NONE) {
             Text(
                 text = stringResource(R.string.enter_code),
                 modifier = Modifier
@@ -120,13 +116,43 @@ fun EnterCodeScreen(
                 value = code,
                 length = EnterCodeViewModel.CODE_LENGTH,
                 modifier = Modifier
-                    .padding(top = 16.dp)
+                    .padding(top = 24.dp)
                     .fillMaxWidth()
                     .align(Alignment.CenterHorizontally),
                 spacedBy = 10.dp
             ) { newCode ->
                 viewModel.updateCode(newCode)
             }
+
+            Row(
+                modifier = Modifier
+                    .padding(top = 16.dp)
+                    .fillMaxWidth(),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(stringResource(R.string.resend_code_in, formattedTimeLeft), fontSize = 14.sp)
+
+                Button(
+                    onClick = {
+                        viewModel.authenticateWithNumber(phoneNumberWithCountryCode, activity)
+                    },
+                    contentPadding = PaddingValues(horizontal = 10.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        contentColor = LocalAppColors.current.appThemeTextColor,
+                        disabledContentColor = LocalAppColors.current.appThemeTextColor.copy(alpha = 0.65f)
+                    ),
+                    enabled = timeLeftInMillis < EnterCodeViewModel.SECOND_IN_MILLIS
+                ) {
+                    Text(
+                        stringResource(R.string.resend_code),
+                        fontFamily = QuickSand,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 15.sp
+                    )
+                }
+            }
+
 
             Spacer(modifier = Modifier.weight(1f))
 
@@ -143,7 +169,7 @@ fun EnterCodeScreen(
                     disabledContentColor = MaterialTheme.colorScheme.onSurface.copy(0.75f),
                     disabledContainerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.75f)
                 ),
-                enabled = code.length == EnterCodeViewModel.CODE_LENGTH && taskState is TaskState.NONE,
+                enabled = code.length == EnterCodeViewModel.CODE_LENGTH,
                 shape = MaterialTheme.shapes.medium
             ) {
                 Text(
@@ -152,6 +178,15 @@ fun EnterCodeScreen(
                     fontSize = 16.sp,
                     modifier = Modifier.padding(vertical = 6.dp)
                 )
+            }
+        }
+        else if (taskState is TaskState.LOADING || taskState is TaskState.DONE.SUCCESS) {
+            Column(
+                Modifier.fillMaxSize(),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                LoadingSpinner()
             }
         }
     }
@@ -171,7 +206,8 @@ private fun PreviewEnterCodeScreen() = AppTheme {
             SnackbarHost(hostState = snackbarHostState)
         }
     ) {
-        EnterCodeScreen(navController = rememberNavController(),
+        EnterCodeScreen(
+            navController = rememberNavController(),
             phoneNumberWithCountryCode = "",
             snackbarHostState = snackbarHostState
         )

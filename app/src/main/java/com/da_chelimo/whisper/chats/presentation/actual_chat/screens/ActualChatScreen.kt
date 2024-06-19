@@ -285,7 +285,7 @@ fun ActualChatScreen(
                     viewModel.updateOpenMediaPicker(true)
                 },
                 modifier = Modifier
-                    .padding(vertical = 16.dp)
+                    .padding(vertical = 8.dp)
                     .focusRequester(focusRequester)
             )
         }

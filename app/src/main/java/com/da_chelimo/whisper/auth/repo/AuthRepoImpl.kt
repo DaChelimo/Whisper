@@ -57,6 +57,11 @@ class AuthRepoImpl : AuthRepo {
             .setTimeout(30L, TimeUnit.SECONDS)
             .setActivity(activity)
             .setCallbacks(getVerificationCallbacks(onVerificationDone))
+            .apply {
+                resendToken?.let {
+                    setForceResendingToken(it)
+                }
+            }
             .build()
 
         PhoneAuthProvider.verifyPhoneNumber(phoneAuthOptions)

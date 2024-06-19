@@ -74,20 +74,24 @@ fun SendImageScreen(navController: NavController, chatID: String, imageUri: Stri
             }
 
 
-            GlideImage(
-                model = imageUri,
-                contentDescription = null,
+            Column(
                 modifier = Modifier
                     .padding(vertical = 12.dp)
                     .weight(1f)
                     .fillMaxWidth()
                     .padding(horizontal = 4.dp)
-                    .clip(RoundedCornerShape(16.dp)),
-                contentScale = ContentScale.FillWidth,
-                requestBuilderTransform = {
-                    it.diskCacheStrategy(DiskCacheStrategy.AUTOMATIC)
-                }
-            )
+                    .clip(RoundedCornerShape(16.dp))
+            ) {
+                GlideImage(
+                    model = imageUri,
+                    contentDescription = null,
+                    modifier = Modifier.fillMaxWidth(),
+                    contentScale = ContentScale.FillWidth,
+                    requestBuilderTransform = {
+                        it.diskCacheStrategy(DiskCacheStrategy.AUTOMATIC)
+                    }
+                )
+            }
 
             TypeMessageBar(
                 modifier = Modifier,
