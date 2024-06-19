@@ -10,7 +10,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -21,7 +20,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.Menu
-import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -81,16 +79,15 @@ fun AllChatsScreen(
 
     DefaultScreen(
         appBar = {
-            Row(
-                horizontalArrangement = Arrangement.SpaceBetween,
+            Box(
                 modifier = Modifier
                     .padding(vertical = 12.dp)
                     .padding(horizontal = 12.dp)
-                    .fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
+                    .fillMaxWidth()
             ) {
 
                 TintedAppBarIcon(
+                    modifier = Modifier.align(Alignment.CenterStart),
                     imageVector = Icons.Rounded.Menu,
                     contentDescription = stringResource(R.string.open_menu),
                     onClick = {
@@ -100,21 +97,24 @@ fun AllChatsScreen(
                     }
                 )
 
+
                 Text(
                     text = stringResource(id = R.string.messages),
                     fontFamily = QuickSand,
                     fontSize = 17.sp,
                     fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onSurface
+                    color = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.align(Alignment.Center)
                 )
 
-                TintedAppBarIcon(
-                    imageVector = Icons.Rounded.Search,
-                    contentDescription = stringResource(R.string.search),
-                    onClick = {
-
-                    }
-                )
+//                TODO: Implement search functionality
+//                TintedAppBarIcon(
+//                    imageVector = Icons.Rounded.Search,
+//                    contentDescription = stringResource(R.string.search),
+//                    onClick = {
+//
+//                    }
+//                )
             }
         },
         backgroundColor = LightWhite
@@ -147,7 +147,10 @@ fun AllChatsScreen(
                             fontFamily = QuickSand,
                             fontSize = 18.sp,
                             color = MaterialTheme.colorScheme.onBackground.copy(0.85f),
-                            modifier = Modifier.fillMaxWidth(0.7f).padding(top = 24.dp).align(Alignment.CenterHorizontally),
+                            modifier = Modifier
+                                .fillMaxWidth(0.7f)
+                                .padding(top = 24.dp)
+                                .align(Alignment.CenterHorizontally),
                             textAlign = TextAlign.Center,
                             lineHeight = 18.sp
                         )
