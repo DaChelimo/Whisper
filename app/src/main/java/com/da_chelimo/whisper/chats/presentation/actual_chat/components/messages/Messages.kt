@@ -8,7 +8,9 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
@@ -25,6 +27,7 @@ import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardColors
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -39,21 +42,217 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
+import com.bumptech.glide.integration.compose.placeholder
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.da_chelimo.whisper.R
 import com.da_chelimo.whisper.chats.domain.Message
 import com.da_chelimo.whisper.chats.domain.MessageStatus
+import com.da_chelimo.whisper.chats.domain.MessageType
+import com.da_chelimo.whisper.chats.domain.toMessageType
 import com.da_chelimo.whisper.chats.presentation.utils.toHourAndMinute
 import com.da_chelimo.whisper.core.presentation.ui.theme.AppTheme
 import com.da_chelimo.whisper.core.presentation.ui.theme.Cabin
 import com.da_chelimo.whisper.core.presentation.ui.theme.LocalAppColors
 import com.da_chelimo.whisper.core.presentation.ui.theme.Poppins
+import com.da_chelimo.whisper.core.utils.formatDurationInMillis
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.ktx.Firebase
+
+
+@Composable
+fun TextOrImageMessage(
+    message: Message,
+    messageIDInFocus: String?,
+    toggleOptionsMenuVisibility: (String?) -> Unit,
+    copyToClipboard: (String) -> Unit,
+    openImage: (String) -> Unit,
+    editMessage: (String) -> Unit,
+    unSendMessage: (String) -> Unit,
+
+    modifier: Modifier = Modifier,
+    isMyChat: Boolean = message.senderID == Firebase.auth.uid, // Doing this allows Compose preview to work
+) {
+    val messageType = message.messageType.toMessageType()
+
+    val content: @Composable ColumnScope.() -> Unit = {
+        val imagePresent = messageType is MessageType.Image
+
+        if (imagePresent) {
+            GlideImage(
+                model = (messageType as MessageType.Image).imageUrl,
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                loading = placeholder {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .aspectRatio((4 / 3).toFloat()),
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        CircularProgressIndicator(
+                            Modifier.size(36.dp),
+                            color = if (isMyChat) Color.White else LocalAppColors.current.appThemeTextColor
+                        )
+                    }
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 4.dp, horizontal = 4.dp)
+                    .clip(RoundedCornerShape(8.dp))
+                    .aspectRatio((4 / 3).toFloat())
+                    .clickable {
+                        openImage(messageType.imageUrl)
+                    },
+                requestBuilderTransform = {
+                    it.diskCacheStrategy(DiskCacheStrategy.AUTOMATIC)
+                }
+            )
+        }
+
+        if (messageType.message.isNotBlank()) {
+            Text(
+                text = messageType.message,
+                fontFamily = Cabin,
+                fontSize = (14.25).sp,
+                lineHeight = 20.sp,
+                modifier = Modifier
+                    .padding(horizontal = 12.dp)
+                    .padding(top = if (imagePresent) 4.dp else 12.dp, bottom = 10.dp)
+                    .align(Alignment.Start)
+            )
+        }
+    }
+
+    MyOrOtherChat(
+        isMyChat = isMyChat,
+        modifier = modifier,
+        message = message,
+        messageIDInFocus = messageIDInFocus,
+        toggleOptionsMenuVisibility = toggleOptionsMenuVisibility,
+        copyToClipboard = copyToClipboard,
+        editMessage = editMessage,
+        unSendMessage = unSendMessage,
+        content = content
+    )
+}
+
+
+@Composable
+fun AudioMessage(
+    message: Message,
+    messageIDInFocus: String?,
+    toggleOptionsMenuVisibility: (String?) -> Unit,
+    unSendMessage: (String) -> Unit,
+    audioUrlBeingPlayed: String?,
+    timeLeftInMillis: String?,
+    isPlaying: Boolean,
+    modifier: Modifier = Modifier,
+    isMyChat: Boolean = message.senderID == Firebase.auth.uid, // Doing this allows Compose preview to work
+
+    onPlayOrPause: () -> Unit,
+    onSeekTo: () -> Unit
+) {
+    val audioType = remember {
+        message.messageType.toMessageType() as MessageType.Audio
+    }
+    val isThisAudioSelected = audioUrlBeingPlayed == audioType.audioUrl
+
+    val content: @Composable ColumnScope.() -> Unit = {
+        Row(
+            modifier = modifier
+                .padding(horizontal = 8.dp)
+                .padding(vertical = 16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            val onSurfaceColor =
+                if (isMyChat) Color.White else LocalAppColors.current.appThemeTextColor
+
+            Image(
+                painter = painterResource(
+                    id = if (isPlaying && isThisAudioSelected) R.drawable.pause else R.drawable.play
+                ),
+                contentDescription = stringResource(if (isPlaying) R.string.pause else R.string.resume),
+                modifier = Modifier
+                    .size(26.dp)
+                    .clickable { onPlayOrPause() },
+                colorFilter = ColorFilter.tint(onSurfaceColor)
+            )
+
+            // TODO: Use onSeekTo() in the slider that we'll put here
+            Spacer(
+                modifier = Modifier
+                    .padding(horizontal = 8.dp)
+                    .weight(1f)
+            )
+
+            Text(
+                text =
+                if (isThisAudioSelected && timeLeftInMillis != null) timeLeftInMillis
+                else audioType.duration.formatDurationInMillis(),
+
+                modifier = Modifier.padding(start = 8.dp),
+                fontSize = 13.sp,
+                color = onSurfaceColor
+            )
+        }
+    }
+
+
+    MyOrOtherChat(
+        isMyChat = isMyChat,
+        message = message,
+        messageIDInFocus = messageIDInFocus,
+        toggleOptionsMenuVisibility = toggleOptionsMenuVisibility,
+        copyToClipboard = { },
+        editMessage = { },
+        unSendMessage = unSendMessage,
+        modifier = modifier,
+        content = content
+    )
+}
+
+
+@Composable
+fun MyOrOtherChat(
+    isMyChat: Boolean,
+    message: Message,
+    messageIDInFocus: String?,
+    toggleOptionsMenuVisibility: (String?) -> Unit,
+    copyToClipboard: (String) -> Unit,
+    editMessage: (String) -> Unit,
+    unSendMessage: (String) -> Unit,
+    modifier: Modifier,
+    content: @Composable ColumnScope.() -> Unit
+) {
+    if (isMyChat) {
+        MyChat(
+            modifier = modifier,
+            message = message,
+            messageIDInFocus = messageIDInFocus,
+            toggleOptionsMenuVisibility = toggleOptionsMenuVisibility,
+            copyToClipboard = copyToClipboard,
+            editMessage = editMessage,
+            unSendMessage = unSendMessage,
+            content = content
+        )
+    } else
+        OtherChat(
+            modifier = modifier,
+            message = message,
+            messageIDInFocus = messageIDInFocus,
+            toggleOptionsMenuVisibility = toggleOptionsMenuVisibility,
+            copyToClipboard = copyToClipboard,
+            content = content
+        )
+}
 
 
 @Composable
@@ -63,15 +262,14 @@ fun MyChat(
     messageIDInFocus: String?,
     toggleOptionsMenuVisibility: (String?) -> Unit,
     copyToClipboard: (String) -> Unit,
-    openImage: (String) -> Unit,
     editMessage: (String) -> Unit,
-    unSendMessage: (String) -> Unit
+    unSendMessage: (String) -> Unit,
+    content: @Composable() (ColumnScope.() -> Unit)
 ) {
     val cornerSize = 10.dp
     val edgeCornerSize = 2.dp
 
     ChatMessage(
-        modifier = modifier,
         chatShape = RoundedCornerShape(
             topStart = cornerSize,
             topEnd = cornerSize,
@@ -86,11 +284,12 @@ fun MyChat(
         message = message,
         showOptionsMenu = messageIDInFocus == message.messageID,
         isMyChat = true,
+        modifier = modifier,
         toggleOptionsMenuVisibility = toggleOptionsMenuVisibility,
         copyToClipboard = copyToClipboard,
-        openImage = openImage,
         editMessage = editMessage,
-        unSendMessage = unSendMessage
+        unSendMessage = unSendMessage,
+        content = content
     )
 }
 
@@ -100,15 +299,14 @@ fun OtherChat(
     modifier: Modifier = Modifier,
     message: Message,
     messageIDInFocus: String?,
-    openImage: (String) -> Unit,
     toggleOptionsMenuVisibility: (String?) -> Unit,
     copyToClipboard: (String) -> Unit,
+    content: @Composable() (ColumnScope.() -> Unit)
 ) {
     val cornerSize = 10.dp
     val edgeCornerSize = 2.dp
 
     ChatMessage(
-        modifier = modifier,
         chatShape = RoundedCornerShape(
             topStart = cornerSize,
             topEnd = cornerSize,
@@ -123,16 +321,17 @@ fun OtherChat(
         message = message,
         showOptionsMenu = messageIDInFocus == message.messageID,
         isMyChat = false,
+        modifier = modifier,
         toggleOptionsMenuVisibility = toggleOptionsMenuVisibility,
-        openImage = openImage,
         copyToClipboard = copyToClipboard,
         editMessage = null,
-        unSendMessage = null
+        unSendMessage = null,
+        content = content
     )
 }
 
 
-@OptIn(ExperimentalFoundationApi::class, ExperimentalGlideComposeApi::class)
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun ChatMessage(
     chatShape: Shape,
@@ -143,10 +342,10 @@ fun ChatMessage(
     isMyChat: Boolean,
     modifier: Modifier = Modifier,
     toggleOptionsMenuVisibility: (String?) -> Unit,
-    openImage: (String) -> Unit,
     copyToClipboard: (String) -> Unit,
     editMessage: ((String) -> Unit)?,
-    unSendMessage: ((String) -> Unit)?
+    unSendMessage: ((String) -> Unit)?,
+    content: @Composable() (ColumnScope.() -> Unit)
 ) {
     Card(
         elevation = CardDefaults.cardElevation(
@@ -178,38 +377,9 @@ fun ChatMessage(
                 elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
                 modifier = Modifier.requiredWidthIn(min = 120.dp, max = 280.dp)
             ) {
-                val imagePresent = message.messageImage != null
-                if (imagePresent) {
-                    GlideImage(
-                        model = message.messageImage,
-                        contentDescription = null,
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 4.dp, horizontal = 4.dp)
-                            .clip(RoundedCornerShape(8.dp))
-                            .aspectRatio((4 / 3).toFloat())
-                            .clickable {
-                                openImage(message.messageImage!!)
-                            },
-                        requestBuilderTransform = {
-                            it.diskCacheStrategy(DiskCacheStrategy.AUTOMATIC)
-                        }
-                    )
-                }
 
-                if (message.message.isNotBlank()) {
-                    Text(
-                        text = message.message,
-                        fontFamily = Cabin,
-                        fontSize = (14.25).sp,
-                        lineHeight = 20.sp,
-                        modifier = Modifier
-                            .padding(horizontal = 12.dp)
-                            .padding(top = if (imagePresent) 4.dp else 12.dp, bottom = 10.dp)
-                            .align(Alignment.Start)
-                    )
-                }
+                content()
+
             }
 
             Row(
@@ -273,7 +443,7 @@ fun ChatMessage(
                         copyToClipboard = copyToClipboard,
                         editMessage = {
                             if (editMessage != null) {
-                                editMessage(message.message)
+                                editMessage(message.messageType.toMessageType().message)
                             }
                         },
                         unSendMessage = unSendMessage
@@ -291,7 +461,7 @@ fun ChatMessage(
 @Composable
 fun RoundedSingleTick(
     modifier: Modifier = Modifier,
-    color: Color =  LocalAppColors.current.appThemeTextColor//MaterialTheme.colorScheme.surface
+    color: Color = LocalAppColors.current.appThemeTextColor//MaterialTheme.colorScheme.surface
 ) {
     Image(
         imageVector = Icons.Default.CheckCircle,
@@ -318,27 +488,78 @@ private fun PreviewChats() = AppTheme(darkTheme = true) {
             mutableStateOf<String?>(null)
         }
 
-        MyChat(
+        TextOrImageMessage(
+            isMyChat = true,
             message = Message.TEST_MY_Message, messageIDInFocus = chatIDInFocus,
             toggleOptionsMenuVisibility = { chatIDInFocus = it },
             copyToClipboard = { },
             unSendMessage = { }, openImage = {}, editMessage = {})
+
         Spacer(modifier = Modifier.height(4.dp))
 
-        OtherChat(message = Message.TEST_MY_Message, messageIDInFocus = chatIDInFocus,
+        TextOrImageMessage(
+            isMyChat = false, message = Message.TEST_MY_Message, messageIDInFocus = chatIDInFocus,
             toggleOptionsMenuVisibility = { chatIDInFocus = it }, openImage = {},
-            copyToClipboard = { })
+            copyToClipboard = { }, editMessage = {}, unSendMessage = {})
 
-        MyChat(message = Message.LONG_TEST_MY_Message, messageIDInFocus = chatIDInFocus,
+
+        var timeLeftInMillis by remember {
+            mutableStateOf("00:12")
+        }
+        var audioUrlBeingPlayed by remember { mutableStateOf("abc") }
+        var isPlaying by remember {
+            mutableStateOf(false)
+        }
+        AudioMessage(
+            isMyChat = true,
+            message = Message.TEST_MY_Message.copy(
+                messageType = MessageType.Audio(30_000, "abc").toFirebaseMap()
+            ),
+            messageIDInFocus = chatIDInFocus,
+            toggleOptionsMenuVisibility = { chatIDInFocus = it },
+            unSendMessage = {},
+            isPlaying = isPlaying,
+            audioUrlBeingPlayed = audioUrlBeingPlayed,
+            onPlayOrPause = { isPlaying = !isPlaying },
+            timeLeftInMillis = timeLeftInMillis,
+            onSeekTo = {}
+        )
+        AudioMessage(
+            isMyChat = false,
+            message = Message.TEST_MY_Message.copy(
+                messageType = MessageType.Audio(30_000, "").toFirebaseMap()
+            ),
+            messageIDInFocus = chatIDInFocus,
+            toggleOptionsMenuVisibility = { chatIDInFocus = it },
+            unSendMessage = {},
+            isPlaying = isPlaying,
+            audioUrlBeingPlayed = audioUrlBeingPlayed,
+            onPlayOrPause = { isPlaying = !isPlaying },
+            timeLeftInMillis = timeLeftInMillis,
+            onSeekTo = {}
+        )
+
+        TextOrImageMessage(
+            isMyChat = true,
+            message = Message.LONG_TEST_MY_Message,
+            messageIDInFocus = chatIDInFocus,
             toggleOptionsMenuVisibility = { chatIDInFocus = it },
             copyToClipboard = { },
-            unSendMessage = { }, openImage = {}, editMessage = { })
+            unSendMessage = { },
+            openImage = {},
+            editMessage = { })
 
         Spacer(modifier = Modifier.height(4.dp))
 
-        OtherChat(message = Message.LONG_TEST_MY_Message, messageIDInFocus = chatIDInFocus,
-            toggleOptionsMenuVisibility = { chatIDInFocus = it }, openImage = {},
-            copyToClipboard = { })
+        TextOrImageMessage(
+            isMyChat = false,
+            message = Message.LONG_TEST_MY_Message,
+            messageIDInFocus = chatIDInFocus,
+            toggleOptionsMenuVisibility = { chatIDInFocus = it },
+            openImage = {},
+            copyToClipboard = { },
+            editMessage = {},
+            unSendMessage = {})
 
     }
 }

@@ -14,7 +14,7 @@ class App: Application() {
 
     /**
      * TODO
-     * 
+     *
      */
 
     override fun onCreate() {

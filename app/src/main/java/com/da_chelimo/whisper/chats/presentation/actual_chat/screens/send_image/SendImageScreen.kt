@@ -98,6 +98,7 @@ fun SendImageScreen(navController: NavController, chatID: String, imageUri: Stri
                 value = typedMessage,
                 onValueChange = { viewModel.updateMessage(it) },
                 openMediaSelector = null,
+                startAudioRecording = null,
                 sendMessage = {
                     viewModel.sendMessage(chatID, imageUri)
                 }

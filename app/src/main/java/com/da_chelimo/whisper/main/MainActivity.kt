@@ -23,7 +23,6 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
-import com.da_chelimo.whisper.welcome.WelcomeScreen
 import com.da_chelimo.whisper.auth.ui.screens.create_profile.CreateProfileScreen
 import com.da_chelimo.whisper.auth.ui.screens.enter_code.EnterCodeScreen
 import com.da_chelimo.whisper.auth.ui.screens.enter_number.EnterNumberScreen
@@ -50,6 +49,7 @@ import com.da_chelimo.whisper.core.presentation.ui.theme.AppTheme
 import com.da_chelimo.whisper.core.presentation.ui.theme.changeStatusBarColor
 import com.da_chelimo.whisper.settings.presentation.screens.profile.ProfileScreen
 import com.da_chelimo.whisper.settings.presentation.screens.settings.SettingsScreen
+import com.da_chelimo.whisper.welcome.WelcomeScreen
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 
@@ -160,6 +160,8 @@ class MainActivity : ComponentActivity() {
                                     navController = navController,
                                     chatID = args.chatId,
                                     newContact = args.newContact,
+                                    coroutineScope = coroutineScope,
+                                    snackbarHostState = snackbarHostState,
                                     updateStatusBar = viewModel::updateStatusBar
                                 )
                             }

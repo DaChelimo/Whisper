@@ -51,6 +51,7 @@ fun TypeMessageBar(
     value: TextFieldValue,
     onValueChange: (TextFieldValue) -> Unit,
     openMediaSelector: (() -> Unit)?,
+    startAudioRecording: (() -> Unit)?,
     sendMessage: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -101,8 +102,22 @@ fun TypeMessageBar(
             }
         )
 
+        // User should only send a vn if there is no attached message
+        if (startAudioRecording != null && value.text.isEmpty()) {
+            IconButton(onClick = { startAudioRecording() }) {
+                Icon(
+                    painter = painterResource(id = R.drawable.mic),
+                    contentDescription = stringResource(R.string.start_recording),
+                    modifier = Modifier
+                        .size(28.dp)
+                        .padding(2.dp),
+                    tint = MaterialTheme.colorScheme.onSurface
+                )
+            }
+        }
+
         if (openMediaSelector != null) {
-            IconButton(onClick = { openMediaSelector() }) {
+            IconButton(onClick = { openMediaSelector() }, modifier = Modifier.size(34.dp)) {
                 Icon(
                     painter = painterResource(id = R.drawable.attach_file),
                     contentDescription = stringResource(R.string.open_media),
@@ -145,7 +160,8 @@ private fun PreviewTypeMessageBar() = AppTheme {
             value = typedMessage,
             onValueChange = { typedMessage = it },
             sendMessage = { },
-            openMediaSelector = { }
+            openMediaSelector = { },
+            startAudioRecording = {}
         )
     }
 }

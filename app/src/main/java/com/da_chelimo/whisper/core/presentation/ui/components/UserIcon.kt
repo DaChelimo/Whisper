@@ -30,6 +30,8 @@ fun UserIcon(profilePic: String?, iconSize: Dp, onClick: () -> Unit, modifier: M
                 .size(iconSize)
                 .clip(CircleShape)
                 .clickable { onClick() },
+
+            loading = placeholder(R.drawable.young_man_anim),
             failure = placeholder(R.drawable.young_man_anim),
             contentScale = ContentScale.Crop,
             requestBuilderTransform = {

@@ -87,25 +87,12 @@ class ChatRepoImpl(private val userRepo: UserRepo = UserRepoImpl()) : ChatRepo {
     override suspend fun createConversation(newContact: MiniUser): String {
         val chatID = UUID.randomUUID().toString()
         val currentUser = userRepo.getUserFromUID(Firebase.auth.uid!!)
-
-        val chat = Chat(
-            chatID = chatID,
-
-            firstMiniUser = MiniUser(currentUser!!.name, currentUser.uid, currentUser.profilePic),
-            secondMiniUser = newContact,
-
-            unreadMessagesCount = 0,
-
-            lastMessage = "",
-            lastMessageSender = currentUser.uid,
-            lastMessageStatus = MessageStatus.SENT,
-            timeOfLastMessage = 1234455
-        )
+        val newChat = Chat.generateNewChatUsingCurrentUser(chatID, currentUser, newContact)
 
         //  chat_details >> chat1234
         firestore.collection(CHAT_DETAILS)
             .document(chatID)
-            .set(chat)
+            .set(newChat)
 
 
         // Add to my individual list of chats

@@ -2,6 +2,7 @@ package com.da_chelimo.whisper.chats.repo.messages
 
 import com.da_chelimo.whisper.chats.domain.Message
 import com.da_chelimo.whisper.chats.domain.MessageStatus
+import com.da_chelimo.whisper.chats.domain.MessageType
 import kotlinx.coroutines.flow.Flow
 
 interface MessagesRepo {
@@ -18,15 +19,26 @@ interface MessagesRepo {
 
 
     /**
+     * Sends an image with or without a text message
+     */
+    suspend fun sendImageMessage(chatID: String, imageUri: String, messageText: String? = null): Boolean
+
+
+    /**
+     * Sends an audio with the audi file duration
+     */
+    suspend fun sendAudioMessage(chatID: String, audioUri: String, duration: Long): Boolean
+
+    /**
      * Sends a message to the chatID
      *
-     * @param message - The message being sent
+     * @param messageType - The type of message being sent (contains any text message)
      * @param chatID - ID of the chat
      *
      *
      * TODO: Expand to allow for different media types by creating functions with similar parameters
      */
-    suspend fun sendMessage(chatID: String, message: Message): Boolean
+    suspend fun sendMessage(chatID: String, messageType: MessageType): Boolean
 
 
     /**

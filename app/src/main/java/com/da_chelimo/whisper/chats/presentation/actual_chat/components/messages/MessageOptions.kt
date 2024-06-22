@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.da_chelimo.whisper.R
 import com.da_chelimo.whisper.chats.domain.Message
+import com.da_chelimo.whisper.chats.domain.toMessageType
 import com.da_chelimo.whisper.chats.presentation.utils.toDayMonthAndTime
 import com.da_chelimo.whisper.core.presentation.ui.theme.ErrorRed
 import com.da_chelimo.whisper.core.presentation.ui.theme.LocalAppColors
@@ -75,7 +76,7 @@ fun MessageOptions(
             MessageOption(
                 icon = R.drawable.copy,
                 name = stringResource(R.string.copy),
-                onOptionSelected = { copyToClipboard(message.message) })
+                onOptionSelected = { copyToClipboard(message.messageType.toMessageType().message) })
 
             if (unSendMessage != null) {
                 MessageOption(
