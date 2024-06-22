@@ -1,6 +1,7 @@
 package com.da_chelimo.whisper.chats.domain
 
 import com.da_chelimo.whisper.core.domain.MiniUser
+import com.da_chelimo.whisper.core.domain.User
 import java.util.UUID
 
 data class Chat(
@@ -11,11 +12,10 @@ data class Chat(
 
     var unreadMessagesCount: Int,
 
-    var lastMessage: String?,
     var lastMessageSender: String?,
     val lastMessageStatus: MessageStatus?,
     var timeOfLastMessage: Long?, // Time in millis when the last text was sent
-    val lastMessageType: MessageType = MessageType.Text,
+    val lastMessageType: Map<String, Any>,
 
     /** Chat can be disabled if:
      * 1) Either user deletes their account
@@ -25,27 +25,43 @@ data class Chat(
 ) {
 
     constructor() : this(
-        "",
-        MiniUser("", "", null),
-        MiniUser("", "", null),
-        0,
-        "",
-        "",
-        MessageStatus.SENT,
-        0
+        chatID = "",
+        firstMiniUser = MiniUser("", "", null),
+        secondMiniUser = MiniUser("", "", null),
+        unreadMessagesCount = 0,
+        lastMessageSender = "",
+        lastMessageStatus = MessageStatus.SENT,
+        timeOfLastMessage = 0,
+        lastMessageType = MessageType.Text("").toFirebaseMap(),
+        isDisabled = false
     )
 
-
     companion object {
+        fun generateNewChatUsingCurrentUser(chatID: String, currentUser: User?, otherContact: MiniUser) =
+            Chat(
+                chatID = chatID,
+
+                firstMiniUser = MiniUser(currentUser!!.name, currentUser.uid, currentUser.profilePic),
+                secondMiniUser = otherContact,
+
+                unreadMessagesCount = 0,
+
+                lastMessageSender = currentUser.uid,
+                lastMessageStatus = MessageStatus.SENT,
+                timeOfLastMessage = System.currentTimeMillis(),
+                lastMessageType = MessageType.Text("").toFirebaseMap()
+            )
+
+
         val TEST_CHAT = Chat(
-            UUID.randomUUID().toString(),
-            MiniUser("Andrew", "1234", null),
-            MiniUser("Diana", "0000", null),
-            6,
-            "Wanna come over for lunch?",
-            "0000",
-            MessageStatus.SENT,
-            System.currentTimeMillis()
+            chatID = UUID.randomUUID().toString(),
+            firstMiniUser = MiniUser("Andrew", "1234", null),
+            secondMiniUser = MiniUser("Diana", "0000", null),
+            unreadMessagesCount = 6,
+            lastMessageSender = "Wanna come over for lunch?",
+            lastMessageStatus = MessageStatus.SENT,
+            timeOfLastMessage = System.currentTimeMillis(),
+            lastMessageType = MessageType.Text("").toFirebaseMap()
         )
     }
 }

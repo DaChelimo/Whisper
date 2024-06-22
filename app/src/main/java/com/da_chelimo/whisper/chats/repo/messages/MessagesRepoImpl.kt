@@ -4,6 +4,8 @@ import androidx.core.net.toUri
 import com.da_chelimo.whisper.chats.domain.Chat
 import com.da_chelimo.whisper.chats.domain.Message
 import com.da_chelimo.whisper.chats.domain.MessageStatus
+import com.da_chelimo.whisper.chats.domain.MessageType
+import com.da_chelimo.whisper.chats.domain.toMessageType
 import com.da_chelimo.whisper.chats.repo.chats.ChatRepo
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.Query
@@ -22,29 +24,55 @@ import java.util.UUID
 
 class MessagesRepoImpl(
     private val chatRepo: ChatRepo
-): MessagesRepo {
+) : MessagesRepo {
+
+    override suspend fun sendImageMessage(
+        chatID: String,
+        imageUri: String,
+        messageText: String?
+    ): Boolean {
+        val imageUrl = uploadFileUsingUri("$chatID/IMAGES/${UUID.randomUUID()}", imageUri)
+        val imageType = MessageType.Image(messageText ?: "", imageUrl)
+
+        return sendMessage(chatID, imageType)
+    }
+
+    override suspend fun sendAudioMessage(
+        chatID: String,
+        audioUri: String,
+        duration: Long
+    ): Boolean {
+        val audioUrl = uploadFileUsingUri("$chatID/AUDIO/${UUID.randomUUID()}", audioUri)
+        val audioType= MessageType.Audio(duration, audioUrl)
+
+        return sendMessage(chatID, audioType)
+    }
 
     // chats >> chat1234 >> messages >> messageID
-    override suspend fun sendMessage(chatID: String, message: Message): Boolean {
-        return try {
-            val imageDownloadUrl = message.messageImage?.toUri()?.let { imageToUpload ->
-                Firebase.storage.getReference("$chatID/${UUID.randomUUID()}")
-                    .putFile(imageToUpload)
-                    .await().storage
-                    .downloadUrl.await().toString()
-            }
-            val actualMessage = message.copy(messageImage = imageDownloadUrl)
+    override suspend fun sendMessage(
+        chatID: String,
+        messageType: MessageType
+    ): Boolean {
+        val message = Message(
+            senderID = Firebase.auth.uid!!,
+            messageID = UUID.randomUUID().toString(),
+            messageType = messageType.toFirebaseMap(),
+            timeSent = System.currentTimeMillis(),
+            messageStatus = MessageStatus.NOT_SENT
+        )
 
+
+        return try {
             ChatRepo.getMessagesCollectionRef(chatID)
-                .document(actualMessage.messageID)
-                .set(actualMessage)
+                .document(message.messageID)
+                .set(message)
                 .addOnCompleteListener {
                     Timber.d("firestore.collection(CHATS_COLLECTION) is ${it.isSuccessful}")
                 }
                 .await()
 
             ChatRepo.getMessagesCollectionRef(chatID)
-                .document(actualMessage.messageID)
+                .document(message.messageID)
                 .update(Message::messageStatus.name, MessageStatus.SENT)
                 .addOnCompleteListener {
                     Timber.d("update(Message::messageStatus.name) is ${it.isSuccessful}")
@@ -56,10 +84,9 @@ class MessagesRepoImpl(
 
             ChatRepo.getChatDetailsRef(chatID).update(
                 mapOf(
-                    Chat::lastMessage.name to actualMessage.message,
-                    Chat::lastMessageSender.name to actualMessage.senderID,
-                    Chat::timeOfLastMessage.name to actualMessage.timeSent,
-                    Chat::lastMessageType.name to actualMessage.messageType,
+                    Chat::lastMessageSender.name to message.senderID,
+                    Chat::timeOfLastMessage.name to message.timeSent,
+                    Chat::lastMessageType.name to message.messageType,
                     Chat::lastMessageStatus.name to MessageStatus.SENT,
                     Chat::unreadMessagesCount.name to (chat?.unreadMessagesCount ?: 0) + 1
                 )
@@ -70,6 +97,16 @@ class MessagesRepoImpl(
             false
         }
     }
+
+
+    /**
+     * Returns the download url of the file that has been uploaded to Firebase Storage
+     */
+    private suspend fun uploadFileUsingUri(storageRef: String, fileUri: String): String =
+        Firebase.storage.getReference(storageRef)
+            .putFile(fileUri.toUri())
+            .await().storage
+            .downloadUrl.await().toString()
 
 
     // chats >> chat1234 >> messages
@@ -122,24 +159,32 @@ class MessagesRepoImpl(
         val chatMessagesCollection = ChatRepo.getMessagesCollectionRef(chatID)
 
         // Edit the message in the main chats collection
-        chatMessagesCollection.document(messageID).update(
+        val messageRef = chatMessagesCollection.document(messageID)
+        val newMessageType = messageRef.get().await()
+            .toObject<Message>()?.messageType?.toMessageType()?.apply { message = newMessage }
+            ?.toFirebaseMap()
+
+        messageRef.update(
             mapOf(
-                Message::message.name to newMessage,
+                Message::messageType.name to newMessageType,
                 Message::wasEdited.name to true
             )
         )
 
 
-        // Update the last message in chat details
-        val lastMessageID =
+        // Checks if the message being edited is the last message
+        // If yes, update the last message in chat details
+        val lastMessage =
             chatMessagesCollection.orderBy(Message::timeSent.name, Query.Direction.DESCENDING)
-                .limit(1).get().await().toObjects(Message::class.java).firstOrNull()?.messageID
+                .limit(1).get().await().toObjects(Message::class.java).firstOrNull()
+
+        val lastMessageID = lastMessage?.messageID
         val isLastMessage = lastMessageID == messageID
 
         if (isLastMessage) {
             ChatRepo.getChatDetailsRef(chatID)
                 .update(
-                    Chat::lastMessage.name, newMessage
+                    Chat::lastMessageType.name, newMessageType
                 )
         }
     }
@@ -170,7 +215,7 @@ class MessagesRepoImpl(
 
         return chatDetailsRef.update(
             mapOf(
-                Chat::lastMessage.name to newLastMessage?.message,
+                Chat::lastMessageType.name to newLastMessage?.messageType,
                 Chat::lastMessageSender.name to newLastMessage?.senderID,
                 Chat::timeOfLastMessage.name to newLastMessage?.timeSent,
                 Chat::unreadMessagesCount.name to newUnreadMessageCount,

@@ -57,7 +57,10 @@
     <string name="edited">Edited</string>
     <string name="edit">Edit</string>
     <string name="open_media">Open media</string>
-    <string name="image">📷 %1$s</string>
+
+    <string name="image_preview">📷 %1$s</string>
+    <string name="audio_preview">🎙️ %1$s</string>
+
     <string name="select_profile_picture_from_galley">Select profile picture from galley</string>
     <string name="click_the_button_to_start_a_conversation">Click the + button to start a conversation</string>
     <string name="delete_account">Delete account</string>
@@ -67,7 +70,12 @@
     <string name="yes">Yes</string>
     <string name="download">Download</string>
     <string name="none_of_your_contacts_is_on_whisper">None of your contacts is on Whisper</string>
-    <string name="message_placeholder">Message...</string>
+    <string name="message_placeholder">Message…</string>
     <string name="resend_code">Resend Code</string>
     <string name="resend_code_in">Resend code in %1$s</string>
+    <string name="delete_voice_message">Delete voice message</string>
+    <string name="start_recording">Start recording</string>
+    <string name="pause">Pause</string>
+    <string name="resume">Resume</string>
+    <string name="recording_permission_needed">Recording permission need to record an audio message</string>
 </resources>

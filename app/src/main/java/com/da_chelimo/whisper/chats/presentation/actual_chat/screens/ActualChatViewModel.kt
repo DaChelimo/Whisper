@@ -1,5 +1,6 @@
 package com.da_chelimo.whisper.chats.presentation.actual_chat.screens
 
+import android.content.Context
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
@@ -7,8 +8,14 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.da_chelimo.whisper.chats.domain.Chat
 import com.da_chelimo.whisper.chats.domain.Message
-import com.da_chelimo.whisper.chats.domain.MessageStatus
+import com.da_chelimo.whisper.chats.domain.MessageType
 import com.da_chelimo.whisper.chats.presentation.utils.toActualChatSeparatorTime
+import com.da_chelimo.whisper.chats.repo.audio_messages.player.AndroidAudioPlayer
+import com.da_chelimo.whisper.chats.repo.audio_messages.player.AudioPlayer
+import com.da_chelimo.whisper.chats.repo.audio_messages.player.PlayerState
+import com.da_chelimo.whisper.chats.repo.audio_messages.recorder.AndroidAudioRecorder
+import com.da_chelimo.whisper.chats.repo.audio_messages.recorder.AudioRecorder
+import com.da_chelimo.whisper.chats.repo.audio_messages.recorder.RecorderState
 import com.da_chelimo.whisper.chats.repo.chats.ChatRepo
 import com.da_chelimo.whisper.chats.repo.chats.ChatRepoImpl
 import com.da_chelimo.whisper.chats.repo.contacts.ContactsRepo
@@ -18,21 +25,24 @@ import com.da_chelimo.whisper.core.domain.MiniUser
 import com.da_chelimo.whisper.core.domain.toMiniUser
 import com.da_chelimo.whisper.core.repo.user.UserRepo
 import com.da_chelimo.whisper.core.repo.user.UserRepoImpl
+import com.da_chelimo.whisper.core.utils.formatDurationInMillis
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import timber.log.Timber
-import java.util.UUID
 
 class ActualChatViewModel(
     private val userRepo: UserRepo = UserRepoImpl(),
     private val chatRepo: ChatRepo = ChatRepoImpl(userRepo),
     private val messagesRepo: MessagesRepo = MessagesRepoImpl(chatRepo),
-    private val contactsRepo: ContactsRepo
+    private val contactsRepo: ContactsRepo,
+    private val audioRecorder: AudioRecorder = AndroidAudioRecorder(),
+    private val audioPlayer: AudioPlayer = AndroidAudioPlayer()
 ) : ViewModel() {
 
     private val _textMessage = MutableStateFlow(TextFieldValue(""))
@@ -44,8 +54,17 @@ class ActualChatViewModel(
 
     val chat = MutableStateFlow<Chat?>(null)
     val messages = mutableStateListOf<Message>()
-
     val mapOfMessageIDAndDateInString = mutableMapOf<String, String>()
+
+
+    val audioBeingPlayed = audioPlayer.audioBeingPlayed
+    val playerState = audioPlayer.playerState
+
+    val playerTimeLeftInMillis = audioPlayer.timeLeftInMillis
+
+    val recorderState = audioRecorder.recorderState
+    private val recordingDurationInMillis = audioRecorder.durationInMillis
+    val formattedRecordingDuration = recordingDurationInMillis.map { it.formatDurationInMillis() }
 
 
     private val _otherUser = MutableStateFlow<MiniUser?>(null)
@@ -58,6 +77,7 @@ class ActualChatViewModel(
     val isEditing: StateFlow<String?> = _isEditing
 
     val doesOtherUserAccountExist = MutableStateFlow(true)
+
 
     suspend fun loadChat(chatID: String?) {
         if (chatID != null) {
@@ -103,6 +123,7 @@ class ActualChatViewModel(
             messagesRepo.getMessagesFromChatID(chatID!!)
                 .onEach { // TODO: Improve this coz this is TERRIBLEEEEEE :)
                     Timber.d("chatRepo.getMessagesFromChatID(chatID!!).collect is $it")
+
                     it.reversed().forEach { message ->
                         val timeTitle =
                             message.timeSent.toActualChatSeparatorTime() ?: return@forEach
@@ -154,16 +175,10 @@ class ActualChatViewModel(
         if (chat.value?.isDisabled == true) { // Chat disabled; do not send & clear message bar
             _textMessage.value = TextFieldValue("")
         } else {
-            val message = Message(
-                senderID = Firebase.auth.uid!!,
-                messageID = UUID.randomUUID().toString(),
-                message = textMessage.value.text,
-                timeSent = System.currentTimeMillis(),
-                messageStatus = MessageStatus.NOT_SENT
-            )
-
+            val message = textMessage.value.text
             _textMessage.value = TextFieldValue("")
-            messagesRepo.sendMessage(chatID!!, message)
+
+            messagesRepo.sendMessage(chatID!!, MessageType.Text(message))
         }
     }
 
@@ -204,8 +219,70 @@ class ActualChatViewModel(
     }
 
 
-    fun resetUnreadMessagesCountOnChatExit() = viewModelScope.launch{
+    fun resetUnreadMessagesCountOnChatExit() = viewModelScope.launch {
         Timber.d("resetUnreadMessagesCountOnChatExit with chatID as $chatID")
         chatID?.let { chatRepo.resetUnreadMessagesCount(it) }
+    }
+
+
+    /**
+     * Stop any audio recording that may be playing
+     * Start recording
+     */
+    fun startRecording(context: Context) {
+        audioPlayer.stopAudio()
+        audioRecorder.startRecording(context)
+    }
+
+    private fun resumeRecording() {
+        audioRecorder.resumeRecording()
+    }
+
+    private fun pauseRecording() {
+        audioRecorder.pauseRecording()
+    }
+
+    fun cancelRecording() {
+        audioRecorder.cancelRecording()
+    }
+
+    fun pauseOrResumeRecording() {
+        if (recorderState.value is RecorderState.Paused) resumeRecording()
+        else pauseRecording()
+    }
+
+    fun sendRecording() = viewModelScope.launch {
+        if (chatID == null) // If it's a new person, create a new chat
+            createConversation()
+
+        val audioFileUri = audioRecorder.endRecording()
+        messagesRepo.sendAudioMessage(
+            chatID = chatID!!,
+            audioUri = audioFileUri?.toString() ?: return@launch,
+            duration = recordingDurationInMillis.value
+        )
+    }
+
+
+    fun playOrPauseAudio(context: Context, audioUrl: String) = viewModelScope.launch {
+        /**
+         * If the urls are different, it means the user is trying to play another vn
+         * { Do not resume; instead start playing it a fresh }
+         */
+        if (audioUrl != audioPlayer.audioBeingPlayed.value)
+            audioPlayer.playAudio(context, audioUrl)
+        else // Otherwise, handle it normally
+            when (playerState.value) {
+                PlayerState.None -> audioPlayer.playAudio(context, audioUrl)
+                PlayerState.Paused -> audioPlayer.resumeAudio()
+                PlayerState.Ongoing -> audioPlayer.pauseAudio()
+            }
+    }
+
+
+    override fun onCleared() {
+        super.onCleared()
+        audioRecorder.cancelRecording()
+        audioPlayer.stopAudio()
     }
 }

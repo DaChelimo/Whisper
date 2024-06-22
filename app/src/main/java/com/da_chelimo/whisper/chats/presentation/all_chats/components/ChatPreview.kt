@@ -35,6 +35,7 @@ import com.da_chelimo.whisper.R
 import com.da_chelimo.whisper.chats.domain.Chat
 import com.da_chelimo.whisper.chats.domain.MessageStatus
 import com.da_chelimo.whisper.chats.domain.MessageType
+import com.da_chelimo.whisper.chats.domain.toMessageType
 import com.da_chelimo.whisper.chats.presentation.utils.toChatPreviewTime
 import com.da_chelimo.whisper.core.presentation.ui.components.UserIcon
 import com.da_chelimo.whisper.core.presentation.ui.theme.AppTheme
@@ -118,15 +119,19 @@ fun ChatPreview(
                     }
 
 
-                    // If the lastMessage is blank, it means it's an image
                     val messagePreview =
-                        chat.lastMessage?.let { lastMessage ->
+                        when (val lastMessageType = chat.lastMessageType.toMessageType()) {
+                            is MessageType.Image -> stringResource(
+                                R.string.image_preview,
+                                lastMessageType.message.ifBlank { "Image" })
 
-                            if (chat.lastMessageType == MessageType.Image)
-                                lastMessage.ifBlank { stringResource(R.string.image, "Image") }
-                            else chat.lastMessage
+                            is MessageType.Audio -> stringResource(
+                                R.string.audio_preview,
+                                "Audio ${lastMessageType.message}"
+                            )
 
-                        } ?: ""
+                            else -> lastMessageType.message
+                        }
 
 
                     Text(

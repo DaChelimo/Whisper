@@ -10,6 +10,7 @@ import com.da_chelimo.whisper.auth.repo.AuthRepoImpl
 import com.da_chelimo.whisper.core.domain.TaskState
 import com.da_chelimo.whisper.core.repo.user.UserRepo
 import com.da_chelimo.whisper.core.repo.user.UserRepoImpl
+import com.da_chelimo.whisper.core.utils.formatDurationInMillis
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -18,7 +19,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import org.joda.time.Duration
 import timber.log.Timber
 
 class EnterCodeViewModel(
@@ -35,13 +35,8 @@ class EnterCodeViewModel(
     private val _timeLeftInMillis = MutableStateFlow(SMS_TIMEOUT)
     val timeLeftInMillis: StateFlow<Long> = _timeLeftInMillis
 
-    val formattedTimeLeft = timeLeftInMillis.map { millisLeft ->
-        val duration = Duration(millisLeft)
-        val mins = duration.standardMinutes.let { if (it.toString().length == 1) "0$it" else it }
-        val secs = duration.standardSeconds.let { if (it.toString().length == 1) "0$it" else it }
-
-        "$mins:$secs"
-    }.stateIn(viewModelScope, SharingStarted.Eagerly, "")
+    val formattedTimeLeft = timeLeftInMillis.map { it.formatDurationInMillis() }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, "")
 
     companion object {
         const val CODE_LENGTH = 6

@@ -1,5 +1,6 @@
 package com.da_chelimo.whisper.chats.presentation.actual_chat.screens
 
+import android.Manifest
 import android.annotation.SuppressLint
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -30,12 +31,14 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
@@ -45,12 +48,18 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.da_chelimo.whisper.R
+import com.da_chelimo.whisper.chats.domain.MessageType
+import com.da_chelimo.whisper.chats.domain.toMessageType
+import com.da_chelimo.whisper.chats.presentation.actual_chat.components.AudioRecordingBar
 import com.da_chelimo.whisper.chats.presentation.actual_chat.components.ChatTopBar
 import com.da_chelimo.whisper.chats.presentation.actual_chat.components.DaySeparatorForActualChat
 import com.da_chelimo.whisper.chats.presentation.actual_chat.components.TypeMessageBar
-import com.da_chelimo.whisper.chats.presentation.actual_chat.components.messages.MyChat
-import com.da_chelimo.whisper.chats.presentation.actual_chat.components.messages.OtherChat
+import com.da_chelimo.whisper.chats.presentation.actual_chat.components.messages.AudioMessage
+import com.da_chelimo.whisper.chats.presentation.actual_chat.components.messages.TextOrImageMessage
 import com.da_chelimo.whisper.chats.presentation.chat_details.components.ComingSoonPopup
+import com.da_chelimo.whisper.chats.repo.audio_messages.player.PlayerState
+import com.da_chelimo.whisper.chats.repo.audio_messages.recorder.RecorderState
 import com.da_chelimo.whisper.core.presentation.ui.ChatDetails
 import com.da_chelimo.whisper.core.presentation.ui.SendImage
 import com.da_chelimo.whisper.core.presentation.ui.ViewImage
@@ -60,8 +69,8 @@ import com.da_chelimo.whisper.core.presentation.ui.theme.ErrorRed
 import com.da_chelimo.whisper.core.presentation.ui.theme.LocalAppColors
 import com.da_chelimo.whisper.core.presentation.ui.theme.QuickSand
 import com.da_chelimo.whisper.core.presentation.ui.theme.StatusBars
-import com.google.firebase.auth.ktx.auth
-import com.google.firebase.ktx.Firebase
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 import timber.log.Timber
 
@@ -75,19 +84,31 @@ fun ActualChatScreen(
     viewModel: ActualChatViewModel = koinViewModel(),
     chatID: String? = null,
     newContact: String? = null,
+    coroutineScope: CoroutineScope,
+    snackbarHostState: SnackbarHostState,
     updateStatusBar: (StatusBars) -> Unit
 ) {
+    val context = LocalContext.current
     val clipboardManager = LocalClipboardManager.current
+
     val composeMessage by viewModel.textMessage.collectAsState()
     val otherUser by viewModel.otherUser.collectAsState()
     val doesOtherUserAccountExist by viewModel.doesOtherUserAccountExist.collectAsState()
 
     val chat by viewModel.chat.collectAsState()
 
+    val recorderState by viewModel.recorderState.collectAsState()
+    val formattedAudioDuration by viewModel.formattedRecordingDuration.collectAsState(initial = "0:00")
+
     val isEditing by viewModel.isEditing.collectAsState()
     var messageIDInFocus by remember {
         mutableStateOf<String?>(null)
     }
+
+    val audioBeingPlayed by viewModel.audioBeingPlayed.collectAsState()
+    val playerState by viewModel.playerState.collectAsState()
+//    val formattedPlayerTimeLeft by viewModel.formattedPlayerTimeLeft.collectAsState(null)
+    val playerTimeLeftInMillis by viewModel.playerTimeLeftInMillis.collectAsState(initial = null)
 
     var showComingSoonPopup by remember {
         mutableStateOf(false)
@@ -177,38 +198,50 @@ fun ActualChatScreen(
                     reverseLayout = true
                 ) {
                     items(viewModel.messages) { message ->
-                        if (message.senderID == Firebase.auth.uid)
-                            MyChat(
+                        val toggleOptionsMenuVisibility: (String?) -> Unit =
+                            { messageIDInFocus = it }
+                        val copyToClipboard: (String) -> Unit = {
+                            clipboardManager.setText(buildAnnotatedString { append(it) })
+                        }
+                        val editMessage: (String) -> Unit = {
+                            viewModel.launchMessageEditing(message.messageID, it)
+                        }
+                        val unSendMessage: (String) -> Unit = { messageID ->
+                            viewModel.unsendMessage(messageID)
+                            messageIDInFocus = null
+                        }
+
+                        val messageType = message.messageType.toMessageType()
+                        if (messageType is MessageType.Audio) {
+                            AudioMessage(
                                 message = message,
                                 messageIDInFocus = messageIDInFocus,
-                                toggleOptionsMenuVisibility = { messageIDInFocus = it },
-                                copyToClipboard = { messageText ->
-                                    clipboardManager.setText(
-                                        buildAnnotatedString { append(messageText) }
+                                toggleOptionsMenuVisibility = toggleOptionsMenuVisibility,
+                                unSendMessage = unSendMessage,
+                                isPlaying = playerState == PlayerState.Ongoing,
+                                audioUrlBeingPlayed = audioBeingPlayed,
+                                timeLeftInMillis = playerTimeLeftInMillis,
+                                onPlayOrPause = {
+                                    viewModel.playOrPauseAudio(
+                                        context = context,
+                                        audioUrl = messageType.audioUrl
                                     )
                                 },
-                                editMessage = { oldMessage ->
-                                    viewModel.launchMessageEditing(message.messageID, oldMessage)
-                                },
-                                unSendMessage = { messageID ->
-                                    viewModel.unsendMessage(messageID)
-                                    messageIDInFocus = null
-                                },
-                                openImage = { openImage(it) }
+                                onSeekTo = {
+                                    // TODO:
+                                }
                             )
-                        else
-                            OtherChat(
+                        } else if (messageType is MessageType.Text || messageType is MessageType.Image) {
+                            TextOrImageMessage(
                                 message = message,
                                 messageIDInFocus = messageIDInFocus,
-                                toggleOptionsMenuVisibility = { messageIDInFocus = it },
-                                copyToClipboard = { messageText ->
-                                    clipboardManager.setText(
-                                        buildAnnotatedString { append(messageText) }
-                                    )
-                                    messageIDInFocus = null
-                                },
+                                toggleOptionsMenuVisibility = toggleOptionsMenuVisibility,
+                                copyToClipboard = copyToClipboard,
+                                editMessage = editMessage,
+                                unSendMessage = unSendMessage,
                                 openImage = { openImage(it) }
                             )
+                        }
 
                         Spacer(modifier = Modifier.height(2.dp))
 
@@ -275,19 +308,65 @@ fun ActualChatScreen(
                 viewModel.updateOpenMediaPicker(false)
             }
 
-            TypeMessageBar(
-                value = composeMessage,
-                onValueChange = { viewModel.updateComposeMessage(it) },
-                sendMessage = {
-                    viewModel.sendOrEditMessage()
-                },
-                openMediaSelector = {
-                    viewModel.updateOpenMediaPicker(true)
-                },
-                modifier = Modifier
-                    .padding(vertical = 8.dp)
-                    .focusRequester(focusRequester)
-            )
+
+
+            var shouldRequestRecordingPermission by remember {
+                mutableStateOf(false)
+            }
+            val recorderLauncher =
+                rememberLauncherForActivityResult(contract = ActivityResultContracts.RequestPermission()) { isGranted ->
+                    if (isGranted)
+                        viewModel.startRecording(context)
+                    else
+                        coroutineScope.launch {
+                            snackbarHostState.showSnackbar(
+                                context.getString(R.string.recording_permission_needed)
+                            )
+                        }
+
+                    shouldRequestRecordingPermission = false
+                }
+
+
+            LaunchedEffect(key1 = shouldRequestRecordingPermission) {
+                if (shouldRequestRecordingPermission)
+                    recorderLauncher.launch(Manifest.permission.RECORD_AUDIO)
+            }
+
+            // When no recording is being done or a recording has already been
+            // completed and is being sent
+            if (recorderState is RecorderState.None || recorderState is RecorderState.Ended) {
+                TypeMessageBar(
+                    value = composeMessage,
+                    onValueChange = { viewModel.updateComposeMessage(it) },
+                    sendMessage = {
+                        viewModel.sendOrEditMessage()
+                    },
+                    openMediaSelector = {
+                        viewModel.updateOpenMediaPicker(true)
+                    },
+                    startAudioRecording = {
+                        shouldRequestRecordingPermission = true
+                    },
+                    modifier = Modifier
+                        .padding(vertical = 8.dp)
+                        .focusRequester(focusRequester)
+                )
+            } else {
+                AudioRecordingBar(
+                    cancelRecording = {
+                        viewModel.cancelRecording()
+                    },
+                    isPaused = recorderState == RecorderState.Paused,
+                    formattedAudioDuration = formattedAudioDuration,
+                    onPauseOrResume = {
+                        viewModel.pauseOrResumeRecording()
+                    },
+                    onSendAudio = {
+                        viewModel.sendRecording()
+                    }
+                )
+            }
         }
 
         if (showComingSoonPopup)
@@ -313,6 +392,10 @@ private fun PreviewActualChatScreen() = AppTheme {
             SnackbarHost(hostState = snackbarHostState)
         }
     ) {
-        ActualChatScreen(rememberNavController()) { }
+        ActualChatScreen(
+            rememberNavController(),
+            snackbarHostState = snackbarHostState,
+            coroutineScope = rememberCoroutineScope()
+        ) { }
     }
 }
