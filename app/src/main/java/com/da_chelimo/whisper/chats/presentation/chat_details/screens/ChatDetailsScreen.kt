@@ -84,6 +84,8 @@ fun ChatDetailsScreen(
                             modifier = Modifier.padding(top = 24.dp, bottom = 16.dp),
                             profilePic = otherUser?.profilePic,
                             iconSize = 120.dp,
+                            progressBarSize = 32.dp,
+                            progressBarThickness = 3.dp,
                             borderIfUsingDefaultPic = 2.dp,
                             onClick = {
                                 isProfilePicFullScreen = true

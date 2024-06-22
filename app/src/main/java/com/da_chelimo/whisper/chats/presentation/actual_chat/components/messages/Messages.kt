@@ -24,6 +24,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardColors
 import androidx.compose.material3.CardDefaults
@@ -48,9 +49,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
-import com.bumptech.glide.integration.compose.GlideImage
-import com.bumptech.glide.integration.compose.placeholder
-import com.bumptech.glide.load.engine.DiskCacheStrategy
+import com.bumptech.glide.integration.compose.GlideSubcomposition
+import com.bumptech.glide.integration.compose.RequestState
 import com.da_chelimo.whisper.R
 import com.da_chelimo.whisper.chats.domain.Message
 import com.da_chelimo.whisper.chats.domain.MessageStatus
@@ -85,24 +85,8 @@ fun TextOrImageMessage(
         val imagePresent = messageType is MessageType.Image
 
         if (imagePresent) {
-            GlideImage(
+            GlideSubcomposition(
                 model = (messageType as MessageType.Image).imageUrl,
-                contentDescription = null,
-                contentScale = ContentScale.Crop,
-                loading = placeholder {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .aspectRatio((4 / 3).toFloat()),
-                        verticalArrangement = Arrangement.Center,
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        CircularProgressIndicator(
-                            Modifier.size(36.dp),
-                            color = if (isMyChat) Color.White else LocalAppColors.current.appThemeTextColor
-                        )
-                    }
-                },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 4.dp, horizontal = 4.dp)
@@ -110,12 +94,71 @@ fun TextOrImageMessage(
                     .aspectRatio((4 / 3).toFloat())
                     .clickable {
                         openImage(messageType.imageUrl)
-                    },
-                requestBuilderTransform = {
-                    it.diskCacheStrategy(DiskCacheStrategy.AUTOMATIC)
+                    }
+            ) {
+                when (state) {
+                    RequestState.Loading -> {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .aspectRatio((4 / 3).toFloat()),
+                            verticalArrangement = Arrangement.Center,
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            CircularProgressIndicator(
+                                Modifier.size(36.dp),
+                                color = if (isMyChat) Color.White else LocalAppColors.current.appThemeTextColor
+                            )
+                        }
+                    }
+
+                    RequestState.Failure -> {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .aspectRatio((4 / 3).toFloat()),
+                            verticalArrangement = Arrangement.Center,
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Image(
+                                imageVector = Icons.Default.Refresh,
+                                contentDescription = null,
+                                modifier = Modifier.size(36.dp)
+                            )
+                            Text(
+                                text = stringResource(id = R.string.error_occurred),
+                                modifier = Modifier.padding(top = 6.dp)
+                            )
+                        }
+                    }
+
+                    is RequestState.Success -> {
+                        Image(painter = painter, contentDescription = null, contentScale = ContentScale.Crop)
+                    }
                 }
-            )
+            }
         }
+//        if (imagePresent) {
+//            GlideImage(
+//                model = (messageType as MessageType.Image).imageUrl,
+//                contentDescription = null,
+//                contentScale = ContentScale.Crop,
+//                loading = placeholder {
+//
+//                },
+//                modifier = Modifier
+//                    .fillMaxWidth()
+//                    .padding(vertical = 4.dp, horizontal = 4.dp)
+//                    .clip(RoundedCornerShape(8.dp))
+//                    .aspectRatio((4 / 3).toFloat())
+//                    .clickable {
+//                        openImage(messageType.imageUrl)
+//                    },
+//                requestBuilderTransform = {
+//                    it.diskCacheStrategy(DiskCacheStrategy.AUTOMATIC)
+//                }
+//            )
+//        }
 
         if (messageType.message.isNotBlank()) {
             Text(

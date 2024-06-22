@@ -4,6 +4,7 @@ package com.da_chelimo.whisper.chats.presentation.actual_chat.screens.view_image
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -42,7 +43,7 @@ fun ViewImageScreen(
     val viewModel = viewModel<ViewImageViewModel>()
     val context = LocalContext.current
 
-    Column(
+    Box(
         Modifier
             .fillMaxSize()
             .background(LocalAppColors.current.mainBackground)
@@ -79,18 +80,16 @@ fun ViewImageScreen(
 
         Column(
             Modifier
-                .fillMaxWidth()
-                .weight(1f)
                 .padding(horizontal = 12.dp)
-                .padding(top = 8.dp)
-                .padding(bottom = 8.dp)
+                .padding(vertical = 2.dp)
                 .clip(RoundedCornerShape(16.dp))
-                .align(Alignment.CenterHorizontally)
+                .align(Alignment.Center),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
         ) {
             GlideImage(
                 model = imageUrl,
                 contentDescription = null,
-                modifier = Modifier.fillMaxWidth(),
                 contentScale = ContentScale.FillWidth,
                 requestBuilderTransform = {
                     it.diskCacheStrategy(DiskCacheStrategy.AUTOMATIC)

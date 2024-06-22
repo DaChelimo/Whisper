@@ -124,6 +124,8 @@ fun CreateProfileScreen(
                     UserIcon(
                         profilePic = profilePic?.toString(),
                         iconSize = 120.dp,
+                        progressBarSize = 32.dp,
+                        progressBarThickness = 3.dp,
                         modifier = Modifier.padding(top = 8.dp),
                         borderIfUsingDefaultPic = 2.dp,
                         onClick = {
