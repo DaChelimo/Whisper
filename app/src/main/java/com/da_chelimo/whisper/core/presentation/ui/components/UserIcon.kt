@@ -3,9 +3,14 @@ package com.da_chelimo.whisper.core.presentation.ui.components
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
@@ -13,40 +18,59 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
-import com.bumptech.glide.integration.compose.GlideImage
-import com.bumptech.glide.integration.compose.placeholder
-import com.bumptech.glide.load.engine.DiskCacheStrategy
+import com.bumptech.glide.integration.compose.GlideSubcomposition
+import com.bumptech.glide.integration.compose.RequestState
 import com.da_chelimo.whisper.R
 import com.da_chelimo.whisper.core.presentation.ui.theme.DarkBlue
+import com.da_chelimo.whisper.core.presentation.ui.theme.LocalAppColors
 
 @OptIn(ExperimentalGlideComposeApi::class)
 @Composable
-fun UserIcon(profilePic: String?, iconSize: Dp, onClick: () -> Unit, modifier: Modifier = Modifier, borderIfUsingDefaultPic: Dp) {
-    if (profilePic != null)
-        GlideImage(
-            model = profilePic,
-            contentDescription = stringResource(R.string.change_profile_picture),
-            modifier = modifier
-                .size(iconSize)
-                .clip(CircleShape)
-                .clickable { onClick() },
-
-            loading = placeholder(R.drawable.young_man_anim),
-            failure = placeholder(R.drawable.young_man_anim),
-            contentScale = ContentScale.Crop,
-            requestBuilderTransform = {
-                it.diskCacheStrategy(DiskCacheStrategy.AUTOMATIC)
+fun UserIcon(
+    profilePic: String?,
+    iconSize: Dp,
+    progressBarSize: Dp,
+    progressBarThickness: Dp,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    borderIfUsingDefaultPic: Dp
+) {
+    GlideSubcomposition(
+        model = profilePic,
+        modifier = modifier
+            .size(iconSize)
+            .clip(CircleShape)
+            .clickable { onClick() }
+    ) {
+        when (state) {
+            RequestState.Loading -> {
+                Column(Modifier.fillMaxSize(), Arrangement.Center, Alignment.CenterHorizontally) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(progressBarSize),
+                        strokeWidth = progressBarThickness,
+                        color = LocalAppColors.current.plainTextColorOnMainBackground
+                    )
+                }
             }
-        )
-    else
-        Image(
-            painter = painterResource(id = R.drawable.young_man_anim),
-            contentDescription = null,
-            modifier = modifier
-                .size(iconSize)
-                .clip(CircleShape)
-                .border(borderIfUsingDefaultPic, DarkBlue, CircleShape)
-                .clickable { onClick() },
-            contentScale = ContentScale.Crop
-        )
+
+            RequestState.Failure -> {
+                Image(
+                    painter = painterResource(id = R.drawable.young_man_anim),
+                    contentDescription = null,
+                    modifier
+                        .fillMaxSize()
+                        .border(borderIfUsingDefaultPic, DarkBlue, CircleShape)
+                )
+            }
+
+            is RequestState.Success -> {
+                Image(
+                    painter = painter,
+                    contentDescription = stringResource(id = R.string.change_profile_picture),
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize()
+                )
+            }
+        }
+    }
 }

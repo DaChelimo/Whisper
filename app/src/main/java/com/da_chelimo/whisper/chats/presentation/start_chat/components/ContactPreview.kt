@@ -46,6 +46,8 @@ fun ContactPreview(
         UserIcon(
             profilePic = contact.profilePic,
             iconSize = 48.dp,
+            progressBarSize = 20.dp,
+            progressBarThickness = (1.5).dp,
             modifier = Modifier.align(Alignment.CenterVertically),
             borderIfUsingDefaultPic = 1.dp,
             onClick = {

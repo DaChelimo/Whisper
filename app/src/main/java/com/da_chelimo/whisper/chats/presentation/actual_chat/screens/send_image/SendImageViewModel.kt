@@ -38,7 +38,7 @@ class SendImageViewModel(
             messagesRepo.sendImageMessage(chatID, imageUri, typedMessage.value.text)
         }
 
-        delay(1000)
+        delay(1200)
         _sendImageState.value = TaskState.DONE.SUCCESS
     }
 

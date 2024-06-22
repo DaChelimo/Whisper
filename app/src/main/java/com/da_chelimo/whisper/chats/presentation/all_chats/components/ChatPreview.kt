@@ -75,6 +75,8 @@ fun ChatPreview(
             UserIcon(
                 profilePic = otherUser.profilePic,
                 iconSize = 53.dp,
+                progressBarSize = 20.dp,
+                progressBarThickness = 2.dp,
                 borderIfUsingDefaultPic = 1.dp,
                 onClick = { openProfilePic(otherUser.profilePic) }
             )
