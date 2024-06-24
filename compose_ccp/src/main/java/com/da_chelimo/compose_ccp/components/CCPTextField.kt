@@ -28,6 +28,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
@@ -179,7 +180,8 @@ fun CCPTextField(
 @Preview
 @Composable
 private fun PreviewCCPTextField() {
-    var country by remember { mutableStateOf(PickerUtils.allCountries.first()) }
+    val context = LocalContext.current
+    var country by remember { mutableStateOf(PickerUtils.getDefaultCountry(context)) }
     var number by remember { mutableStateOf("") }
 
     Column(

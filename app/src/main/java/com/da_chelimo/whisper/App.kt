@@ -14,7 +14,7 @@ class App: Application() {
 
     /**
      * TODO
-     *
+     * 1) Add user-activity (Active, Last active)
      */
 
     override fun onCreate() {
