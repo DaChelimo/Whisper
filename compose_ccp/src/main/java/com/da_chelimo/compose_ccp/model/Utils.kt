@@ -21,6 +21,9 @@ object PickerUtils {
         }
     }
 
+
+    fun getDefaultCountry(context: Context) = allCountries.filter { it.code == getDefaultLangCode(context) }.first()
+
     /**
      * [getDefaultLangCode] Returns the default language code of the device.
      * [context] The context of the activity or fragment.
@@ -30,6 +33,7 @@ object PickerUtils {
             val localeCode: TelephonyManager =
                 context.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
             val countryCode = localeCode.networkCountryIso
+
             countryCode.ifEmpty {
                 "us"
             }
@@ -566,6 +570,8 @@ object PickerUtils {
             else -> R.string.kenya
         }
     }
+
+    val defaultCountry = allCountries.first { it.code == "us" }
 
     /**
      * [allCountries] is a list of all countries in the world sorted alphabetically.

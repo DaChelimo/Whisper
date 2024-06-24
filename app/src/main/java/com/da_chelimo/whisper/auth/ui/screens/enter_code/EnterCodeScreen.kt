@@ -24,6 +24,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -140,7 +141,9 @@ fun EnterCodeScreen(
                     contentPadding = PaddingValues(horizontal = 10.dp),
                     colors = ButtonDefaults.buttonColors(
                         contentColor = LocalAppColors.current.appThemeTextColor,
-                        disabledContentColor = LocalAppColors.current.appThemeTextColor.copy(alpha = 0.65f)
+                        disabledContentColor = LocalAppColors.current.appThemeTextColor.copy(alpha = 0.65f),
+                        containerColor = Color.Transparent,
+                        disabledContainerColor = Color.Transparent
                     ),
                     enabled = timeLeftInMillis < EnterCodeViewModel.SECOND_IN_MILLIS
                 ) {

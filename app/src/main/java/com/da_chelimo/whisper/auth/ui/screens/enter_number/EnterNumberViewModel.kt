@@ -18,7 +18,7 @@ class EnterNumberViewModel: ViewModel() {
     private val _number = MutableStateFlow("")
     val number: StateFlow<String> = _number
 
-    private val _country = MutableStateFlow(PickerUtils.allCountries.first())
+    private val _country = MutableStateFlow(PickerUtils.defaultCountry)
     val country: StateFlow<Country> = _country
 
     val numberWithCountryCode = number.map { "${country.value.phoneNoCode}$it".trim() }.stateIn(viewModelScope, SharingStarted.Eagerly, "")
