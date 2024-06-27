@@ -78,4 +78,6 @@
     <string name="pause">Pause</string>
     <string name="resume">Resume</string>
     <string name="recording_permission_needed">Recording permission need to record an audio message</string>
+    <string name="chat_messages">Chat messages</string>
+    <string name="channel_for_direct_messages">Channel for direct messages you receive</string>
 </resources>

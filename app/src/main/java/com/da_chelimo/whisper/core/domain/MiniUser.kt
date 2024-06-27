@@ -7,7 +7,7 @@ data class MiniUser(
     val name: String,
     val uid: String,
     val profilePic: String?,
-    val lastSeen: Long = System.currentTimeMillis()
+    val lastSeen: Long = 0L
 ) {
 
     constructor(): this("", "", null, 0L)

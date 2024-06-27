@@ -64,6 +64,7 @@ firebase-storage = { group = "com.google.firebase", name = "firebase-storage" }
 
 compose-googleFonts = { group = "androidx.compose.ui", name = "ui-text-google-fonts", version.ref = "googlefonts-compose" }
 compose-glide = { group = "com.github.bumptech.glide", name = "compose", version.ref = "glide-compose" }
+compose-coil = { group = "io.coil-kt", name ="coil", version = "2.6.0" }
 compose-countrycode = { group = "io.github.joelkanyi", name = "komposecountrycodepicker", version = "1.2.0" }
 compose-imageCropper = { module = "com.vanniktech:android-image-cropper", version.ref = "androidImageCropper" }
 

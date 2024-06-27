@@ -86,6 +86,7 @@ dependencies {
 
     // Compose UI libraries
     implementation(libs.compose.glide)
+    implementation(libs.compose.coil)
     implementation(libs.cloudy)
     implementation(libs.compose.googleFonts)
     implementation(libs.compose.imageCropper)

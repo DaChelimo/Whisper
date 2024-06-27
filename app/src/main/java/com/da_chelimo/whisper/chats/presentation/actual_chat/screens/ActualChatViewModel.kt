@@ -21,6 +21,8 @@ import com.da_chelimo.whisper.chats.repo.chats.ChatRepoImpl
 import com.da_chelimo.whisper.chats.repo.contacts.ContactsRepo
 import com.da_chelimo.whisper.chats.repo.messages.MessagesRepo
 import com.da_chelimo.whisper.chats.repo.messages.MessagesRepoImpl
+import com.da_chelimo.whisper.chats.repo.unread_messages.UnreadMessagesRepo
+import com.da_chelimo.whisper.chats.repo.unread_messages.UnreadMessagesRepoImpl
 import com.da_chelimo.whisper.core.domain.MiniUser
 import com.da_chelimo.whisper.core.domain.toMiniUser
 import com.da_chelimo.whisper.core.repo.user.UserRepo
@@ -42,6 +44,7 @@ class ActualChatViewModel(
     private val userRepo: UserRepo = UserRepoImpl(),
     private val userDetailsRepo: UserDetailsRepo = UserDetailsRepoImpl(),
     private val chatRepo: ChatRepo = ChatRepoImpl(userRepo),
+    private val unreadMessagesRepo: UnreadMessagesRepo = UnreadMessagesRepoImpl(userRepo),
     private val messagesRepo: MessagesRepo = MessagesRepoImpl(chatRepo),
     private val contactsRepo: ContactsRepo,
     private val audioRecorder: AudioRecorder = AndroidAudioRecorder(),
@@ -154,7 +157,7 @@ class ActualChatViewModel(
              * If chats have been opened by the user who had unread messages,
              * reset the unreadMessagesCount to 0
              */
-            chatRepo.resetUnreadMessagesCount(chatID!!)
+            unreadMessagesRepo.resetUnreadMessagesCount(chatID!!)
         }
     }
 
@@ -231,7 +234,7 @@ class ActualChatViewModel(
 
     fun resetUnreadMessagesCountOnChatExit() = viewModelScope.launch {
         Timber.d("resetUnreadMessagesCountOnChatExit with chatID as $chatID")
-        chatID?.let { chatRepo.resetUnreadMessagesCount(it) }
+        chatID?.let { unreadMessagesRepo.resetUnreadMessagesCount(it) }
     }
 
 

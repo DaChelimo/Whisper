@@ -35,7 +35,7 @@ class UserStatusMoniter(
     fun removeMoniter() {
         GlobalScope.launch {
             Firebase.auth.uid?.let { userDetailsRepo.goOffline(it) }
-            job?.cancel()
         }
+        job?.cancel()
     }
 }

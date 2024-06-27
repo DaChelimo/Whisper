@@ -138,23 +138,6 @@ class ChatRepoImpl(private val userRepo: UserRepo = UserRepoImpl()) : ChatRepo {
     }
 
 
-    override suspend fun resetUnreadMessagesCount(chatID: String) {
-        val chat = getChatFromChatID(chatID)
-        val lastMessageSender = chat?.lastMessageSender
-        val myUID = Firebase.auth.uid
-        val isOtherUser = myUID != lastMessageSender
-
-        Timber.d("isOtherUser is $isOtherUser")
-
-        if (isOtherUser)
-            getChatDetailsRef(chatID).update(
-                mapOf(
-                    Chat::unreadMessagesCount.name to 0,
-                    Chat::lastMessageStatus.name to MessageStatus.OPENED
-                )
-            )
-    }
-
 
     override suspend fun updateMessageStatus(messageID: String, messageStatus: MessageStatus) {
 
