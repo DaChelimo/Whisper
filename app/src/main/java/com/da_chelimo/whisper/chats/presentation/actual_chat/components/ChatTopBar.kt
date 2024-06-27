@@ -1,5 +1,6 @@
 package com.da_chelimo.whisper.chats.presentation.actual_chat.components
 
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -29,7 +30,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.compose.rememberNavController
 import com.da_chelimo.whisper.R
+import com.da_chelimo.whisper.core.domain.User
 import com.da_chelimo.whisper.core.presentation.ui.theme.AppTheme
+import com.da_chelimo.whisper.core.presentation.ui.theme.OnlineGreen
 import com.da_chelimo.whisper.core.presentation.ui.theme.QuickSand
 
 @Composable
@@ -37,6 +40,7 @@ fun ChatTopBar(
     onBackPress: () -> Unit,
     otherPersonName: String?,
     modifier: Modifier = Modifier,
+    lastSeenOrIsOnline: String?,
     onVoiceCall: () -> Unit,
     onVideoCall: () -> Unit
 ) {
@@ -64,13 +68,38 @@ fun ChatTopBar(
                 )
             }
 
-            Text(
-                text = otherPersonName ?: "",
-                fontFamily = QuickSand,
-                fontSize = 19.sp,
-                fontWeight = FontWeight.SemiBold,
-                modifier = Modifier.align(Alignment.Center)
-            )
+            Column(Modifier.align(Alignment.Center), horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(
+                    text = otherPersonName ?: "",
+                    fontFamily = QuickSand,
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    modifier = Modifier
+                )
+
+                if (lastSeenOrIsOnline != null) {
+                    Row(
+                        Modifier.align(Alignment.CenterHorizontally),
+                    ) {
+                        Text(
+                            text = lastSeenOrIsOnline,
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Medium,
+                            lineHeight = 13.sp
+                        )
+
+                        if (lastSeenOrIsOnline == User.ONLINE)
+                            Canvas(
+                                modifier = Modifier
+                                    .padding(top = 1.dp)
+                                    .padding(horizontal = 2.dp)
+                                    .size(8.dp)
+                            ) {
+                                drawCircle(OnlineGreen)
+                            }
+                    }
+                }
+            }
 
             Row(modifier = Modifier.align(Alignment.CenterEnd)) {
                 IconButton(onClick = { onVoiceCall() }) {
@@ -105,6 +134,7 @@ private fun PreviewChatTopBar() = AppTheme {
         ChatTopBar(
             onBackPress = { navController.popBackStack() },
             otherPersonName = "Andrew Chelimo",
+            lastSeenOrIsOnline = "Last Seen: 14:23",
             onVoiceCall = {},
             onVideoCall = {})
     }

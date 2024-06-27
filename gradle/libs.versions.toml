@@ -11,8 +11,8 @@ lifecycleRuntimeKtx = "2.8.1"
 activityCompose = "1.9.0"
 navigationCompose = "2.8.0-beta02"
 
-composeBom = "2024.05.00"
-firebaseBom = "33.1.0"
+composeBom = "2024.06.00"
+firebaseBom = "33.1.1"
 koin-bom = "3.5.0"
 
 googlefonts-compose = "1.6.7"

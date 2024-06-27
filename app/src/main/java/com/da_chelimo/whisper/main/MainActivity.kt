@@ -47,6 +47,7 @@ import com.da_chelimo.whisper.core.presentation.ui.Welcome
 import com.da_chelimo.whisper.core.presentation.ui.navigateSafely
 import com.da_chelimo.whisper.core.presentation.ui.theme.AppTheme
 import com.da_chelimo.whisper.core.presentation.ui.theme.changeStatusBarColor
+import com.da_chelimo.whisper.network_moniter.UserStatusMoniter
 import com.da_chelimo.whisper.settings.presentation.screens.profile.ProfileScreen
 import com.da_chelimo.whisper.settings.presentation.screens.settings.SettingsScreen
 import com.da_chelimo.whisper.welcome.WelcomeScreen
@@ -55,12 +56,15 @@ import com.google.firebase.ktx.Firebase
 
 class MainActivity : ComponentActivity() {
 
+    private var userStatusMoniter = UserStatusMoniter()
+
     val viewModel: MainViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
+
         setContent {
             AppTheme {
                 val snackbarHostState = SnackbarHostState()
@@ -199,5 +203,16 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+
+    override fun onStart() {
+        super.onStart()
+        userStatusMoniter.moniter()
+    }
+
+    override fun onStop() {
+        super.onStop()
+        userStatusMoniter.removeMoniter()
     }
 }

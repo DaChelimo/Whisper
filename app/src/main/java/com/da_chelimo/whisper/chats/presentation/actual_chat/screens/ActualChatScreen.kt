@@ -93,6 +93,7 @@ fun ActualChatScreen(
 
     val composeMessage by viewModel.textMessage.collectAsState()
     val otherUser by viewModel.otherUser.collectAsState()
+    val otherUserLastSeen by viewModel.otherUserLastSeen.collectAsState(initial = null)
     val doesOtherUserAccountExist by viewModel.doesOtherUserAccountExist.collectAsState()
 
     val chat by viewModel.chat.collectAsState()
@@ -165,6 +166,7 @@ fun ActualChatScreen(
                         navController.popBackStack()
                     },
                     otherPersonName = otherUser?.name,
+                    lastSeenOrIsOnline = otherUserLastSeen,
                     modifier = Modifier.clickable {
                         val otherUID = otherUser?.uid
                         if (viewModel.chatID != null && otherUID != null)

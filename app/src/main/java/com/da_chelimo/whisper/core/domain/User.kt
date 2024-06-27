@@ -11,19 +11,27 @@ data class User(
     val uid: String,
     val bio: String,
     val profilePic: String?,
-    val number: String
+    val number: String,
+    var lastSeen: Long,
+    var userStatus: UserStatus = UserStatus.HasDataButNotInApp
 ) : Parcelable {
 
-    constructor() : this("", "", "", null, "")
+    constructor() : this("", "", "", null, "", 0)
 
+    fun isOnline() =
+        ((System.currentTimeMillis() - lastSeen) / 1000 <= 15) && userStatus == UserStatus.Active
 
     companion object {
+        const val ONLINE = "Online"
+
+
         val TEST_User_SHORT_BIO = User(
             "Samantha Chelimo",
             "12345",
             "In another world, in another dimension",
             null,
-            "+254794940110"
+            "+254794940110",
+            0
         )
 
         val TEST_User_LONG_BIO = User(
@@ -31,10 +39,11 @@ data class User(
             "12345",
             "In another world, in another dimension. I was yours. You were mine",
             null,
-            "+254794940110"
+            "+254794940110",
+            0
         )
     }
 }
 
 fun User.toMiniUser() =
-    MiniUser(name, uid, profilePic)
+    MiniUser(name, uid, profilePic, lastSeen)

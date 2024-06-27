@@ -1,6 +1,7 @@
 package com.da_chelimo.whisper.core.repo.user_details
 
 import android.net.Uri
+import com.da_chelimo.whisper.core.domain.MiniUser
 import com.da_chelimo.whisper.core.domain.TaskState
 import com.da_chelimo.whisper.core.domain.User
 import kotlinx.coroutines.flow.Flow
@@ -8,6 +9,8 @@ import kotlinx.coroutines.flow.Flow
 interface UserDetailsRepo {
 
     val getUserProfileFlow: Flow<User?>
+
+    fun getUserLastSeenAsFlow(user: Flow<MiniUser?>): Flow<String?>
 
     /**
      * Updates the user's name in the main /user/ DB
@@ -21,6 +24,11 @@ interface UserDetailsRepo {
 
     suspend fun updateUserBio(userID: String, newBio: String): Boolean
 
+
+    fun updateUserLastSeen(userID: String, lastSeen: Long)
+
+    suspend fun goOnline(userID: String)
+    suspend fun goOffline(userID: String)
 
     /**
      * Updates the user's profilePic in the main /user/ DB

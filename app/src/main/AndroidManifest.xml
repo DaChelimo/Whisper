@@ -35,5 +35,6 @@
             android:name="com.canhub.cropper.CropImageActivity"
             android:theme="@style/CropImageTheme"/>
 
+<!--        <service android:name=".network_moniter.NetworkService"/>-->
     </application>
 </manifest>

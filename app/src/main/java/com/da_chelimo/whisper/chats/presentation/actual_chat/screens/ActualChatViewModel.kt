@@ -25,6 +25,8 @@ import com.da_chelimo.whisper.core.domain.MiniUser
 import com.da_chelimo.whisper.core.domain.toMiniUser
 import com.da_chelimo.whisper.core.repo.user.UserRepo
 import com.da_chelimo.whisper.core.repo.user.UserRepoImpl
+import com.da_chelimo.whisper.core.repo.user_details.UserDetailsRepo
+import com.da_chelimo.whisper.core.repo.user_details.UserDetailsRepoImpl
 import com.da_chelimo.whisper.core.utils.formatDurationInMillis
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
@@ -38,6 +40,7 @@ import timber.log.Timber
 
 class ActualChatViewModel(
     private val userRepo: UserRepo = UserRepoImpl(),
+    private val userDetailsRepo: UserDetailsRepo = UserDetailsRepoImpl(),
     private val chatRepo: ChatRepo = ChatRepoImpl(userRepo),
     private val messagesRepo: MessagesRepo = MessagesRepoImpl(chatRepo),
     private val contactsRepo: ContactsRepo,
@@ -69,6 +72,8 @@ class ActualChatViewModel(
 
     private val _otherUser = MutableStateFlow<MiniUser?>(null)
     val otherUser: StateFlow<MiniUser?> = _otherUser
+    val otherUserLastSeen = userDetailsRepo.getUserLastSeenAsFlow(otherUser)
+
 
     private val _openMediaPicker = MutableStateFlow(false)
     val openMediaPicker: StateFlow<Boolean> = _openMediaPicker
@@ -98,8 +103,13 @@ class ActualChatViewModel(
             } else {
                 val chat = chat.value
 
-                if (chat?.firstMiniUser?.uid == Firebase.auth.uid) chat?.secondMiniUser
-                else chat?.firstMiniUser
+                val otherUserUID = if (chat?.firstMiniUser?.uid == Firebase.auth.uid) chat?.secondMiniUser?.uid
+                else chat?.firstMiniUser?.uid
+
+                /**
+                 * Fetch the user profile to allow you to see his last seen
+                 */
+                userRepo.getUserFromUID(otherUserUID ?: return)?.toMiniUser()
             }
 
         Timber.d("otherUser.value is ${otherUser.value}")
