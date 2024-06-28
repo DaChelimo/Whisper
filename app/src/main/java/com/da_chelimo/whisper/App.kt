@@ -3,6 +3,7 @@ package com.da_chelimo.whisper
 import android.app.Application
 import com.da_chelimo.whisper.core.di.appModule
 import com.da_chelimo.whisper.core.di.localModule
+import com.da_chelimo.whisper.notifications.AppNotificationManager
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
 import org.koin.core.context.startKoin
@@ -19,6 +20,10 @@ class App : Application() {
 //        Intent(applicationContext, NetworkService::class.java)
 //    }
 
+    private val appNotificationManager by lazy {
+        AppNotificationManager(applicationContext)
+    }
+
     /**
      * TODO
      * 1) Add user-activity (Active, Last active)
@@ -33,6 +38,8 @@ class App : Application() {
     override fun onCreate() {
         super.onCreate()
         Timber.plant(Timber.DebugTree())
+
+        appNotificationManager.clearNotifications()
 
 //        networkIntent?.let {
 //            try {

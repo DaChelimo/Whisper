@@ -143,7 +143,7 @@ fun AllChatsScreen(
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(MaterialTheme.colorScheme.background)
+                    .background(LocalAppColors.current.mainBackground)
             ) {
                 // The user has NO CHATS
                 if (chats?.isEmpty() == true) {

@@ -5,6 +5,7 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.os.Bundle
 import androidx.compose.ui.graphics.toArgb
 import androidx.core.app.NotificationChannelCompat
 import androidx.core.app.NotificationCompat
@@ -14,7 +15,6 @@ import androidx.core.app.Person
 import androidx.core.app.RemoteInput
 import androidx.core.graphics.drawable.IconCompat
 import androidx.core.graphics.drawable.toBitmap
-import androidx.core.os.bundleOf
 import coil.Coil
 import coil.request.ImageRequest
 import com.da_chelimo.whisper.R
@@ -77,8 +77,10 @@ class AppNotificationManager(
         )
     }
 
-    private fun getReplyPendingIntent(): PendingIntent? {
-        val replyIntent = Intent(context, ReplyNotificationReceiver::class.java)
+    private fun getReplyPendingIntent(chatID: String): PendingIntent? {
+        val replyIntent = Intent(context, ReplyNotificationReceiver::class.java).apply {
+            putExtra(REPLY_CHAT_ID, chatID)
+        }
 
         return PendingIntent.getBroadcast(
             context,
@@ -112,9 +114,14 @@ class AppNotificationManager(
         createNotificationChannel()
 
         val remoteInput = RemoteInput.Builder(REPLY_KEY)
-            .addExtras(
-                bundleOf(REPLY_CHAT_ID to chatID)
-            )
+            .addExtras(Bundle().also { it.putCharSequence(REPLY_CHAT_ID, chatID) })
+            .setLabel("Reply with ...")
+//            .addExtras(Bundle().apply {  })
+//            .addExtras(
+//                Bundle().apply {
+//                    putString()
+//                }
+//            )
             .build()
 
         val currentPerson = getPersonFromUser(currentUser)
@@ -128,7 +135,7 @@ class AppNotificationManager(
         val replyAction = NotificationCompat.Action.Builder(
             /* icon = */ IconCompat.createWithResource(context, R.drawable.round_send),
             /* title = */ context.getString(R.string.reply),
-            /* intent = */ getReplyPendingIntent()
+            /* intent = */ getReplyPendingIntent(chatID)
         ).addRemoteInput(remoteInput).build()
 
         val notification = NotificationCompat.Builder(context, CHAT_MESSAGES_CHANNEL_ID)

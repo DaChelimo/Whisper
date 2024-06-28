@@ -33,6 +33,7 @@
         </activity>
 
         <service android:name=".notifications.ReplyService" android:exported="false"/>
+        <service android:name=".notifications.UnreadMessagesService" android:exported="false"/>
 
         <receiver android:name=".notifications.ReplyNotificationReceiver" android:exported="false"/>
 

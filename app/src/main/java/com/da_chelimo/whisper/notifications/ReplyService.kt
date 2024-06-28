@@ -5,6 +5,7 @@ import android.content.Intent
 import android.os.IBinder
 import com.da_chelimo.whisper.chats.repo.unread_messages.UnreadMessagesRepo
 import com.da_chelimo.whisper.chats.repo.unread_messages.UnreadMessagesRepoImpl
+import com.da_chelimo.whisper.chats.repo.unread_messages.models.UnreadMessages
 import com.da_chelimo.whisper.notifications.models.toNotiMessage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -27,12 +28,16 @@ class ReplyService(
     private val coroutineScope = CoroutineScope(Dispatchers.Main + job)
 
 
+    private var latestUnreadMessages = listOf<UnreadMessages>()
+
+
     override fun onBind(intent: Intent?): IBinder? = null
 
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         coroutineScope.launch {
             Timber.d("onStartCommand on!!")
+
 
             unreadMessagesRepo.getUnreadMessages().collectLatest { unreadMessagesList ->
                 Timber.d("unreadMessagesRepo.getUnreadMessages().collectLatest is $unreadMessagesList")

@@ -120,8 +120,13 @@ class ActualChatViewModel(
         doesOtherUserAccountExist.value = otherUserID?.let { userRepo.getUserFromUID(it) } != null
     }
 
+
+    fun markMessagesAsOpened(chatID: String?) = viewModelScope.launch {
+        unreadMessagesRepo.updateMessagesAsOpened(chatID)
+    }
+
     /**
-     * Fetch chats from a given chatID
+     * Fetch messages from a given chatID
      *
      * @param paramChatID ~ if chatID == null, it means this is a new conversation being created.
      *                  Therefore, we need to generate a chatID and update it on the personalized chats in Fire DB

@@ -56,7 +56,7 @@ class UserDetailsRepoImpl : UserDetailsRepo {
                         error?.printStackTrace()
 
                         val updatedUser = value?.toObject<User>()
-                        Timber.d("updatedUser is $updatedUser")
+//                        Timber.d("updatedUser is $updatedUser")
 
                         trySend(
                             if (updatedUser != null) {

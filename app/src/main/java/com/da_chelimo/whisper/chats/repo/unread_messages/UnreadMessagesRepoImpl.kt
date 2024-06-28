@@ -12,9 +12,10 @@ import com.da_chelimo.whisper.core.repo.user.UserRepo
 import com.da_chelimo.whisper.core.repo.user.UserRepoImpl
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.Filter
+import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.firestore.toObjects
 import com.google.firebase.ktx.Firebase
-import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
@@ -26,9 +27,10 @@ import timber.log.Timber
 class UnreadMessagesRepoImpl(
     private val userRepo: UserRepo = UserRepoImpl(),
     private val chatRepo: ChatRepo = ChatRepoImpl()
-): UnreadMessagesRepo {
+) : UnreadMessagesRepo {
 
     private val firestore = Firebase.firestore
+
 
     override fun getUnreadChatIDS(): Flow<List<String>> = callbackFlow {
         /**
@@ -36,7 +38,9 @@ class UnreadMessagesRepoImpl(
          * updating the last seen time (to reduce the number of calls)
          * {SKETCHYYYYY... I knowwwww.... And I'm... I'm.... I'm SORRYYYYY :(}
          */
-        val currentUser = Firebase.auth.uid?.let { userRepo.getUserFromUID(it)?.toMiniUser()?.copy(lastSeen = 0L) }
+        val currentUser = Firebase.auth.uid?.let {
+            userRepo.getUserFromUID(it)?.toMiniUser()?.copy(lastSeen = 0L)
+        }
         Timber.d("currentUser is $currentUser")
 
         val firstUserFilter = Filter.equalTo(Chat::firstMiniUser.name, currentUser)
@@ -63,9 +67,10 @@ class UnreadMessagesRepoImpl(
     }
 
 
-    @OptIn(DelicateCoroutinesApi::class)
     override fun getUnreadMessages(): Flow<List<UnreadMessages>> = callbackFlow {
-        val currentUser = Firebase.auth.uid?.let { userRepo.getUserFromUID(it)?.toMiniUser()?.copy(lastSeen = 0L) }
+        val currentUser = Firebase.auth.uid?.let {
+            userRepo.getUserFromUID(it)?.toMiniUser()?.copy(lastSeen = 0L)
+        }
         val firstUserFilter = Filter.equalTo(Chat::firstMiniUser.name, currentUser)
         val secondUserFilter = Filter.equalTo(Chat::secondMiniUser.name, currentUser)
 
@@ -82,30 +87,72 @@ class UnreadMessagesRepoImpl(
         Timber.d("IDS in getUnreadMessages() is $IDS")
 
 
-        getUnreadChatIDS().collectLatest { chatIDs ->
-            val listOfUnreadMessages = chatIDs.map { ID ->
-                val chat = chatRepo.getChatFromChatID(ID)
+        getUnreadChatIDS().collectLatest { listOfChatIDS ->
+            val listOfUnreadMessages = listOfChatIDS.map { chatID ->
+                val chat = chatRepo.getChatFromChatID(chatID)
 
-
-                val messages = ChatRepo.getMessagesCollectionRef(ID)
+                val messages = ChatRepo.getMessagesCollectionRef(chatID)
                     .whereNotEqualTo(Message::messageStatus.name, MessageStatus.OPENED)
+                    .orderBy(Message::timeSent.name, Query.Direction.ASCENDING)
                     .get()
                     .await()
                     .toObjects(Message::class.java)
 
-                val firstUserIsCurrentUser = chat?.firstMiniUser?.uid == Firebase.auth.uid
-                val currentMiniUser = if (firstUserIsCurrentUser) chat?.firstMiniUser else chat?.secondMiniUser
-                val otherMiniUser = if (firstUserIsCurrentUser) chat?.secondMiniUser else chat?.firstMiniUser
+                updateMessagesAsReceived(chatID, messages)
 
-                UnreadMessages(ID, currentMiniUser, otherMiniUser, messages)
+                val firstUserIsCurrentUser = chat?.firstMiniUser?.uid == Firebase.auth.uid
+                val currentMiniUser =
+                    if (firstUserIsCurrentUser) chat?.firstMiniUser else chat?.secondMiniUser
+                val otherMiniUser =
+                    if (firstUserIsCurrentUser) chat?.secondMiniUser else chat?.firstMiniUser
+
+                UnreadMessages(chatID, currentMiniUser, otherMiniUser, messages)
             }
 
             Timber.d("listOfUnreadMessages is $listOfUnreadMessages")
+
 
             trySend(listOfUnreadMessages)
         }
 
         awaitClose {}
+    }
+
+
+    override fun updateMessagesAsReceived(chatID: String, messages: List<Message>) {
+        getChatDetailsRef(chatID)
+            .update(Chat::lastMessageStatus.name, MessageStatus.RECEIVED)
+
+        val messagesRef = ChatRepo.getMessagesCollectionRef(chatID)
+        messages.forEach {
+            messagesRef.document(it.messageID)
+                .update(Message::messageStatus.name, MessageStatus.RECEIVED)
+        }
+    }
+
+
+    override suspend fun updateMessagesAsOpened(chatID: String?) {
+        /**
+         * Mark all messages as opened if:
+         * 1) it was not opened before AND
+         * 2) it is from the other person
+         */
+        val messageIDS = ChatRepo.getMessagesCollectionRef(chatID ?: return)
+            .whereIn(
+                Message::messageStatus.name,
+                listOf(MessageStatus.NOT_SENT, MessageStatus.SENT, MessageStatus.RECEIVED)
+            )
+            .whereNotEqualTo(Message::senderID.name, Firebase.auth.uid)
+            .get()
+            .await()
+            .toObjects<Message>()
+            .map { it.messageID }
+
+        messageIDS.forEach { messageId ->
+            ChatRepo.getMessagesCollectionRef(chatID)
+                .document(messageId)
+                .update(Message::messageStatus.name, MessageStatus.OPENED)
+        }
     }
 
 

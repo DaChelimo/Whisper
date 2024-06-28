@@ -1,5 +1,6 @@
 package com.da_chelimo.whisper.chats.repo.unread_messages
 
+import com.da_chelimo.whisper.chats.domain.Message
 import com.da_chelimo.whisper.chats.repo.unread_messages.models.UnreadMessages
 import kotlinx.coroutines.flow.Flow
 
@@ -13,6 +14,20 @@ interface UnreadMessagesRepo {
      * Emits a flow of a list of the user's unread messages
      */
     fun getUnreadMessages(): Flow<List<UnreadMessages>>
+
+
+    /**
+     * Updates the given messages as RECEIVED for a specific chat
+     */
+    fun updateMessagesAsReceived(chatID: String, messages: List<Message>)
+
+
+    /**
+     * Mark all messages as opened if:
+     * 1) it was not opened before AND
+     * 2) it is from the other person
+     */
+    suspend fun updateMessagesAsOpened(chatID: String?)
 
 
     /**

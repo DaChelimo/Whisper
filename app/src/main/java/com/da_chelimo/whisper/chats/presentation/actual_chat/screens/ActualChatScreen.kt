@@ -127,6 +127,7 @@ fun ActualChatScreen(
     LaunchedEffect(key1 = Unit) {
         viewModel.loadChat(chatID)
         viewModel.loadOtherUser(chatID, newContact)
+        viewModel.markMessagesAsOpened(chatID)
         viewModel.fetchChats(chatID)
     }
 
