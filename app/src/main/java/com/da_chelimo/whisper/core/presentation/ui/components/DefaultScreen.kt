@@ -7,6 +7,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -26,10 +31,23 @@ fun DefaultScreen(
     backgroundColor: Color = LocalAppColors.current.mainBackground,
     content: @Composable ColumnScope.() -> Unit
 ) {
+    var shouldNavigateBack by remember {
+        mutableStateOf(false)
+    }
+
+    LaunchedEffect(key1 = shouldNavigateBack) {
+        if (shouldNavigateBack)
+            navController.popBackStack()
+    }
+
     DefaultScreen(
         modifier = modifier,
         appBar = {
-            AppBar(navController = navController, appBarText = appBarText)
+            AppBar(
+                navController = navController,
+                appBarText = appBarText,
+                onBackPressed = { shouldNavigateBack = true }
+            )
         },
         surfaceColor = surfaceColor,
         backgroundColor = backgroundColor,

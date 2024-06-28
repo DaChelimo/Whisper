@@ -132,9 +132,20 @@ fun ActualChatScreen(
     }
 
 
+    var shouldNavigateBack by remember {
+        mutableStateOf(false)
+    }
+
+    LaunchedEffect(key1 = shouldNavigateBack) {
+        if (shouldNavigateBack)
+            navController.popBackStack()
+    }
+
+
+
     BackHandler {
         viewModel.resetUnreadMessagesCountOnChatExit()
-        navController.popBackStack()
+        shouldNavigateBack = true
     }
 
 
@@ -164,7 +175,7 @@ fun ActualChatScreen(
                 ChatTopBar(
                     onBackPress = {
                         viewModel.resetUnreadMessagesCountOnChatExit()
-                        navController.popBackStack()
+                        shouldNavigateBack = true
                     },
                     otherPersonName = otherUser?.name,
                     lastSeenOrIsOnline = otherUserLastSeen,

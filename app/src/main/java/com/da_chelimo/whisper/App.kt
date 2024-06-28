@@ -26,8 +26,9 @@ class App : Application() {
 
     /**
      * TODO
-     * 1) Add user-activity (Active, Last active)
-     * 2) Add single, double and blue ticks in message
+     * 1) Add user-activity (Active, Last active) -> DONE
+     * 2) Add single, double and blue ticks in message -> DONE
+     *
      * 3) Video support
      * 4) Waveform in vns
      * 5) Fix navigation issues

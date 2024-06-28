@@ -11,6 +11,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -47,9 +48,22 @@ fun SettingsScreen(navController: NavController) {
     val viewModel = viewModel<SettingsViewModel>()
     val isDeleting by viewModel.isDeletingAccount.collectAsState()
 
+
     var showAreYouSurePopup by remember {
         mutableStateOf(false)
     }
+
+
+    var shouldNavigateBack by remember {
+        mutableStateOf(false)
+    }
+
+    LaunchedEffect(key1 = shouldNavigateBack) {
+        if (shouldNavigateBack)
+            navController.popBackStack()
+    }
+
+
 
     Box(modifier = Modifier.fillMaxSize()) {
         DefaultScreen(
@@ -67,7 +81,7 @@ fun SettingsScreen(navController: NavController) {
                         imageVector = Icons.AutoMirrored.Rounded.KeyboardArrowLeft,
                         contentDescription = stringResource(R.string.back_button),
                         onClick = {
-                            navController.popBackStack()
+                            shouldNavigateBack = true
                         }
                     )
 
