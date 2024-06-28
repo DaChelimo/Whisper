@@ -225,7 +225,4 @@ class MessagesRepoImpl(
             .isSuccessful
     }
 
-    override suspend fun updateMessageStatus(messageID: String, messageStatus: MessageStatus) {
-
-    }
 }

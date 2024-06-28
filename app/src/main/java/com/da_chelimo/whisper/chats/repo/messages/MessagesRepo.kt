@@ -1,7 +1,6 @@
 package com.da_chelimo.whisper.chats.repo.messages
 
 import com.da_chelimo.whisper.chats.domain.Message
-import com.da_chelimo.whisper.chats.domain.MessageStatus
 import com.da_chelimo.whisper.chats.domain.MessageType
 import kotlinx.coroutines.flow.Flow
 
@@ -54,7 +53,4 @@ interface MessagesRepo {
      * 2) if it was the last message. Update last message in ChatDetails
      */
     suspend fun unsendMessage(chatID: String, messageID: String): Boolean
-
-
-    suspend fun updateMessageStatus(messageID: String, messageStatus: MessageStatus)
 }

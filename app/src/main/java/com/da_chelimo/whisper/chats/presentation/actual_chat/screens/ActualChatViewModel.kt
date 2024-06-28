@@ -300,6 +300,7 @@ class ActualChatViewModel(
 
     override fun onCleared() {
         super.onCleared()
+        resetUnreadMessagesCountOnChatExit()
         audioRecorder.cancelRecording()
         audioPlayer.stopAudio()
     }

@@ -71,6 +71,7 @@ import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun TextOrImageMessage(
     message: Message,
@@ -97,9 +98,10 @@ fun TextOrImageMessage(
                     .padding(vertical = 4.dp, horizontal = 4.dp)
                     .clip(RoundedCornerShape(8.dp))
                     .aspectRatio((4 / 3).toFloat())
-                    .clickable {
-                        openImage(messageType.imageUrl)
-                    }
+                    .combinedClickable(
+                        onClick = { openImage(messageType.imageUrl) },
+                        onLongClick = { toggleOptionsMenuVisibility(message.messageID) }
+                    )
             ) {
                 when (state) {
                     RequestState.Loading -> {
@@ -147,27 +149,6 @@ fun TextOrImageMessage(
                 }
             }
         }
-//        if (imagePresent) {
-//            GlideImage(
-//                model = (messageType as MessageType.Image).imageUrl,
-//                contentDescription = null,
-//                contentScale = ContentScale.Crop,
-//                loading = placeholder {
-//
-//                },
-//                modifier = Modifier
-//                    .fillMaxWidth()
-//                    .padding(vertical = 4.dp, horizontal = 4.dp)
-//                    .clip(RoundedCornerShape(8.dp))
-//                    .aspectRatio((4 / 3).toFloat())
-//                    .clickable {
-//                        openImage(messageType.imageUrl)
-//                    },
-//                requestBuilderTransform = {
-//                    it.diskCacheStrategy(DiskCacheStrategy.AUTOMATIC)
-//                }
-//            )
-//        }
 
         if (messageType.message.isNotBlank()) {
             Text(
