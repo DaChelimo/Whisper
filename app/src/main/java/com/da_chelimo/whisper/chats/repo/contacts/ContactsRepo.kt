@@ -9,7 +9,7 @@ interface ContactsRepo {
     /**
      * A flow with contacts on Whisper
      */
-    val contactsOnWhisper: Flow<List<User>>
+    val contactsOnWhisper: Flow<List<User>?>
 
     /**
      * Checks if the contact uid is in the user's chats already { There is a pre-existing convo }

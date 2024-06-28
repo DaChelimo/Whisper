@@ -2,21 +2,26 @@ package com.da_chelimo.whisper.core.repo.user_details
 
 import android.net.Uri
 import com.da_chelimo.whisper.chats.domain.Chat
+import com.da_chelimo.whisper.chats.presentation.utils.toChatPreviewTime
 import com.da_chelimo.whisper.chats.repo.chats.ChatRepo.Companion.CHAT_DETAILS
 import com.da_chelimo.whisper.chats.repo.chats.ChatRepo.Companion.getChatDetailsRef
 import com.da_chelimo.whisper.core.domain.MiniUser
 import com.da_chelimo.whisper.core.domain.TaskState
 import com.da_chelimo.whisper.core.domain.User
+import com.da_chelimo.whisper.core.domain.UserStatus
 import com.da_chelimo.whisper.core.domain.toMiniUser
 import com.da_chelimo.whisper.core.repo.user.UserRepo.Companion.getStorageRefForProfilePic
 import com.da_chelimo.whisper.core.repo.user.UserRepo.Companion.getUserProfileReference
 import com.google.firebase.auth.ktx.auth
+import com.google.firebase.firestore.ListenerRegistration
 import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.firestore.toObject
 import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.tasks.await
 import timber.log.Timber
 
@@ -39,6 +44,53 @@ class UserDetailsRepoImpl : UserDetailsRepo {
         }
 
 
+    override fun getUserLastSeenAsFlow(user: Flow<MiniUser?>): Flow<String?> = callbackFlow {
+        var lastSeenCallback: ListenerRegistration? = null
+
+        user.collectLatest {
+            val userID = it?.uid
+
+            if (userID != null) {
+                lastSeenCallback =
+                    getUserProfileReference(userID).addSnapshotListener { value, error ->
+                        error?.printStackTrace()
+
+                        val updatedUser = value?.toObject<User>()
+//                        Timber.d("updatedUser is $updatedUser")
+
+                        trySend(
+                            if (updatedUser != null) {
+                                if (updatedUser.isOnline()) User.ONLINE
+                                else "Last Seen: ${
+                                    updatedUser.lastSeen.toChatPreviewTime(addAmPMSymbol = true)
+                                }"
+                            } else
+                                null
+                        )
+                    }
+            }
+        }
+
+        awaitClose {
+            lastSeenCallback?.remove()
+        }
+    }
+
+
+    override suspend fun goOnline(userID: String) {
+        getUserProfileReference(userID).update(
+            User::userStatus.name, UserStatus.Active
+        ).await()
+    }
+
+    override suspend fun goOffline(userID: String) {
+        getUserProfileReference(userID).update(
+            User::userStatus.name, UserStatus.Offline
+        ).await()
+
+        Timber.d("GoOffline was successful: true")
+    }
+
     override suspend fun updateUserName(userID: String, newName: String): Boolean {
         val currentUser =
             getUserProfileReference(userID).get().await().toObject(User::class.java)?.toMiniUser()
@@ -57,6 +109,18 @@ class UserDetailsRepoImpl : UserDetailsRepo {
         getUserProfileReference(userID)
             .update(User::bio.name, newBio)
             .isSuccessful
+
+
+    override fun updateUserLastSeen(userID: String, lastSeen: Long) {
+        Timber.d("Service: updateUserLastSeen with lastSeen as $lastSeen")
+
+        getUserProfileReference(userID)
+            .update(User::lastSeen.name, lastSeen)
+
+//        if (userStatus == UserStatus.Offline)
+//            getUserProfileReference(userID)
+//                .update(User::lastSeen.name, System.currentTimeMillis())
+    }
 
     override suspend fun updateUserProfilePic(
         userID: String,

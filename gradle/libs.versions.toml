@@ -11,8 +11,8 @@ lifecycleRuntimeKtx = "2.8.1"
 activityCompose = "1.9.0"
 navigationCompose = "2.8.0-beta02"
 
-composeBom = "2024.05.00"
-firebaseBom = "33.1.0"
+composeBom = "2024.06.00"
+firebaseBom = "33.1.1"
 koin-bom = "3.5.0"
 
 googlefonts-compose = "1.6.7"
@@ -64,6 +64,7 @@ firebase-storage = { group = "com.google.firebase", name = "firebase-storage" }
 
 compose-googleFonts = { group = "androidx.compose.ui", name = "ui-text-google-fonts", version.ref = "googlefonts-compose" }
 compose-glide = { group = "com.github.bumptech.glide", name = "compose", version.ref = "glide-compose" }
+compose-coil = { group = "io.coil-kt", name ="coil", version = "2.6.0" }
 compose-countrycode = { group = "io.github.joelkanyi", name = "komposecountrycodepicker", version = "1.2.0" }
 compose-imageCropper = { module = "com.vanniktech:android-image-cropper", version.ref = "androidImageCropper" }
 

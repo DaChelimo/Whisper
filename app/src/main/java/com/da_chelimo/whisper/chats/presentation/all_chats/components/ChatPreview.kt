@@ -19,6 +19,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -36,15 +37,17 @@ import com.da_chelimo.whisper.chats.domain.Chat
 import com.da_chelimo.whisper.chats.domain.MessageStatus
 import com.da_chelimo.whisper.chats.domain.MessageType
 import com.da_chelimo.whisper.chats.domain.toMessageType
+import com.da_chelimo.whisper.chats.presentation.actual_chat.components.messages.RoundedSingleTick
 import com.da_chelimo.whisper.chats.presentation.utils.toChatPreviewTime
 import com.da_chelimo.whisper.core.presentation.ui.components.UserIcon
 import com.da_chelimo.whisper.core.presentation.ui.theme.AppTheme
-import com.da_chelimo.whisper.core.presentation.ui.theme.DarkBlue
+import com.da_chelimo.whisper.core.presentation.ui.theme.LocalAppColors
 import com.da_chelimo.whisper.core.presentation.ui.theme.Montserrat
 import com.da_chelimo.whisper.core.presentation.ui.theme.QuickSand
 import com.da_chelimo.whisper.core.presentation.ui.theme.Roboto
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
+import timber.log.Timber
 
 @Composable
 fun ChatPreview(
@@ -110,15 +113,10 @@ fun ChatPreview(
                     chat.lastMessageSender == Firebase.auth.uid
 
                 Row(Modifier.padding(top = 2.dp), verticalAlignment = Alignment.CenterVertically) {
-                    if (lastMessageIsMine) {
-                        if (chat.lastMessageStatus == MessageStatus.OPENED)
-                            Row {
-                                SingleTick(color = DarkBlue)
-                                SingleTick(modifier = Modifier.offset((-9).dp), color = DarkBlue)
-                            }
-                        else
-                            SingleTick(modifier = Modifier.padding(end = 6.dp))
-                    }
+                    ChatPreviewTicks(
+                        lastMessageIsMine = lastMessageIsMine,
+                        lastMessageStatus = chat.lastMessageStatus
+                    )
 
 
                     val messagePreview =
@@ -153,6 +151,43 @@ fun ChatPreview(
                     // TODO: Add double ticks {grey or blue at the end}
                     if (!lastMessageIsMine && chat.unreadMessagesCount != 0)
                         UnreadTextsCount(count = chat.unreadMessagesCount)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun ChatPreviewTicks(
+    lastMessageIsMine: Boolean,
+    lastMessageStatus: MessageStatus?,
+    modifier: Modifier = Modifier
+) {
+    Column(modifier) {
+        if (lastMessageIsMine) {
+            LaunchedEffect(key1 = Unit) {
+                Timber.d("lastMessageStatus is $lastMessageStatus")
+            }
+
+            when (lastMessageStatus) {
+                MessageStatus.SENT -> SingleTick(modifier = Modifier.padding(end = 6.dp))
+                MessageStatus.RECEIVED -> {
+                    val tickColor =
+                        LocalAppColors.current.plainTextColorOnMainBackground.copy(alpha = 0.7f)
+                    Row {
+                        SingleTick(color = tickColor)
+                        SingleTick(modifier = Modifier.offset((-9).dp), color = tickColor)
+                    }
+                }
+
+                else -> {
+                    Row {
+                        RoundedSingleTick(borderColor = LocalAppColors.current.mainBackground)
+                        RoundedSingleTick(
+                            modifier = Modifier.offset((-9).dp),
+                            borderColor = LocalAppColors.current.lighterMainBackground
+                        )
+                    }
                 }
             }
         }

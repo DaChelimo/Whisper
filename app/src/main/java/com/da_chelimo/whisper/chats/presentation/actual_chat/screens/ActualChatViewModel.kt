@@ -21,10 +21,14 @@ import com.da_chelimo.whisper.chats.repo.chats.ChatRepoImpl
 import com.da_chelimo.whisper.chats.repo.contacts.ContactsRepo
 import com.da_chelimo.whisper.chats.repo.messages.MessagesRepo
 import com.da_chelimo.whisper.chats.repo.messages.MessagesRepoImpl
+import com.da_chelimo.whisper.chats.repo.unread_messages.UnreadMessagesRepo
+import com.da_chelimo.whisper.chats.repo.unread_messages.UnreadMessagesRepoImpl
 import com.da_chelimo.whisper.core.domain.MiniUser
 import com.da_chelimo.whisper.core.domain.toMiniUser
 import com.da_chelimo.whisper.core.repo.user.UserRepo
 import com.da_chelimo.whisper.core.repo.user.UserRepoImpl
+import com.da_chelimo.whisper.core.repo.user_details.UserDetailsRepo
+import com.da_chelimo.whisper.core.repo.user_details.UserDetailsRepoImpl
 import com.da_chelimo.whisper.core.utils.formatDurationInMillis
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
@@ -38,7 +42,9 @@ import timber.log.Timber
 
 class ActualChatViewModel(
     private val userRepo: UserRepo = UserRepoImpl(),
+    private val userDetailsRepo: UserDetailsRepo = UserDetailsRepoImpl(),
     private val chatRepo: ChatRepo = ChatRepoImpl(userRepo),
+    private val unreadMessagesRepo: UnreadMessagesRepo = UnreadMessagesRepoImpl(userRepo),
     private val messagesRepo: MessagesRepo = MessagesRepoImpl(chatRepo),
     private val contactsRepo: ContactsRepo,
     private val audioRecorder: AudioRecorder = AndroidAudioRecorder(),
@@ -69,6 +75,8 @@ class ActualChatViewModel(
 
     private val _otherUser = MutableStateFlow<MiniUser?>(null)
     val otherUser: StateFlow<MiniUser?> = _otherUser
+    val otherUserLastSeen = userDetailsRepo.getUserLastSeenAsFlow(otherUser)
+
 
     private val _openMediaPicker = MutableStateFlow(false)
     val openMediaPicker: StateFlow<Boolean> = _openMediaPicker
@@ -98,8 +106,13 @@ class ActualChatViewModel(
             } else {
                 val chat = chat.value
 
-                if (chat?.firstMiniUser?.uid == Firebase.auth.uid) chat?.secondMiniUser
-                else chat?.firstMiniUser
+                val otherUserUID = if (chat?.firstMiniUser?.uid == Firebase.auth.uid) chat?.secondMiniUser?.uid
+                else chat?.firstMiniUser?.uid
+
+                /**
+                 * Fetch the user profile to allow you to see his last seen
+                 */
+                userRepo.getUserFromUID(otherUserUID ?: return)?.toMiniUser()
             }
 
         Timber.d("otherUser.value is ${otherUser.value}")
@@ -107,8 +120,13 @@ class ActualChatViewModel(
         doesOtherUserAccountExist.value = otherUserID?.let { userRepo.getUserFromUID(it) } != null
     }
 
+
+    fun markMessagesAsOpened(chatID: String?) = viewModelScope.launch {
+        unreadMessagesRepo.updateMessagesAsOpened(chatID)
+    }
+
     /**
-     * Fetch chats from a given chatID
+     * Fetch messages from a given chatID
      *
      * @param paramChatID ~ if chatID == null, it means this is a new conversation being created.
      *                  Therefore, we need to generate a chatID and update it on the personalized chats in Fire DB
@@ -144,7 +162,7 @@ class ActualChatViewModel(
              * If chats have been opened by the user who had unread messages,
              * reset the unreadMessagesCount to 0
              */
-            chatRepo.resetUnreadMessagesCount(chatID!!)
+            unreadMessagesRepo.resetUnreadMessagesCount(chatID!!)
         }
     }
 
@@ -221,7 +239,7 @@ class ActualChatViewModel(
 
     fun resetUnreadMessagesCountOnChatExit() = viewModelScope.launch {
         Timber.d("resetUnreadMessagesCountOnChatExit with chatID as $chatID")
-        chatID?.let { chatRepo.resetUnreadMessagesCount(it) }
+        chatID?.let { unreadMessagesRepo.resetUnreadMessagesCount(it) }
     }
 
 
@@ -282,6 +300,7 @@ class ActualChatViewModel(
 
     override fun onCleared() {
         super.onCleared()
+        resetUnreadMessagesCountOnChatExit()
         audioRecorder.cancelRecording()
         audioPlayer.stopAudio()
     }

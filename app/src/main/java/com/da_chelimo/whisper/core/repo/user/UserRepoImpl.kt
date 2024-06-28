@@ -23,9 +23,10 @@ class UserRepoImpl : UserRepo {
         var profilePicRemoteUrl: Uri? = null
 
         if (profilePicLocalUri != null)
-            profilePicRemoteUrl = getStorageRefForProfilePic(Firebase.auth.uid!!).putFile(profilePicLocalUri)
-                .await()
-                .storage.downloadUrl.await()
+            profilePicRemoteUrl =
+                getStorageRefForProfilePic(Firebase.auth.uid!!).putFile(profilePicLocalUri)
+                    .await()
+                    .storage.downloadUrl.await()
 
         val user = User(
             uid = Firebase.auth.uid
@@ -33,7 +34,8 @@ class UserRepoImpl : UserRepo {
             name = name,
             bio = bio,
             number = phoneNumber,
-            profilePic = profilePicRemoteUrl?.toString()
+            profilePic = profilePicRemoteUrl?.toString(),
+            lastSeen = System.currentTimeMillis()
         )
 
         getUserProfileReference(Firebase.auth.uid!!)

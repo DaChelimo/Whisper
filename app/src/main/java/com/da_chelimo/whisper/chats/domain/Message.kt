@@ -61,5 +61,6 @@ data class Message(
 enum class MessageStatus {
     NOT_SENT,
     SENT,
+    RECEIVED,
     OPENED
 }

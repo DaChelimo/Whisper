@@ -1,5 +1,6 @@
 package com.da_chelimo.whisper.main
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -47,6 +48,9 @@ import com.da_chelimo.whisper.core.presentation.ui.Welcome
 import com.da_chelimo.whisper.core.presentation.ui.navigateSafely
 import com.da_chelimo.whisper.core.presentation.ui.theme.AppTheme
 import com.da_chelimo.whisper.core.presentation.ui.theme.changeStatusBarColor
+import com.da_chelimo.whisper.network_moniter.UserStatusMoniter
+import com.da_chelimo.whisper.notifications.ReplyService
+import com.da_chelimo.whisper.notifications.UnreadMessagesService
 import com.da_chelimo.whisper.settings.presentation.screens.profile.ProfileScreen
 import com.da_chelimo.whisper.settings.presentation.screens.settings.SettingsScreen
 import com.da_chelimo.whisper.welcome.WelcomeScreen
@@ -55,12 +59,18 @@ import com.google.firebase.ktx.Firebase
 
 class MainActivity : ComponentActivity() {
 
+    private var userStatusMoniter = UserStatusMoniter()
+    private val replyService by lazy { ReplyService() }
+    private val unreadMessagesService by lazy { UnreadMessagesService() }
+
+
     val viewModel: MainViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
+
         setContent {
             AppTheme {
                 val snackbarHostState = SnackbarHostState()
@@ -199,5 +209,22 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+
+    override fun onStart() {
+        super.onStart()
+        userStatusMoniter.moniter()
+
+        replyService.stopSelf()
+        startService(Intent(this, UnreadMessagesService::class.java))
+    }
+
+    override fun onStop() {
+        super.onStop()
+        userStatusMoniter.removeMoniter()
+
+        startService(Intent(this, ReplyService::class.java))
+        unreadMessagesService.stopSelf()
     }
 }

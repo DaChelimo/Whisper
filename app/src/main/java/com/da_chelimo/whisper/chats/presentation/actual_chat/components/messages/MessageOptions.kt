@@ -28,6 +28,8 @@ import com.da_chelimo.whisper.chats.presentation.utils.toDayMonthAndTime
 import com.da_chelimo.whisper.core.presentation.ui.theme.ErrorRed
 import com.da_chelimo.whisper.core.presentation.ui.theme.LocalAppColors
 import com.da_chelimo.whisper.core.presentation.ui.theme.QuickSand
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.ktx.Firebase
 
 
 @Composable
@@ -66,7 +68,7 @@ fun MessageOptions(
                 name = stringResource(R.string.forward),
                 onOptionSelected = { })
 
-            if (editMessage != null) {
+            if (editMessage != null && message.senderID == Firebase.auth.uid) {
                 MessageOption(
                     icon = R.drawable.edit,
                     name = stringResource(R.string.edit),
@@ -78,7 +80,7 @@ fun MessageOptions(
                 name = stringResource(R.string.copy),
                 onOptionSelected = { copyToClipboard(message.messageType.toMessageType().message) })
 
-            if (unSendMessage != null) {
+            if (unSendMessage != null && message.senderID == Firebase.auth.uid) {
                 MessageOption(
                     icon = R.drawable.unsend,
                     name = stringResource(R.string.unsend),

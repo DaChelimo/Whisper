@@ -93,6 +93,7 @@ fun ActualChatScreen(
 
     val composeMessage by viewModel.textMessage.collectAsState()
     val otherUser by viewModel.otherUser.collectAsState()
+    val otherUserLastSeen by viewModel.otherUserLastSeen.collectAsState(initial = null)
     val doesOtherUserAccountExist by viewModel.doesOtherUserAccountExist.collectAsState()
 
     val chat by viewModel.chat.collectAsState()
@@ -126,13 +127,25 @@ fun ActualChatScreen(
     LaunchedEffect(key1 = Unit) {
         viewModel.loadChat(chatID)
         viewModel.loadOtherUser(chatID, newContact)
+        viewModel.markMessagesAsOpened(chatID)
         viewModel.fetchChats(chatID)
     }
 
 
+    var shouldNavigateBack by remember {
+        mutableStateOf(false)
+    }
+
+    LaunchedEffect(key1 = shouldNavigateBack) {
+        if (shouldNavigateBack)
+            navController.popBackStack()
+    }
+
+
+
     BackHandler {
         viewModel.resetUnreadMessagesCountOnChatExit()
-        navController.popBackStack()
+        shouldNavigateBack = true
     }
 
 
@@ -162,9 +175,10 @@ fun ActualChatScreen(
                 ChatTopBar(
                     onBackPress = {
                         viewModel.resetUnreadMessagesCountOnChatExit()
-                        navController.popBackStack()
+                        shouldNavigateBack = true
                     },
                     otherPersonName = otherUser?.name,
+                    lastSeenOrIsOnline = otherUserLastSeen,
                     modifier = Modifier.clickable {
                         val otherUID = otherUser?.uid
                         if (viewModel.chatID != null && otherUID != null)

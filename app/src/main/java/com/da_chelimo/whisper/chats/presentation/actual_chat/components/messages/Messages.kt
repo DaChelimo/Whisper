@@ -3,9 +3,11 @@
 package com.da_chelimo.whisper.chats.presentation.actual_chat.components.messages
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
@@ -23,7 +25,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardColors
@@ -46,6 +48,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
@@ -56,9 +59,11 @@ import com.da_chelimo.whisper.chats.domain.Message
 import com.da_chelimo.whisper.chats.domain.MessageStatus
 import com.da_chelimo.whisper.chats.domain.MessageType
 import com.da_chelimo.whisper.chats.domain.toMessageType
+import com.da_chelimo.whisper.chats.presentation.all_chats.components.SingleTick
 import com.da_chelimo.whisper.chats.presentation.utils.toHourAndMinute
 import com.da_chelimo.whisper.core.presentation.ui.theme.AppTheme
 import com.da_chelimo.whisper.core.presentation.ui.theme.Cabin
+import com.da_chelimo.whisper.core.presentation.ui.theme.DarkBlue
 import com.da_chelimo.whisper.core.presentation.ui.theme.LocalAppColors
 import com.da_chelimo.whisper.core.presentation.ui.theme.Poppins
 import com.da_chelimo.whisper.core.utils.formatDurationInMillis
@@ -66,6 +71,7 @@ import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun TextOrImageMessage(
     message: Message,
@@ -92,9 +98,10 @@ fun TextOrImageMessage(
                     .padding(vertical = 4.dp, horizontal = 4.dp)
                     .clip(RoundedCornerShape(8.dp))
                     .aspectRatio((4 / 3).toFloat())
-                    .clickable {
-                        openImage(messageType.imageUrl)
-                    }
+                    .combinedClickable(
+                        onClick = { openImage(messageType.imageUrl) },
+                        onLongClick = { toggleOptionsMenuVisibility(message.messageID) }
+                    )
             ) {
                 when (state) {
                     RequestState.Loading -> {
@@ -133,32 +140,15 @@ fun TextOrImageMessage(
                     }
 
                     is RequestState.Success -> {
-                        Image(painter = painter, contentDescription = null, contentScale = ContentScale.Crop)
+                        Image(
+                            painter = painter,
+                            contentDescription = null,
+                            contentScale = ContentScale.Crop
+                        )
                     }
                 }
             }
         }
-//        if (imagePresent) {
-//            GlideImage(
-//                model = (messageType as MessageType.Image).imageUrl,
-//                contentDescription = null,
-//                contentScale = ContentScale.Crop,
-//                loading = placeholder {
-//
-//                },
-//                modifier = Modifier
-//                    .fillMaxWidth()
-//                    .padding(vertical = 4.dp, horizontal = 4.dp)
-//                    .clip(RoundedCornerShape(8.dp))
-//                    .aspectRatio((4 / 3).toFloat())
-//                    .clickable {
-//                        openImage(messageType.imageUrl)
-//                    },
-//                requestBuilderTransform = {
-//                    it.diskCacheStrategy(DiskCacheStrategy.AUTOMATIC)
-//                }
-//            )
-//        }
 
         if (messageType.message.isNotBlank()) {
             Text(
@@ -459,17 +449,19 @@ fun ChatMessage(
                 }
 
                 if (isMyChat) {
-                    if (message.messageStatus == MessageStatus.OPENED)
-                        Row {
+                    when (message.messageStatus) {
+                        MessageStatus.OPENED -> Row {
+                            RoundedSingleTick(borderColor = LocalAppColors.current.lighterMainBackground)
                             RoundedSingleTick(
-                                modifier = Modifier
-                            )
-                            RoundedSingleTick(
-                                modifier = Modifier.offset((-8).dp)
+                                modifier = Modifier.offset((-8).dp),
+                                borderColor = LocalAppColors.current.lighterMainBackground
                             )
                         }
-                    else
-                        RoundedSingleTick()
+
+                        MessageStatus.RECEIVED -> RoundedSingleTick(borderColor = LocalAppColors.current.lighterMainBackground)
+
+                        else -> SingleTick(color = LocalAppColors.current.appThemeTextColor, modifier = Modifier.padding(end = 4.dp))
+                    }
                 }
             }
 
@@ -504,16 +496,23 @@ fun ChatMessage(
 @Composable
 fun RoundedSingleTick(
     modifier: Modifier = Modifier,
-    color: Color = LocalAppColors.current.appThemeTextColor//MaterialTheme.colorScheme.surface
+    size: Dp = 18.dp,
+    circleColor: Color = DarkBlue,
+    tickColor: Color = Color.White,
+    borderColor: Color
 ) {
     Image(
-        imageVector = Icons.Default.CheckCircle,
+        imageVector = Icons.Default.Check,
         contentDescription = null,
         modifier = modifier
-            .size(15.dp)
+            .size(size)
             .clip(CircleShape)
-            .background(MaterialTheme.colorScheme.background),
-        colorFilter = ColorFilter.tint(color)
+            .background(circleColor)
+            .border(BorderStroke((1.25).dp, borderColor), CircleShape)
+            .padding(2.dp)
+            .padding(horizontal = (0.2).dp, vertical = 2.dp),
+        colorFilter = ColorFilter.tint(tickColor),
+        contentScale = ContentScale.Crop
     )
 }
 

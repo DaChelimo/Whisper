@@ -72,13 +72,6 @@ interface ChatRepo {
      */
     fun disableChat(chatID: String)
 
-    /**
-     * Checks if the current user is the one who has pending unread messages
-     *
-     * If chats have been opened by the user who had unread messages,
-     * reset the unreadMessagesCount to 0
-     */
-    suspend fun resetUnreadMessagesCount(chatID: String)
 
     suspend fun updateMessageStatus(messageID: String, messageStatus: MessageStatus)
 }

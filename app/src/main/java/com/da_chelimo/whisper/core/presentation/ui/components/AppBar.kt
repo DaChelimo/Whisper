@@ -33,7 +33,7 @@ fun AppBar(
     modifier: Modifier = Modifier,
     navController: NavController,
     appBarText: String? = null,
-    onBackPressed: () -> Unit = { navController.popBackStack() }
+    onBackPressed: () -> Unit
 ) {
     Row(
         modifier

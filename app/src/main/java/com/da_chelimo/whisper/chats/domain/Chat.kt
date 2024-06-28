@@ -26,8 +26,8 @@ data class Chat(
 
     constructor() : this(
         chatID = "",
-        firstMiniUser = MiniUser("", "", null),
-        secondMiniUser = MiniUser("", "", null),
+        firstMiniUser = MiniUser("", "", null, 0L),
+        secondMiniUser = MiniUser("", "", null, 0L),
         unreadMessagesCount = 0,
         lastMessageSender = "",
         lastMessageStatus = MessageStatus.SENT,
@@ -41,7 +41,7 @@ data class Chat(
             Chat(
                 chatID = chatID,
 
-                firstMiniUser = MiniUser(currentUser!!.name, currentUser.uid, currentUser.profilePic),
+                firstMiniUser = MiniUser(currentUser!!.name, currentUser.uid, currentUser.profilePic, 0L),
                 secondMiniUser = otherContact,
 
                 unreadMessagesCount = 0,
@@ -55,8 +55,8 @@ data class Chat(
 
         val TEST_CHAT = Chat(
             chatID = UUID.randomUUID().toString(),
-            firstMiniUser = MiniUser("Andrew", "1234", null),
-            secondMiniUser = MiniUser("Diana", "0000", null),
+            firstMiniUser = MiniUser("Andrew", "1234", null, 0L),
+            secondMiniUser = MiniUser("Diana", "0000", null, 0L),
             unreadMessagesCount = 6,
             lastMessageSender = "Wanna come over for lunch?",
             lastMessageStatus = MessageStatus.SENT,

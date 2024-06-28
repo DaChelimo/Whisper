@@ -71,7 +71,8 @@ fun ControlBlurOnScreen(
             content(this)
 
 
-        if (profilePic != null && isPictureOnFullScreen) {
+//        if (profilePic != null && isPictureOnFullScreen) {
+        if (isPictureOnFullScreen) {
             FullScreenProfilePicScreen(
                 profilePic = profilePic,
                 modifier = Modifier.align(Alignment.Center),
@@ -89,7 +90,7 @@ fun ControlBlurOnScreen(
 @OptIn(ExperimentalGlideComposeApi::class)
 @Composable
 fun FullScreenProfilePicScreen(
-    profilePic: String,
+    profilePic: String?,
     modifier: Modifier = Modifier,
     dismissProfilePic: () -> Unit
 ) {
@@ -103,7 +104,7 @@ fun FullScreenProfilePicScreen(
                 onClick = { dismissProfilePic() }
             )
     ) {
-        if (profilePic.isNotBlank())
+        if (!profilePic.isNullOrBlank())
             GlideImage(
                 model = profilePic,
                 contentDescription = stringResource(R.string.change_profile_picture),
