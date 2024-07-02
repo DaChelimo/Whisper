@@ -3,9 +3,6 @@ package com.da_chelimo.whisper.auth.ui.screens.create_profile
 import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.canhub.cropper.CropImageContractOptions
-import com.canhub.cropper.CropImageOptions
-import com.canhub.cropper.CropImageView
 import com.da_chelimo.whisper.core.domain.TaskState
 import com.da_chelimo.whisper.core.repo.user.UserRepo
 import com.da_chelimo.whisper.core.repo.user.UserRepoImpl
@@ -28,18 +25,6 @@ class CreateProfileViewModel(
 
     private val _taskState = MutableStateFlow<TaskState>(TaskState.NONE)
     val taskState: StateFlow<TaskState> = _taskState
-
-    val cropImageContract = CropImageContractOptions(
-            null,
-            CropImageOptions(
-                imageSourceIncludeCamera = true,
-                imageSourceIncludeGallery = true,
-                cropShape = CropImageView.CropShape.OVAL,
-                aspectRatioX = 1,
-                aspectRatioY = 1,
-                fixAspectRatio = true
-            )
-        )
 
 
     fun createUserProfile(phoneNumber: String) {

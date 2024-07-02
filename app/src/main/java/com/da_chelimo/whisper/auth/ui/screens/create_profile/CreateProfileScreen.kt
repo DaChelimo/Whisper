@@ -32,7 +32,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -50,6 +52,7 @@ import com.canhub.cropper.CropImageContract
 import com.da_chelimo.whisper.R
 import com.da_chelimo.whisper.core.domain.TaskState
 import com.da_chelimo.whisper.core.presentation.ui.AllChats
+import com.da_chelimo.whisper.core.presentation.ui.Welcome
 import com.da_chelimo.whisper.core.presentation.ui.components.DefaultScreen
 import com.da_chelimo.whisper.core.presentation.ui.components.LoadingSpinner
 import com.da_chelimo.whisper.core.presentation.ui.components.UserIcon
@@ -59,6 +62,7 @@ import com.da_chelimo.whisper.core.presentation.ui.theme.DarkBlue
 import com.da_chelimo.whisper.core.presentation.ui.theme.Poppins
 import com.da_chelimo.whisper.core.presentation.ui.theme.QuickSand
 import com.da_chelimo.whisper.core.presentation.ui.theme.SelectionBlue
+import com.da_chelimo.whisper.core.utils.DefaultCropContract
 import kotlinx.coroutines.flow.collectLatest
 
 @Composable
@@ -86,134 +90,156 @@ fun CreateProfileScreen(
             val bio by viewModel.bio.collectAsState()
             val profilePic by viewModel.profilePic.collectAsState()
 
-            val cropImageContract = remember { viewModel.cropImageContract }
+            var galleryIsOpen by remember { mutableStateOf(false) }
+            var shouldOpenGallery by remember { mutableStateOf(false) }
+
 
             val launcher =
                 rememberLauncherForActivityResult(contract = CropImageContract()) { imageURI ->
+                    galleryIsOpen = false
+
                     imageURI.uriContent?.let { uri ->
                         viewModel.updateProfilePic(uri)
                     }
                 }
 
+            LaunchedEffect(key1 = shouldOpenGallery) {
+                // If we should open gallery && it was already closed, open gallery
+                if (shouldOpenGallery && !galleryIsOpen) {
+                    galleryIsOpen = true
+                    launcher.launch(DefaultCropContract)
+                }
+            }
+
 
             val scrollState = rememberScrollState()
 
-            Column(
-                Modifier
-                    .fillMaxSize()
-                    .verticalScroll(scrollState),
-                horizontalAlignment = Alignment.CenterHorizontally
-            )
-            {
+            // I would have used task State for this but it simply isn't loading
+            // TODO: Fix this
+            var isSubmittingData by remember {
+                mutableStateOf(false)
+            }
 
-                Text(
-                    text = stringResource(R.string.profile_info),
-                    style = MaterialTheme.typography.titleLarge,
-                    modifier = Modifier.padding(top = 12.dp)
+            Box(Modifier.fillMaxSize()) {
+                Column(
+                    Modifier
+                        .fillMaxSize()
+                        .verticalScroll(scrollState),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 )
+                {
+                    Text(
+                        text = stringResource(R.string.profile_info),
+                        style = MaterialTheme.typography.titleLarge,
+                        modifier = Modifier.padding(top = 12.dp)
+                    )
 
-                Text(
-                    text = stringResource(R.string.provide_name_and_profile_photo),
-                    fontFamily = Poppins,
-                    fontSize = 14.sp,
-                    modifier = Modifier
-                        .padding(top = 6.dp)
-                )
+                    Text(
+                        text = stringResource(R.string.provide_name_and_profile_photo),
+                        fontFamily = Poppins,
+                        fontSize = 14.sp,
+                        modifier = Modifier
+                            .padding(top = 6.dp)
+                    )
 
-                Box(Modifier) {
-                    UserIcon(
-                        profilePic = profilePic?.toString(),
-                        iconSize = 120.dp,
-                        progressBarSize = 32.dp,
-                        progressBarThickness = 3.dp,
-                        modifier = Modifier.padding(top = 8.dp),
-                        borderIfUsingDefaultPic = 2.dp,
-                        onClick = {
-                            launcher.launch(cropImageContract)
+                    Box(Modifier) {
+                        UserIcon(
+                            profilePic = profilePic?.toString(),
+                            iconSize = 120.dp,
+                            progressBarSize = 32.dp,
+                            progressBarThickness = 3.dp,
+                            modifier = Modifier.padding(top = 8.dp),
+                            borderIfUsingDefaultPic = 2.dp,
+                            onClick = {
+                                shouldOpenGallery = true
+                            }
+                        )
+
+                        IconButton(
+                            onClick = { shouldOpenGallery = true },
+                            modifier = Modifier.align(Alignment.BottomEnd),
+                            colors = IconButtonDefaults.iconButtonColors(
+                                containerColor = DarkBlue,
+                                contentColor = Color.White
+                            )
+                        ) {
+                            Icon(
+                                imageVector = Icons.Rounded.Add,
+                                contentDescription = stringResource(R.string.select_profile_picture_from_galley),
+                                modifier = Modifier.size(26.dp)
+                            )
+                        }
+                    }
+
+                    CreateProfileTextField(
+                        modifier = Modifier.padding(top = 20.dp),
+                        value = name,
+                        placeHolderText = stringResource(R.string.enter_your_name),
+                        onValueChange = {
+                            viewModel.updateName(it)
                         }
                     )
 
-                    IconButton(
-                        onClick = { launcher.launch(cropImageContract) },
-                        modifier = Modifier.align(Alignment.BottomEnd),
-                        colors = IconButtonDefaults.iconButtonColors(
-                            containerColor = DarkBlue,
-                            contentColor = Color.White
-                        )
-                    ) {
-                        Icon(
-                            imageVector = Icons.Rounded.Add,
-                            contentDescription = stringResource(R.string.select_profile_picture_from_galley),
-                            modifier = Modifier.size(26.dp)
-                        )
-                    }
-                }
-
-                CreateProfileTextField(
-                    modifier = Modifier.padding(top = 20.dp),
-                    value = name,
-                    placeHolderText = stringResource(R.string.enter_your_name),
-                    onValueChange = {
-                        viewModel.updateName(it)
-                    }
-                )
-
-                CreateProfileTextField(
-                    modifier = Modifier.padding(top = 12.dp),
-                    value = bio,
-                    placeHolderText = stringResource(id = R.string.enter_your_bio),
-                    onValueChange = {
-                        viewModel.updateBio(it)
-                    }
-                )
-
-
-                Spacer(modifier = Modifier.weight(1f))
-
-
-                LaunchedEffect(key1 = Unit) {
-                    viewModel.taskState.collectLatest {
-                        if (it is TaskState.DONE.SUCCESS)
-                            navController.navigateSafelyAndPopTo(
-                                route = AllChats,
-                                popTo = AllChats,
-                                isInclusive = true
-                            )
-                        else if (it is TaskState.DONE.ERROR)
-                            snackbarHostState.showSnackbar("Error occurred")
-                    }
-                }
-
-                Button(
-                    onClick = {
-                        viewModel.createUserProfile(phoneNumber)
-                        viewModel.resetTaskState()
-                    },
-                    modifier = Modifier
-                        .padding(vertical = 24.dp)
-                        .fillMaxWidth(),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.surface,
-                        contentColor = MaterialTheme.colorScheme.onSurface,
-                        disabledContentColor = MaterialTheme.colorScheme.onSurface.copy(0.75f),
-                        disabledContainerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.75f)
-                    ),
-                    enabled = name.isNotBlank(),
-                    shape = MaterialTheme.shapes.medium
-                ) {
-                    Text(
-                        text = stringResource(R.string.next),
-                        fontFamily = Poppins,
-                        fontSize = 16.sp,
-                        modifier = Modifier.padding(vertical = 6.dp)
+                    CreateProfileTextField(
+                        modifier = Modifier.padding(top = 12.dp),
+                        value = bio,
+                        placeHolderText = stringResource(id = R.string.enter_your_bio),
+                        onValueChange = {
+                            viewModel.updateBio(it)
+                        }
                     )
+
+
+                    Spacer(modifier = Modifier.weight(1f))
+
+
+                    LaunchedEffect(key1 = Unit) {
+                        viewModel.taskState.collectLatest {
+                            if (it is TaskState.DONE.SUCCESS)
+                                navController.navigateSafelyAndPopTo(
+                                    route = AllChats,
+                                    popTo = Welcome,
+                                    isInclusive = true
+                                )
+                            else if (it is TaskState.DONE.ERROR)
+                                snackbarHostState.showSnackbar("Error occurred")
+                        }
+                    }
+
+                    Button(
+                        onClick = {
+                            isSubmittingData = true
+                            viewModel.createUserProfile(phoneNumber)
+                            viewModel.resetTaskState()
+                            isSubmittingData = false
+                        },
+                        modifier = Modifier
+                            .padding(vertical = 24.dp)
+                            .fillMaxWidth(),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.surface,
+                            contentColor = MaterialTheme.colorScheme.onSurface,
+                            disabledContentColor = MaterialTheme.colorScheme.onSurface.copy(0.75f),
+                            disabledContainerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.75f)
+                        ),
+                        enabled = name.isNotBlank(),
+                        shape = MaterialTheme.shapes.medium
+                    ) {
+                        Text(
+                            text = stringResource(R.string.next),
+                            fontFamily = Poppins,
+                            fontSize = 16.sp,
+                            modifier = Modifier.padding(vertical = 6.dp)
+                        )
+                    }
                 }
+
+//                if (taskState !is TaskState.NONE)
+                // tODO: Why is this NOT WORKING????
+                if (isSubmittingData)
+                    LoadingSpinner(modifier = Modifier.align(Alignment.Center))
             }
         }
-
-
-        if (taskState !is TaskState.NONE)
-            LoadingSpinner(modifier = Modifier.align(Alignment.Center))
     }
 }
 

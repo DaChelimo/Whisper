@@ -10,6 +10,6 @@ class AllChatsViewModel(
     private val chatRepo: ChatRepo = ChatRepoImpl()
 ) : ViewModel() {
 
-    val chats = chatRepo.getChatsForUser(Firebase.auth.uid!!)
+    val chats = chatRepo.getChatsForUser(Firebase.auth.uid)
 
 }

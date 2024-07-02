@@ -38,12 +38,22 @@ class EnterCodeViewModel(
     val formattedTimeLeft = timeLeftInMillis.map { it.formatDurationInMillis() }
         .stateIn(viewModelScope, SharingStarted.Eagerly, "")
 
+    /**
+     * The app moves to Chromes to verify if the user is real
+     * Using isAuthenticating prevents double authentication
+     */
+    private var isAuthenticating = false
+
+
     companion object {
         const val CODE_LENGTH = 6
 
         const val SECOND_IN_MILLIS = 1000.toLong()
         const val SMS_TIMEOUT = 30 * SECOND_IN_MILLIS
     }
+
+
+
 
     fun updateCode(newCode: String) {
         _code.value = newCode
@@ -59,23 +69,27 @@ class EnterCodeViewModel(
                 _timeLeftInMillis.value = millisUntilFinished
             }
 
-            override fun onFinish() {}
+            override fun onFinish() {
+                isAuthenticating = false
+            }
         }
         timer.start()
     }
 
 
     fun authenticateWithNumber(phoneNumber: String, activity: Activity?) {
-        startTimer()
+        if (!isAuthenticating) {
+            startTimer()
 
-        authRepo.authenticateWithNumber(
-            phoneNumber = phoneNumber,
-            activity = activity!!,
-            onVerificationDone = { isSuccess ->
-                if (isSuccess)
-                    _taskState.value = TaskState.DONE.SUCCESS
-            }
-        )
+            authRepo.authenticateWithNumber(
+                phoneNumber = phoneNumber,
+                activity = activity!!,
+                onVerificationDone = { isSuccess ->
+                    if (isSuccess)
+                        _taskState.value = TaskState.DONE.SUCCESS
+                }
+            )
+        }
     }
 
     suspend fun checkIfUserHasExistingAccount(): Boolean {
@@ -88,16 +102,19 @@ class EnterCodeViewModel(
         _taskState.value = TaskState.LOADING()
 
         viewModelScope.launch {
-            authRepo.submitSMSCode(code.value) { isSuccess ->
-                Timber.d("isSuccess in authRepo.submitSMSCode(code.value) is $isSuccess")
+            try {
+                authRepo.submitSMSCode(code.value) { isSuccess ->
+                    Timber.d("isSuccess in authRepo.submitSMSCode(code.value) is $isSuccess")
 
-                viewModelScope.launch {
-                    if (isSuccess) {
-                        _taskState.value = TaskState.DONE.SUCCESS
+                    viewModelScope.launch {
+                        if (isSuccess) {
+                            _taskState.value = TaskState.DONE.SUCCESS
+                        } else
+                            _taskState.value = TaskState.DONE.ERROR(R.string.error_occurred)
                     }
-                    else
-                        _taskState.value = TaskState.DONE.ERROR(R.string.error_occurred)
                 }
+            } catch (e: Exception) { // Thrown when the wrong OTP is entered
+                _taskState.value = TaskState.DONE.ERROR(R.string.wrong_otp_entered)
             }
         }
     }

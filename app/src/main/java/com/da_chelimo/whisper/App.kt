@@ -11,27 +11,28 @@ import org.koin.core.logger.Level
 import timber.log.Timber
 
 class App : Application() {
-//
-//    private val networkMonitor = NetworkMonitor()
-//    private val networkService = NetworkService(networkMonitor)
-//
-//
-//    private val networkIntent: Intent? by lazy {
-//        Intent(applicationContext, NetworkService::class.java)
-//    }
-
     private val appNotificationManager by lazy {
         AppNotificationManager(applicationContext)
     }
 
     /**
+     * Issues:
+     * 1) CreateProfile SelectPhoto causing crash -> FIXED
+     * 2) Selecting user in ContactsScreen is causing nav.popStack()  -> FIXED
+     * 3) Change DP screen to use GlobalScope instead of viewModelScope -> DONE
+     * 4) Show loading spinner in the ContactsScreen when contacts have not yet
+     *    been loaded
+     * 5) Double sending of OTP code -> FIXED-ish
+     */
+
+    /**
      * TODO
      * 1) Add user-activity (Active, Last active) -> DONE
      * 2) Add single, double and blue ticks in message -> DONE
+     * 5) Fix navigation issues -> DONE
      *
      * 3) Video support
      * 4) Waveform in vns
-     * 5) Fix navigation issues
      * 6) Status
      * 7) Calls
      */

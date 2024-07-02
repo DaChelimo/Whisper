@@ -8,6 +8,9 @@ import com.da_chelimo.whisper.core.repo.user_details.UserDetailsRepo
 import com.da_chelimo.whisper.core.repo.user_details.UserDetailsRepoImpl
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -35,9 +38,17 @@ class ProfileViewModel(
     }
 
 
-    fun updateProfilePic(localUri: Uri) = viewModelScope.launch {
+    /**
+     * Upload the DP on the server. We use a 1.3 second delay to buy time for the upload to finish
+     */
+    @OptIn(DelicateCoroutinesApi::class)
+    fun updateProfilePic(localUri: Uri) = GlobalScope.launch {
         userDetailsRepo.updateUserProfilePic(Firebase.auth.uid!!, localUri).collectLatest { task ->
             _taskState.value = task
+        }
+        viewModelScope.launch {
+            delay(1300)
+            _taskState.value = TaskState.DONE.SUCCESS
         }
     }
 }

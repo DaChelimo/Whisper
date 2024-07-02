@@ -40,6 +40,8 @@ class AppNotificationManager(
 
 
     companion object {
+        const val NOTIFICATION_CHAT_ID = "com.da_chelimo.whisper.NOTIFICATION_CHAT_ID"
+
         const val REPLY_KEY = "REPLY_MESSAGE_KEY"
         const val REPLY_CHAT_ID = "REPLY_CHAT_ID"
 //        const val REPLY_MESSAGE_ID = "REPLY_MESSAGE_ID"
@@ -50,7 +52,7 @@ class AppNotificationManager(
         const val OPEN_APP_INTENT_CODE = 2000
     }
 
-    fun createNotificationChannel() {
+    private fun createNotificationChannel() {
         val channel = NotificationChannelCompat.Builder(
             CHAT_MESSAGES_CHANNEL_ID,
             NotificationManager.IMPORTANCE_HIGH
@@ -67,8 +69,15 @@ class AppNotificationManager(
         notificationManagerCompat.getNotificationChannel(CHAT_MESSAGES_CHANNEL_ID) != null
 
 
-    private fun getOpenAppPendingIntent(): PendingIntent? {
-        val intent = Intent(context, MainActivity::class.java)
+    /**
+     * Make intent work
+     */
+    private fun getOpenAppPendingIntent(chatID: String): PendingIntent? {
+        val intent = Intent(context, MainActivity::class.java).apply {
+            putExtra(NOTIFICATION_CHAT_ID, chatID)
+//            putExtras(Bundle().apply { putString(NOTIFICATION_CHAT_ID, chatID)} )
+        }
+
         return PendingIntent.getActivity(
             context,
             OPEN_APP_INTENT_CODE,
@@ -90,6 +99,7 @@ class AppNotificationManager(
         )
     }
 
+
     private suspend fun getIconFromUrl(imageUrl: String): IconCompat? {
         val imageRequest = ImageRequest.Builder(context).data(imageUrl).target {
             IconCompat.createWithBitmap(it.toBitmap())
@@ -104,6 +114,8 @@ class AppNotificationManager(
         setIcon(icon)
     }.build()
 
+
+
     @SuppressLint("MissingPermission")
     suspend fun sendNotification(
         chatID: String,
@@ -116,12 +128,6 @@ class AppNotificationManager(
         val remoteInput = RemoteInput.Builder(REPLY_KEY)
             .addExtras(Bundle().also { it.putCharSequence(REPLY_CHAT_ID, chatID) })
             .setLabel("Reply with ...")
-//            .addExtras(Bundle().apply {  })
-//            .addExtras(
-//                Bundle().apply {
-//                    putString()
-//                }
-//            )
             .build()
 
         val currentPerson = getPersonFromUser(currentUser)
@@ -141,7 +147,7 @@ class AppNotificationManager(
         val notification = NotificationCompat.Builder(context, CHAT_MESSAGES_CHANNEL_ID)
             .setColor(DarkBlue.toArgb())
             .setAutoCancel(true)
-            .setContentIntent(getOpenAppPendingIntent())
+            .setContentIntent(getOpenAppPendingIntent(chatID))
             .setSmallIcon(IconCompat.createWithResource(context, R.mipmap.app_icon_round))
             .setStyle(
                 MessagingStyle(currentPerson).also {
@@ -159,19 +165,11 @@ class AppNotificationManager(
             .build()
 
         val id = chatID.hashCode().absoluteValue
-//        val chatIntID = BigInteger(chatID.encodeToByteArray()).toInt()
-//        chatIntID.toBigInteger().toByteArray().toString()
 
         Timber.d("chatID.hashCode() is $id")
-
-//        notificationManagerCompat.notify(kotlin.random.Random.nextInt(100), notification)
         notificationManagerCompat.notify(id, notification)
     }
 
-
-    fun refreshNotifications() {
-
-    }
 
 
     fun clearNotifications() {

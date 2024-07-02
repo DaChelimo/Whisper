@@ -28,7 +28,7 @@ class ContactsRepoImpl(
     private val firestore = Firebase.firestore
 
     override val contactsOnWhisper: Flow<List<User>?> =
-        localContactDao.getContacts().map { list -> list.filterNot { it.uid == Firebase.auth.uid } }
+        localContactDao.getContacts().map { list -> list?.filterNot { it.uid == Firebase.auth.uid } }
 
 
     override suspend fun getContactFromUID(userUID: String): User? =

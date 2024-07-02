@@ -9,6 +9,7 @@ import com.da_chelimo.whisper.core.domain.MiniUser
 import com.da_chelimo.whisper.core.domain.TaskState
 import com.da_chelimo.whisper.core.domain.User
 import com.da_chelimo.whisper.core.domain.UserStatus
+import com.da_chelimo.whisper.core.domain.isOnline
 import com.da_chelimo.whisper.core.domain.toMiniUser
 import com.da_chelimo.whisper.core.repo.user.UserRepo.Companion.getStorageRefForProfilePic
 import com.da_chelimo.whisper.core.repo.user.UserRepo.Companion.getUserProfileReference
@@ -78,12 +79,15 @@ class UserDetailsRepoImpl : UserDetailsRepo {
 
 
     override suspend fun goOnline(userID: String) {
+        Timber.d("Go Online called")
         getUserProfileReference(userID).update(
             User::userStatus.name, UserStatus.Active
         ).await()
     }
 
     override suspend fun goOffline(userID: String) {
+        Timber.d("Go Offline called")
+
         getUserProfileReference(userID).update(
             User::userStatus.name, UserStatus.Offline
         ).await()

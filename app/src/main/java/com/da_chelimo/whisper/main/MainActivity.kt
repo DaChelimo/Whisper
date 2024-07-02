@@ -15,6 +15,7 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -32,7 +33,7 @@ import com.da_chelimo.whisper.chats.presentation.actual_chat.screens.send_image.
 import com.da_chelimo.whisper.chats.presentation.actual_chat.screens.view_image.ViewImageScreen
 import com.da_chelimo.whisper.chats.presentation.all_chats.screens.AllChatsScreen
 import com.da_chelimo.whisper.chats.presentation.chat_details.screens.ChatDetailsScreen
-import com.da_chelimo.whisper.chats.presentation.start_chat.screens.SelectContactScreen
+import com.da_chelimo.whisper.chats.presentation.select_contact.screens.SelectContactScreen
 import com.da_chelimo.whisper.core.presentation.ui.ActualChat
 import com.da_chelimo.whisper.core.presentation.ui.AllChats
 import com.da_chelimo.whisper.core.presentation.ui.ChatDetails
@@ -49,6 +50,7 @@ import com.da_chelimo.whisper.core.presentation.ui.navigateSafely
 import com.da_chelimo.whisper.core.presentation.ui.theme.AppTheme
 import com.da_chelimo.whisper.core.presentation.ui.theme.changeStatusBarColor
 import com.da_chelimo.whisper.network_moniter.UserStatusMoniter
+import com.da_chelimo.whisper.notifications.AppNotificationManager
 import com.da_chelimo.whisper.notifications.ReplyService
 import com.da_chelimo.whisper.notifications.UnreadMessagesService
 import com.da_chelimo.whisper.settings.presentation.screens.profile.ProfileScreen
@@ -56,6 +58,7 @@ import com.da_chelimo.whisper.settings.presentation.screens.settings.SettingsScr
 import com.da_chelimo.whisper.welcome.WelcomeScreen
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
+import timber.log.Timber
 
 class MainActivity : ComponentActivity() {
 
@@ -87,6 +90,9 @@ class MainActivity : ComponentActivity() {
 
 
                 LaunchedEffect(key1 = Unit) {
+//                    if (Firebase.auth.uid == null)
+//                        navController.navigate(Welcome)
+
                     val currentUser = viewModel.fetchCurrentUser()
 
                     if (currentUser?.uid == null && Firebase.auth.uid != null) { // User registered but didn't create their profile
@@ -96,6 +102,12 @@ class MainActivity : ComponentActivity() {
                     }
                 }
 
+                val notificationChatID = remember { intent?.getStringExtra(AppNotificationManager.NOTIFICATION_CHAT_ID) }
+                LaunchedEffect(key1 = Unit) {
+                    Timber.d("notificationChatID is $notificationChatID")
+                    if (notificationChatID != null)
+                        navController.navigate(ActualChat(notificationChatID, null))
+                }
 
                 Scaffold(
                     modifier = Modifier.fillMaxSize(),
@@ -107,6 +119,7 @@ class MainActivity : ComponentActivity() {
                         NavHost(
                             navController = navController,
                             startDestination = if (Firebase.auth.uid == null) Welcome else AllChats
+//                            startDestination = AllChats// if (Firebase.auth.uid == null) Welcome else AllChats
                         ) {
 
                             composable<Welcome> {
