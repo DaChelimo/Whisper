@@ -17,12 +17,12 @@ class App : Application() {
 
     /**
      * Issues:
-     * 1) CreateProfile SelectPhoto causing crash
-     * 2) Selecting user in ContactsScreen is causing nav.popStack()
-     * 3) Change DP screen to use GlobalScope instead of viewModelScope
+     * 1) CreateProfile SelectPhoto causing crash -> FIXED
+     * 2) Selecting user in ContactsScreen is causing nav.popStack()  -> FIXED
+     * 3) Change DP screen to use GlobalScope instead of viewModelScope -> DONE
      * 4) Show loading spinner in the ContactsScreen when contacts have not yet
      *    been loaded
-     * 5) Double sending of OTP code
+     * 5) Double sending of OTP code -> FIXED-ish
      */
 
     /**
