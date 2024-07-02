@@ -15,7 +15,7 @@ abstract class LocalContactDao: BaseDao<LocalContact>() {
     abstract suspend fun getContact(userUID: String): User?
 
     @Query("SELECT contact FROM localcontact")
-    abstract fun getContacts(): Flow<List<User>>
+    abstract fun getContacts(): Flow<List<User>?>
 
     @Query("DELETE FROM localcontact")
     abstract suspend fun deleteContacts()

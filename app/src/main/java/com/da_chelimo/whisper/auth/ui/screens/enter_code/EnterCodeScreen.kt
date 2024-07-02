@@ -56,8 +56,9 @@ fun EnterCodeScreen(
     phoneNumberWithCountryCode: String,
     snackbarHostState: SnackbarHostState
 ) {
-
+    val context = LocalContext.current
     val viewModel = viewModel<EnterCodeViewModel>()
+
     val code by viewModel.code.collectAsState()
     val taskState by viewModel.taskState.collectAsState()
 
@@ -88,8 +89,9 @@ fun EnterCodeScreen(
             }
 
             is TaskState.DONE.ERROR -> {
-                snackbarHostState.showSnackbar("Error occurred")
+                snackbarHostState.showSnackbar(context.getString((taskState as TaskState.DONE.ERROR).errorMessageRes))
                 viewModel.resetTaskState()
+                navController.popBackStack()
             }
 
             else -> {}
@@ -182,8 +184,7 @@ fun EnterCodeScreen(
                     modifier = Modifier.padding(vertical = 6.dp)
                 )
             }
-        }
-        else if (taskState is TaskState.LOADING || taskState is TaskState.DONE.SUCCESS) {
+        } else if (taskState is TaskState.LOADING || taskState is TaskState.DONE.SUCCESS) {
             Column(
                 Modifier.fillMaxSize(),
                 verticalArrangement = Arrangement.Center,

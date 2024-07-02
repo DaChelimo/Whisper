@@ -33,7 +33,7 @@ import com.da_chelimo.whisper.chats.presentation.actual_chat.screens.send_image.
 import com.da_chelimo.whisper.chats.presentation.actual_chat.screens.view_image.ViewImageScreen
 import com.da_chelimo.whisper.chats.presentation.all_chats.screens.AllChatsScreen
 import com.da_chelimo.whisper.chats.presentation.chat_details.screens.ChatDetailsScreen
-import com.da_chelimo.whisper.chats.presentation.start_chat.screens.SelectContactScreen
+import com.da_chelimo.whisper.chats.presentation.select_contact.screens.SelectContactScreen
 import com.da_chelimo.whisper.core.presentation.ui.ActualChat
 import com.da_chelimo.whisper.core.presentation.ui.AllChats
 import com.da_chelimo.whisper.core.presentation.ui.ChatDetails
@@ -90,6 +90,9 @@ class MainActivity : ComponentActivity() {
 
 
                 LaunchedEffect(key1 = Unit) {
+//                    if (Firebase.auth.uid == null)
+//                        navController.navigate(Welcome)
+
                     val currentUser = viewModel.fetchCurrentUser()
 
                     if (currentUser?.uid == null && Firebase.auth.uid != null) { // User registered but didn't create their profile
@@ -106,7 +109,6 @@ class MainActivity : ComponentActivity() {
                         navController.navigate(ActualChat(notificationChatID, null))
                 }
 
-
                 Scaffold(
                     modifier = Modifier.fillMaxSize(),
                     snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
@@ -117,6 +119,7 @@ class MainActivity : ComponentActivity() {
                         NavHost(
                             navController = navController,
                             startDestination = if (Firebase.auth.uid == null) Welcome else AllChats
+//                            startDestination = AllChats// if (Firebase.auth.uid == null) Welcome else AllChats
                         ) {
 
                             composable<Welcome> {

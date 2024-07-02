@@ -65,7 +65,7 @@ class AndroidAudioRecorder(
     }
 
     override fun endRecording(): Uri? {
-        stopWatch.pauseOrStop()
+        stopWatch.stopAndReset()
 
         mediaRecorder?.stop()
         mediaRecorder?.release()

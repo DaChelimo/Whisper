@@ -33,9 +33,6 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.canhub.cropper.CropImageContract
-import com.canhub.cropper.CropImageContractOptions
-import com.canhub.cropper.CropImageOptions
-import com.canhub.cropper.CropImageView
 import com.da_chelimo.whisper.R
 import com.da_chelimo.whisper.chats.presentation.view_profile_pic.ControlBlurOnScreen
 import com.da_chelimo.whisper.core.domain.TaskState
@@ -44,6 +41,7 @@ import com.da_chelimo.whisper.core.presentation.ui.components.LoadingSpinner
 import com.da_chelimo.whisper.core.presentation.ui.components.UserIcon
 import com.da_chelimo.whisper.core.presentation.ui.theme.AppTheme
 import com.da_chelimo.whisper.core.presentation.ui.theme.DarkBlue
+import com.da_chelimo.whisper.core.utils.DefaultCropContract
 import com.da_chelimo.whisper.settings.presentation.screens.profile.components.EditProfilePopup
 import com.da_chelimo.whisper.settings.presentation.screens.profile.components.ProfileItem
 import timber.log.Timber
@@ -166,19 +164,7 @@ fun ProfileScreen(
                 }
 
             if (showProfilePicPopup)
-                pickImageLauncher.launch(
-                    CropImageContractOptions(
-                        null,
-                        CropImageOptions(
-                            imageSourceIncludeCamera = true,
-                            imageSourceIncludeGallery = true,
-                            cropShape = CropImageView.CropShape.OVAL,
-                            aspectRatioX = 1,
-                            aspectRatioY = 1,
-                            fixAspectRatio = true
-                        )
-                    )
-                )
+                pickImageLauncher.launch(DefaultCropContract)
         }
     }
 }

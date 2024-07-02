@@ -57,7 +57,7 @@ interface ChatRepo {
     /**
      * Gets all the chats of the user, given the userID
      */
-    fun getChatsForUser(userID: String): Flow<List<Chat>?>
+    fun getChatsForUser(userID: String?): Flow<List<Chat>?>
 
     /**
      * Disables all the user's chats

@@ -11,18 +11,19 @@ import org.koin.core.logger.Level
 import timber.log.Timber
 
 class App : Application() {
-//
-//    private val networkMonitor = NetworkMonitor()
-//    private val networkService = NetworkService(networkMonitor)
-//
-//
-//    private val networkIntent: Intent? by lazy {
-//        Intent(applicationContext, NetworkService::class.java)
-//    }
-
     private val appNotificationManager by lazy {
         AppNotificationManager(applicationContext)
     }
+
+    /**
+     * Issues:
+     * 1) CreateProfile SelectPhoto causing crash
+     * 2) Selecting user in ContactsScreen is causing nav.popStack()
+     * 3) Change DP screen to use GlobalScope instead of viewModelScope
+     * 4) Show loading spinner in the ContactsScreen when contacts have not yet
+     *    been loaded
+     * 5) Double sending of OTP code
+     */
 
     /**
      * TODO

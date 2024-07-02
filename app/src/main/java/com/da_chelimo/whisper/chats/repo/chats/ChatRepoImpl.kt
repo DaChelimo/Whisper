@@ -49,33 +49,38 @@ class ChatRepoImpl(private val userRepo: UserRepo = UserRepoImpl()) : ChatRepo {
         }
     }
 
-    override fun getChatsForUser(userID: String) = callbackFlow<List<Chat>?> {
+    override fun getChatsForUser(userID: String?) = callbackFlow<List<Chat>?> {
         var chatListener: ListenerRegistration? = null
 
-        getChatIdsForUser(userID).collectLatest { listOfChatIDs ->
-            if (listOfChatIDs.isEmpty())
-                trySend(listOf())
+        if (userID != null) {
 
-            Timber.d("listOfChatIDs is $listOfChatIDs")
+            getChatIdsForUser(userID).collectLatest { listOfChatIDs ->
+                if (listOfChatIDs.isEmpty())
+                    trySend(listOf())
 
-            if (listOfChatIDs.isNotEmpty()) {
-                chatListener = firestore.collection(CHAT_DETAILS)
-                    .whereIn(Chat::chatID.name, listOfChatIDs)
-                    .orderBy(Chat::timeOfLastMessage.name, Query.Direction.DESCENDING)
-                    .addSnapshotListener { value, error ->
-                        try {
-                            val chats = value?.toObjects(Chat::class.java)
-                            Timber.e(error)
-                            Timber.d("chats in addSnapshotListener() are $chats")
+                Timber.d("listOfChatIDs is $listOfChatIDs")
 
-                            trySend(chats ?: listOf())
-                        } catch (e: Exception) { Timber.e(e) }
-                    }
+                if (listOfChatIDs.isNotEmpty()) {
+                    chatListener = firestore.collection(CHAT_DETAILS)
+                        .whereIn(Chat::chatID.name, listOfChatIDs)
+                        .orderBy(Chat::timeOfLastMessage.name, Query.Direction.DESCENDING)
+                        .addSnapshotListener { value, error ->
+                            try {
+                                val chats = value?.toObjects(Chat::class.java)
+                                Timber.e(error)
+                                Timber.d("chats in addSnapshotListener() are $chats")
+
+                                trySend(chats ?: listOf())
+                            } catch (e: Exception) {
+                                Timber.e(e)
+                            }
+                        }
 
 
 //                awaitClose {
 //                    chatsListener.remove()
 //                }
+                }
             }
         }
 
@@ -123,9 +128,9 @@ class ChatRepoImpl(private val userRepo: UserRepo = UserRepoImpl()) : ChatRepo {
         val listOfPersonalizedIDs = getPersonalizedChatsFirebaseRef(userID).get()
             .await().toObjects(ChatRepo.PersonalizedChat::class.java).map { it.chatID }
 
-            listOfPersonalizedIDs.forEach { chatID ->
-                getPersonalizedChatsFirebaseRef(userID).document(chatID).delete()
-            }
+        listOfPersonalizedIDs.forEach { chatID ->
+            getPersonalizedChatsFirebaseRef(userID).document(chatID).delete()
+        }
     }
 
 
@@ -136,7 +141,6 @@ class ChatRepoImpl(private val userRepo: UserRepo = UserRepoImpl()) : ChatRepo {
 
         Timber.d("disableChat.isSuccessful is $disableChat")
     }
-
 
 
     override suspend fun updateMessageStatus(messageID: String, messageStatus: MessageStatus) {

@@ -18,8 +18,6 @@ data class User(
 
     constructor() : this("", "", "", null, "", 0)
 
-    fun isOnline() =
-        ((System.currentTimeMillis() - lastSeen) / 1000 <= 15) && userStatus == UserStatus.Active
 
     companion object {
         const val ONLINE = "Online"
@@ -44,6 +42,10 @@ data class User(
         )
     }
 }
+
+fun User.isOnline() =
+    ((System.currentTimeMillis() - lastSeen) / 1000 <= 15) && userStatus == UserStatus.Active
+
 
 fun User.toMiniUser() =
     MiniUser(name, uid, profilePic, lastSeen)
