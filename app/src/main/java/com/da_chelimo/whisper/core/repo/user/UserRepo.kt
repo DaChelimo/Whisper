@@ -17,7 +17,7 @@ interface UserRepo {
 
         fun getStorageRefForProfilePic(uid: String) =
             Firebase.storage
-                .getReference("$uid/$PROFILE_PIC")
+                .getReference("USERS/$uid/$PROFILE_PIC")
 
         fun getUserProfileReference(uid: String): DocumentReference =
             Firebase.firestore

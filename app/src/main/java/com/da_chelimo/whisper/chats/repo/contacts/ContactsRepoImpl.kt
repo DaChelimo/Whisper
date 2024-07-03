@@ -11,6 +11,7 @@ import com.da_chelimo.whisper.core.domain.User
 import com.da_chelimo.whisper.core.domain.toMiniUser
 import com.da_chelimo.whisper.core.repo.user.UserRepo
 import com.google.firebase.auth.ktx.auth
+import com.google.firebase.firestore.Filter
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.Dispatchers
@@ -40,31 +41,44 @@ class ContactsRepoImpl(
         val myContact = userRepo.getUserFromUID(Firebase.auth.uid!!)?.toMiniUser()
 
 
+        val firstUserFilter = Filter.and(Filter.equalTo(Chat::firstMiniUser.name, myContact), Filter.equalTo(Chat::secondMiniUser.name, otherContact))
+        val secondUserFilter = Filter.and(Filter.equalTo(Chat::secondMiniUser.name, myContact), Filter.equalTo(Chat::firstMiniUser.name, otherContact))
+
         /**
          * In the chat details, the current user can be the first user and the otherContact be the second user
          * OR vice-versa
          *
          * The two methods below check for both
          */
-        val chatWithOtherUserAsFirstUser = Firebase.firestore.collection(ChatRepo.CHAT_DETAILS)
-            .whereEqualTo(Chat::firstMiniUser.name, otherContact)
-            .whereEqualTo(Chat::secondMiniUser.name, myContact)
+        val chatExists = Firebase.firestore.collection(ChatRepo.CHAT_DETAILS)
+            .where(Filter.or(firstUserFilter, secondUserFilter))
             .get()
             .await()
             .toObjects(Chat::class.java)
             .firstOrNull()
 
-        val chatWithCurrentUserAsFirstUser = Firebase.firestore.collection(ChatRepo.CHAT_DETAILS)
-            .whereEqualTo(Chat::firstMiniUser.name, myContact)
-            .whereEqualTo(Chat::secondMiniUser.name, otherContact)
-            .get()
-            .await()
-            .toObjects(Chat::class.java)
-            .firstOrNull()
+        Timber.d("Chat exists: $chatExists")
 
-
-
-        return chatWithCurrentUserAsFirstUser?.chatID ?: chatWithOtherUserAsFirstUser?.chatID
+        return chatExists?.chatID
+//        val chatWithOtherUserAsFirstUser = Firebase.firestore.collection(ChatRepo.CHAT_DETAILS)
+//            .whereEqualTo(Chat::firstMiniUser.name, otherContact)
+//            .whereEqualTo(Chat::secondMiniUser.name, myContact)
+//            .get()
+//            .await()
+//            .toObjects(Chat::class.java)
+//            .firstOrNull()
+//
+//        val chatWithCurrentUserAsFirstUser = Firebase.firestore.collection(ChatRepo.CHAT_DETAILS)
+//            .whereEqualTo(Chat::firstMiniUser.name, myContact)
+//            .whereEqualTo(Chat::secondMiniUser.name, otherContact)
+//            .get()
+//            .await()
+//            .toObjects(Chat::class.java)
+//            .firstOrNull()
+//
+//
+//
+//        return chatWithCurrentUserAsFirstUser?.chatID ?: chatWithOtherUserAsFirstUser?.chatID
     }
 
     /**

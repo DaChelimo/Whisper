@@ -57,6 +57,8 @@ import com.da_chelimo.whisper.chats.presentation.view_profile_pic.ControlBlurOnS
 import com.da_chelimo.whisper.core.presentation.ui.ActualChat
 import com.da_chelimo.whisper.core.presentation.ui.SelectContact
 import com.da_chelimo.whisper.core.presentation.ui.Settings
+import com.da_chelimo.whisper.core.presentation.ui.components.AppBottomBar
+import com.da_chelimo.whisper.core.presentation.ui.components.BottomBars
 import com.da_chelimo.whisper.core.presentation.ui.components.DefaultScreen
 import com.da_chelimo.whisper.core.presentation.ui.components.TintedAppBarIcon
 import com.da_chelimo.whisper.core.presentation.ui.navigateSafely
@@ -139,98 +141,102 @@ fun AllChatsScreen(
             profilePic = isProfilePicFullScreen,
             dismissPicture = { isProfilePicFullScreen = null }
         ) {
+            Column(Modifier.fillMaxSize()) {
 
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(LocalAppColors.current.mainBackground)
-            ) {
-                // The user has NO CHATS
-                if (chats?.isEmpty() == true) {
-                    Column(Modifier.align(Alignment.Center)) {
-                        Image(
-                            painter = painterResource(id = R.drawable.start_chat),
-                            contentDescription = null,
-                            modifier = Modifier
-                                .size(60.dp)
-                                .align(Alignment.CenterHorizontally),
-                            colorFilter = ColorFilter.tint(LocalAppColors.current.appThemeTextColor)
-                        )
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(LocalAppColors.current.mainBackground)
+                ) {
+                    // The user has NO CHATS
+                    if (chats?.isEmpty() == true) {
+                        Column(Modifier.align(Alignment.Center)) {
+                            Image(
+                                painter = painterResource(id = R.drawable.start_chat),
+                                contentDescription = null,
+                                modifier = Modifier
+                                    .size(60.dp)
+                                    .align(Alignment.CenterHorizontally),
+                                colorFilter = ColorFilter.tint(LocalAppColors.current.appThemeTextColor)
+                            )
 
-                        Text(
-                            text = stringResource(R.string.click_the_button_to_start_a_conversation),
-                            fontFamily = QuickSand,
-                            fontSize = 18.sp,
-                            color = MaterialTheme.colorScheme.onBackground.copy(0.85f),
-                            modifier = Modifier
-                                .fillMaxWidth(0.7f)
-                                .padding(top = 24.dp)
-                                .align(Alignment.CenterHorizontally),
-                            textAlign = TextAlign.Center,
-                            lineHeight = 18.sp
-                        )
-                    }
-                }
-
-                // The user has CHATS
-                else if (chats?.isNotEmpty() == true) {
-                    LazyColumn(
-                        modifier = Modifier
-                            .padding(bottom = 4.dp)
-                            .fillMaxSize(),
-                        verticalArrangement = Arrangement.spacedBy(4.dp)
-                    ) {
-                        items(chats!!) { chat ->
-                            ChatPreview(
-                                chat = chat,
-                                modifier = Modifier,
-                                openProfilePic = { profilePic ->
-                                    isProfilePicFullScreen = profilePic ?: ""
-                                },
-                                openChat = {
-                                    navController.navigateSafely(
-                                        ActualChat(chat.chatID, null)
-                                    )
-                                }
+                            Text(
+                                text = stringResource(R.string.click_the_button_to_start_a_conversation),
+                                fontFamily = QuickSand,
+                                fontSize = 18.sp,
+                                color = MaterialTheme.colorScheme.onBackground.copy(0.85f),
+                                modifier = Modifier
+                                    .fillMaxWidth(0.7f)
+                                    .padding(top = 24.dp)
+                                    .align(Alignment.CenterHorizontally),
+                                textAlign = TextAlign.Center,
+                                lineHeight = 18.sp
                             )
                         }
                     }
-                }
 
-
-                val permissionRequestLauncher = rememberLauncherForActivityResult(
-                    contract = ActivityResultContracts.RequestPermission()
-                ) { isGranted ->
-                    if (isGranted)
-                        navController.navigateSafely(SelectContact)
-                    else
-                        coroutineScope.launch {
-                            snackbarHostState.showSnackbar(context.getString(R.string.read_contacts_permission))
+                    // The user has CHATS
+                    else if (chats?.isNotEmpty() == true) {
+                        LazyColumn(
+                            modifier = Modifier
+                                .padding(bottom = 4.dp)
+                                .fillMaxSize(),
+                            verticalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            items(chats!!) { chat ->
+                                ChatPreview(
+                                    chat = chat,
+                                    modifier = Modifier,
+                                    openProfilePic = { profilePic ->
+                                        isProfilePicFullScreen = profilePic ?: ""
+                                    },
+                                    openChat = {
+                                        navController.navigateSafely(
+                                            ActualChat(chat.chatID, null)
+                                        )
+                                    }
+                                )
+                            }
                         }
+                    }
+
+
+                    val permissionRequestLauncher = rememberLauncherForActivityResult(
+                        contract = ActivityResultContracts.RequestPermission()
+                    ) { isGranted ->
+                        if (isGranted)
+                            navController.navigateSafely(SelectContact)
+                        else
+                            coroutineScope.launch {
+                                snackbarHostState.showSnackbar(context.getString(R.string.read_contacts_permission))
+                            }
+                    }
+
+                    Card(
+                        modifier = Modifier
+                            .align(Alignment.BottomEnd)
+                            .padding(horizontal = 8.dp, vertical = 16.dp)
+                            .clickable {
+                                permissionRequestLauncher.launch(Manifest.permission.READ_CONTACTS)
+                            },
+                        shape = RoundedCornerShape(12.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = LocalAppColors.current.fabContainerColor,
+                            contentColor = Color.White
+                        ),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.Add,
+                            contentDescription = stringResource(R.string.start_a_chat),
+                            modifier = Modifier
+                                .size(48.dp)
+                                .padding(8.dp)
+                        )
+                    }
                 }
 
-                Card(
-                    modifier = Modifier
-                        .align(Alignment.BottomEnd)
-                        .padding(horizontal = 8.dp, vertical = 16.dp)
-                        .clickable {
-                            permissionRequestLauncher.launch(Manifest.permission.READ_CONTACTS)
-                        },
-                    shape = RoundedCornerShape(12.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = LocalAppColors.current.fabContainerColor,
-                        contentColor = Color.White
-                    ),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Rounded.Add,
-                        contentDescription = stringResource(R.string.start_a_chat),
-                        modifier = Modifier
-                            .size(48.dp)
-                            .padding(8.dp)
-                    )
-                }
+                AppBottomBar(currentBottomBar = BottomBars.AllChats, navController = navController)
             }
         }
     }

@@ -43,8 +43,12 @@ import com.da_chelimo.whisper.core.presentation.ui.EnterNumber
 import com.da_chelimo.whisper.core.presentation.ui.MyProfile
 import com.da_chelimo.whisper.core.presentation.ui.SelectContact
 import com.da_chelimo.whisper.core.presentation.ui.SendImage
+import com.da_chelimo.whisper.core.presentation.ui.SendImageIn
+import com.da_chelimo.whisper.core.presentation.ui.SendImageInNavType
 import com.da_chelimo.whisper.core.presentation.ui.Settings
+import com.da_chelimo.whisper.core.presentation.ui.Stories
 import com.da_chelimo.whisper.core.presentation.ui.ViewImage
+import com.da_chelimo.whisper.core.presentation.ui.ViewStory
 import com.da_chelimo.whisper.core.presentation.ui.Welcome
 import com.da_chelimo.whisper.core.presentation.ui.navigateSafely
 import com.da_chelimo.whisper.core.presentation.ui.theme.AppTheme
@@ -55,10 +59,13 @@ import com.da_chelimo.whisper.notifications.ReplyService
 import com.da_chelimo.whisper.notifications.UnreadMessagesService
 import com.da_chelimo.whisper.settings.presentation.screens.profile.ProfileScreen
 import com.da_chelimo.whisper.settings.presentation.screens.settings.SettingsScreen
+import com.da_chelimo.whisper.stories.ui.screens.all_stories.StoriesScreen
+import com.da_chelimo.whisper.stories.ui.screens.view_story.ViewStoryScreen
 import com.da_chelimo.whisper.welcome.WelcomeScreen
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import timber.log.Timber
+import kotlin.reflect.typeOf
 
 class MainActivity : ComponentActivity() {
 
@@ -167,6 +174,17 @@ class MainActivity : ComponentActivity() {
                             }
 
 
+
+                            composable<Stories> {
+                                StoriesScreen(navController = navController)
+                            }
+                            composable<ViewStory> {
+                                val args = it.toRoute<ViewStory>()
+                                ViewStoryScreen(navController = navController, authorID = args.authorID)
+                            }
+
+
+
                             composable<AllChats> {
                                 AllChatsScreen(
                                     navController = navController,
@@ -175,7 +193,6 @@ class MainActivity : ComponentActivity() {
                                     updateStatusBar = viewModel::updateStatusBar
                                 )
                             }
-
                             composable<ActualChat> {
                                 val args = it.toRoute<ActualChat>()
 
@@ -201,13 +218,16 @@ class MainActivity : ComponentActivity() {
                                 )
                             }
 
-                            composable<SendImage> {
+                            composable<SendImage>(
+                                typeMap = mapOf(typeOf<SendImageIn>() to SendImageInNavType)
+                            ) {
                                 val args = it.toRoute<SendImage>()
 
                                 SendImageScreen(
                                     navController = navController,
-                                    chatID = args.chatId,
-                                    imageUri = args.imageUri
+                                    imageUri = args.imageUri,
+                                    sendImageIn = args.sendImageIn
+//                                    onSendImage = args.onSendImage
                                 )
                             }
 

@@ -1,16 +1,12 @@
 package com.da_chelimo.whisper
 
 import android.app.Application
-import com.da_chelimo.whisper.core.di.appModule
-import com.da_chelimo.whisper.core.di.localModule
+import com.da_chelimo.whisper.di.initKoin
 import com.da_chelimo.whisper.notifications.AppNotificationManager
-import org.koin.android.ext.koin.androidContext
-import org.koin.android.ext.koin.androidLogger
-import org.koin.core.context.startKoin
-import org.koin.core.logger.Level
 import timber.log.Timber
 
 class App : Application() {
+
     private val appNotificationManager by lazy {
         AppNotificationManager(applicationContext)
     }
@@ -31,9 +27,10 @@ class App : Application() {
      * 2) Add single, double and blue ticks in message -> DONE
      * 5) Fix navigation issues -> DONE
      *
+     * 6) Status -> ONGOING
+     *
      * 3) Video support
      * 4) Waveform in vns
-     * 6) Status
      * 7) Calls
      */
 
@@ -41,22 +38,8 @@ class App : Application() {
         super.onCreate()
         Timber.plant(Timber.DebugTree())
 
+        initKoin()
+
         appNotificationManager.clearNotifications()
-
-//        networkIntent?.let {
-//            try {
-//                networkService.startService(it)
-//            } catch (exception: Exception) {
-//                Timber.e(exception)
-//            }
-//        }
-//        networkMonitor.setupCallback(applicationContext, true)
-
-        startKoin {
-            androidLogger(Level.DEBUG)
-            androidContext(this@App)
-            modules(appModule)
-            modules(localModule)
-        }
     }
 }

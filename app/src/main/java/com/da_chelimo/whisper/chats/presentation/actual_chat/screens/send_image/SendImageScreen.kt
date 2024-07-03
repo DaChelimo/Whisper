@@ -33,10 +33,17 @@ import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.da_chelimo.whisper.R
 import com.da_chelimo.whisper.chats.presentation.actual_chat.components.TypeMessageBar
 import com.da_chelimo.whisper.core.domain.TaskState
+import com.da_chelimo.whisper.core.presentation.ui.SendImageIn
 import com.da_chelimo.whisper.core.presentation.ui.components.LoadingSpinner
 
+/**
+ * Allows the user to add text to an image. This screen is used in sending images in Chats and Stories
+ *
+ * @param onSendImage -> String is the caption of the image typed by the user
+ */
+@OptIn(ExperimentalGlideComposeApi::class)
 @Composable
-fun SendImageScreen(navController: NavController, chatID: String, imageUri: String) {
+fun SendImageScreen(navController: NavController, imageUri: String, sendImageIn: SendImageIn) {// onSendImage: (String) -> Unit) {
     val viewModel = viewModel<SendImageViewModel>()
     val typedMessage by viewModel.typedMessage.collectAsState()
 
@@ -100,7 +107,8 @@ fun SendImageScreen(navController: NavController, chatID: String, imageUri: Stri
                 openMediaSelector = null,
                 startAudioRecording = null,
                 sendMessage = {
-                    viewModel.sendMessage(chatID, imageUri)
+                    viewModel.sendMessage(imageUri, sendImageIn)
+//                    viewModel.sendMessage { onSendImage(typedMessage.text) }
                 }
             )
         }

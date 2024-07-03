@@ -31,7 +31,7 @@ class MessagesRepoImpl(
         imageUri: String,
         messageText: String?
     ): Boolean {
-        val imageUrl = uploadFileUsingUri("$chatID/IMAGES/${UUID.randomUUID()}", imageUri)
+        val imageUrl = uploadFileUsingUri("CHATS/$chatID/IMAGES/${UUID.randomUUID()}", imageUri)
         val imageType = MessageType.Image(messageText ?: "", imageUrl)
 
         return sendMessage(chatID, imageType)
@@ -42,7 +42,7 @@ class MessagesRepoImpl(
         audioUri: String,
         duration: Long
     ): Boolean {
-        val audioUrl = uploadFileUsingUri("$chatID/AUDIO/${UUID.randomUUID()}", audioUri)
+        val audioUrl = uploadFileUsingUri("CHATS/$chatID/AUDIO/${UUID.randomUUID()}", audioUri)
         val audioType= MessageType.Audio(duration, audioUrl)
 
         return sendMessage(chatID, audioType)

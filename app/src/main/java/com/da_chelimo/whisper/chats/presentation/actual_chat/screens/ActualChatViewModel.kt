@@ -32,6 +32,9 @@ import com.da_chelimo.whisper.core.repo.user_details.UserDetailsRepoImpl
 import com.da_chelimo.whisper.core.utils.formatDurationInMillis
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.launchIn
@@ -240,6 +243,15 @@ class ActualChatViewModel(
     fun resetUnreadMessagesCountOnChatExit() = viewModelScope.launch {
         Timber.d("resetUnreadMessagesCountOnChatExit with chatID as $chatID")
         chatID?.let { unreadMessagesRepo.resetUnreadMessagesCount(it) }
+    }
+
+
+    @OptIn(DelicateCoroutinesApi::class)
+    suspend fun sendImage(imageUri: String, imageCaption: String) {
+        GlobalScope.launch {
+            chatID?.let { messagesRepo.sendImageMessage(it, imageUri, imageCaption) }
+        }
+        delay(1200)
     }
 
 

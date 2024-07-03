@@ -2,6 +2,8 @@ package com.da_chelimo.whisper.chats.domain
 
 import com.da_chelimo.whisper.core.domain.MiniUser
 import com.da_chelimo.whisper.core.domain.User
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.ktx.Firebase
 import java.util.UUID
 
 data class Chat(
@@ -26,8 +28,8 @@ data class Chat(
 
     constructor() : this(
         chatID = "",
-        firstMiniUser = MiniUser("", "", null, 0L),
-        secondMiniUser = MiniUser("", "", null, 0L),
+        firstMiniUser = MiniUser("", "", null),
+        secondMiniUser = MiniUser("", "", null),
         unreadMessagesCount = 0,
         lastMessageSender = "",
         lastMessageStatus = MessageStatus.SENT,
@@ -36,12 +38,12 @@ data class Chat(
         isDisabled = false
     )
 
+
     companion object {
         fun generateNewChatUsingCurrentUser(chatID: String, currentUser: User?, otherContact: MiniUser) =
             Chat(
                 chatID = chatID,
-
-                firstMiniUser = MiniUser(currentUser!!.name, currentUser.uid, currentUser.profilePic, 0L),
+                firstMiniUser = MiniUser(currentUser!!.name, currentUser.uid, currentUser.profilePic),
                 secondMiniUser = otherContact,
 
                 unreadMessagesCount = 0,
@@ -55,8 +57,8 @@ data class Chat(
 
         val TEST_CHAT = Chat(
             chatID = UUID.randomUUID().toString(),
-            firstMiniUser = MiniUser("Andrew", "1234", null, 0L),
-            secondMiniUser = MiniUser("Diana", "0000", null, 0L),
+            firstMiniUser = MiniUser("Andrew", "1234", null),
+            secondMiniUser = MiniUser("Diana", "0000", null),
             unreadMessagesCount = 6,
             lastMessageSender = "Wanna come over for lunch?",
             lastMessageStatus = MessageStatus.SENT,
@@ -67,3 +69,5 @@ data class Chat(
 }
 
 
+fun Chat.getCurrentUser() = if (firstMiniUser.uid == Firebase.auth.uid) firstMiniUser else secondMiniUser
+fun Chat.getOtherUser() = if (secondMiniUser.uid == Firebase.auth.uid) firstMiniUser else secondMiniUser

@@ -14,10 +14,5 @@ import org.koin.dsl.module
 // For ViewModels and commonly used instances e.g Moshi for serialization
 val appModule = module {
 
-    single<Moshi> { Moshi.Builder().add(KotlinJsonAdapterFactory()).build() }
 
-
-    single<ContactsRepo> { ContactsRepoImpl(get(), UserRepoImpl()) }
-    viewModel { SelectContactsViewModel(get()) }
-    viewModel { ActualChatViewModel(contactsRepo = get()) }
 }

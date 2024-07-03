@@ -10,6 +10,7 @@ import com.da_chelimo.whisper.core.presentation.ui.ActualChat
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import timber.log.Timber
 
 class SelectContactsViewModel(
     private val contactsRepo: ContactsRepo
@@ -27,6 +28,7 @@ class SelectContactsViewModel(
      */
     fun startOrResumeConversation(newContact: User) = viewModelScope.launch {
         val existingChatID = contactsRepo.checkForPreExistingChat(newContact)
+        Timber.d("startOrResumeConversation.existingChatID is $existingChatID")
 
         _shouldNavigateToActualChat.value = if (existingChatID != null)
             ActualChat(chatId = existingChatID, newContact = null)

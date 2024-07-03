@@ -62,6 +62,7 @@ import com.da_chelimo.whisper.chats.repo.audio_messages.player.PlayerState
 import com.da_chelimo.whisper.chats.repo.audio_messages.recorder.RecorderState
 import com.da_chelimo.whisper.core.presentation.ui.ChatDetails
 import com.da_chelimo.whisper.core.presentation.ui.SendImage
+import com.da_chelimo.whisper.core.presentation.ui.SendImageIn
 import com.da_chelimo.whisper.core.presentation.ui.ViewImage
 import com.da_chelimo.whisper.core.presentation.ui.navigateSafely
 import com.da_chelimo.whisper.core.presentation.ui.theme.AppTheme
@@ -307,12 +308,18 @@ fun ActualChatScreen(
                     if (imageUri != null) {
                         navController.navigateSafely(
                             SendImage(
-                                viewModel.chatID!!,
-                                imageUri.toString()
+                                imageUri = imageUri.toString(),
+                                sendImageIn = SendImageIn.Chat(chatID)
+//                                onSendImage = { imageCaption ->
+//                                    coroutineScope.launch {
+//                                        viewModel.sendImage(imageUri.toString(), imageCaption)
+//                                    }
+//                                }
                             )
                         )
                     }
                 }
+
 
             val shouldOpenMediaPicker by viewModel.openMediaPicker.collectAsState()
             LaunchedEffect(key1 = shouldOpenMediaPicker) {
@@ -321,7 +328,6 @@ fun ActualChatScreen(
 
                 viewModel.updateOpenMediaPicker(false)
             }
-
 
 
             var shouldRequestRecordingPermission by remember {

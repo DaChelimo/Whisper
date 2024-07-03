@@ -5,6 +5,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -28,59 +29,89 @@ import com.da_chelimo.whisper.R
 import com.da_chelimo.whisper.core.presentation.ui.theme.DarkBlue
 import com.da_chelimo.whisper.core.presentation.ui.theme.LocalAppColors
 
-@OptIn(ExperimentalGlideComposeApi::class)
 @Composable
 fun UserIcon(
     profilePic: String?,
-    iconSize: Dp,
-    progressBarSize: Dp,
-    progressBarThickness: Dp,
-    onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    borderIfUsingDefaultPic: Dp
+    iconSize: Dp = 48.dp,
+    progressBarSize: Dp = 22.dp,
+    progressBarThickness: Dp = (1.5).dp,
+    borderIfUsingDefaultPic: Dp? = null,
+    onClick: () -> Unit
 ) {
-    GlideSubcomposition(
-        model = profilePic ?: R.drawable.young_man_anim,
+    Glider(
+        imageUrl = profilePic ?: R.drawable.young_man_anim,
+        contentDescription = stringResource(id = R.string.change_profile_picture),
+
         modifier = modifier
             .size(iconSize)
             .clip(CircleShape)
-            .clickable { onClick() }
-    ) {
+            .clickable { onClick() },
+
+        loading = {
+            CircularProgressIndicator(
+                modifier = Modifier.size(progressBarSize),
+                strokeWidth = progressBarThickness,
+                color = LocalAppColors.current.plainTextColorOnMainBackground
+            )
+        },
+        error = {
+            Image(
+                imageVector = Icons.Rounded.Person,// painterResource(id = R.drawable.young_man_anim),
+                contentDescription = null,
+                modifier
+                    .fillMaxSize()
+                    .clip(CircleShape)
+                    .apply {
+                        borderIfUsingDefaultPic?.let { border(it, DarkBlue, CircleShape) }
+                    }
+                    .padding(8.dp),
+                contentScale = ContentScale.Crop,
+                colorFilter = ColorFilter.tint(LocalAppColors.current.appThemeTextColor)
+            )
+        }
+    )
+}
+
+
+@OptIn(ExperimentalGlideComposeApi::class)
+@Composable
+fun Glider(
+    imageUrl: Any?,
+    modifier: Modifier = Modifier,
+    contentDescription: String? = null,
+    loading: @Composable ColumnScope.() -> Unit,
+    error: @Composable ColumnScope.() -> Unit
+) {
+    GlideSubcomposition(model = imageUrl, modifier = modifier) {
         when (state) {
-            RequestState.Loading -> {
-                Column(Modifier.fillMaxSize(), Arrangement.Center, Alignment.CenterHorizontally) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(progressBarSize),
-                        strokeWidth = progressBarThickness,
-                        color = LocalAppColors.current.plainTextColorOnMainBackground
-                    )
-                }
-            }
-
-            RequestState.Failure -> {
-                Image(
-                    imageVector = Icons.Rounded.Person,// painterResource(id = R.drawable.young_man_anim),
-                    contentDescription = null,
-                    modifier
-                        .fillMaxSize()
-//                        .size(iconSize)
-                        .clip(CircleShape)
-                        .border(borderIfUsingDefaultPic, DarkBlue, CircleShape)
-                        .padding(8.dp),
-                    contentScale = ContentScale.Crop,
-                    colorFilter = ColorFilter.tint(LocalAppColors.current.appThemeTextColor)
-                )
-            }
-
             is RequestState.Success -> {
                 Image(
                     painter = painter,
-                    contentDescription = stringResource(id = R.string.change_profile_picture),
+                    contentDescription = contentDescription,
                     contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .size(iconSize)
-                        .clip(CircleShape)
+                    modifier = modifier
                 )
+            }
+
+            is RequestState.Loading -> {
+                Column(
+                    Modifier.fillMaxSize(),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    loading()
+                }
+            }
+
+            is RequestState.Failure -> {
+                Column(
+                    Modifier.fillMaxSize(),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    error()
+                }
             }
         }
     }

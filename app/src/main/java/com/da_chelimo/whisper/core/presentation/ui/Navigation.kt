@@ -5,7 +5,7 @@ import androidx.annotation.MainThread
 import androidx.lifecycle.Lifecycle
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavController
-import com.da_chelimo.whisper.R
+import androidx.navigation.NavType
 import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
 
@@ -66,6 +66,12 @@ object MyProfile
 
 
 @Serializable
+object Stories
+@Serializable
+data class ViewStory(val authorID: String)
+
+
+@Serializable
 object AllChats
 
 @Serializable
@@ -74,8 +80,21 @@ data class ActualChat(val chatId: String?, val newContact: String?)
 @Serializable
 data class ChatDetails(val chatId: String, val otherUserId: String)
 
-@Serializable
-data class SendImage(val chatId: String, val imageUri: String)
 
+@Serializable
+open class SendImageIn: java.io.Serializable {
+    @Serializable
+    class Chat(val chatId: String?): SendImageIn()
+
+    @Serializable
+    data object Story : SendImageIn() {
+        private fun readResolve(): Any = Story
+    }
+}
+
+val SendImageInNavType = object : NavType.SerializableType<SendImageIn>(type = SendImageIn::class.java) {}
+
+@Serializable
+data class SendImage(val imageUri: String, val sendImageIn: SendImageIn): java.io.Serializable  //, val onSendImage: (String) -> Unit)
 @Serializable
 data class ViewImage(val imageUrl: String)

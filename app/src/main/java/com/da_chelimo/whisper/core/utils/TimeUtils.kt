@@ -2,8 +2,25 @@ package com.da_chelimo.whisper.core.utils
 
 import android.os.Handler
 import android.os.Looper
+import com.da_chelimo.whisper.chats.presentation.utils.toHourAndMinute
 import kotlinx.coroutines.flow.MutableStateFlow
+import org.joda.time.DateTime
 import org.joda.time.Duration
+import org.joda.time.Interval
+
+
+fun Long.toStoryTime(): String {
+    val jodaTime = DateTime(this)
+    val timeInterval = Interval(this, System.currentTimeMillis()).toDuration()
+
+    return if (timeInterval.standardMinutes < 60)
+        "${jodaTime.toString("mm")} minutes ago"
+    else if (timeInterval.standardHours < 24)
+        toHourAndMinute(true)
+    else if (timeInterval.standardDays < 2)
+        "Yesterday"
+    else jodaTime.toString("HH:mm EEEE")
+}
 
 
 fun Long.formatDurationInMillis(): String {
