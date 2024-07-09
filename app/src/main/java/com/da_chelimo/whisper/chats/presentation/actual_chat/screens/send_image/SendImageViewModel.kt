@@ -65,7 +65,7 @@ class SendImageViewModel(
                 storyRepo.postStory(
                     localImageUri = imageUri.toUri(),
                     storyCaption = typedMessage.value.text,
-                    userID = userID
+                    currentUserID = userID
                 )
             }
         }

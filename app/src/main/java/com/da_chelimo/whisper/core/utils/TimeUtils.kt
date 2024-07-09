@@ -1,9 +1,11 @@
 package com.da_chelimo.whisper.core.utils
 
+import android.media.MediaPlayer
 import android.os.Handler
 import android.os.Looper
 import com.da_chelimo.whisper.chats.presentation.utils.toHourAndMinute
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import org.joda.time.DateTime
 import org.joda.time.Duration
 import org.joda.time.Interval
@@ -31,9 +33,44 @@ fun Long.formatDurationInMillis(): String {
     return "$mins:$secs"
 }
 
+class PlayerStopWatch {
+    private val handler = Handler(Looper.getMainLooper())
+    private var mediaPlayer: MediaPlayer? = null
 
-class StopWatch {
-    var timeInMillis = MutableStateFlow(0L)
+    private val _timeInMillis = MutableStateFlow<Long?>(null)
+    val timeInMillis: StateFlow<Long?> = _timeInMillis
+
+    private var isPlaying = false
+
+    private val runnable = object : Runnable {
+        override fun run() {
+            if (isPlaying) {
+                mediaPlayer?.let {
+                    _timeInMillis.value = (it.duration - it.currentPosition).toLong()
+                    handler.postDelayed(this, 1000)
+                }
+            }
+        }
+    }
+
+    fun start(currentMediaPlayer: MediaPlayer) {
+        isPlaying = true
+        mediaPlayer = currentMediaPlayer
+        handler.post(runnable)
+    }
+
+    fun pause() { isPlaying = false }
+    fun resume() { isPlaying = true; handler.post(runnable) }
+
+    fun stop() {
+        _timeInMillis.value = 0L
+        mediaPlayer = null
+    }
+}
+
+
+class RecorderStopWatch {
+    val timeInMillis = MutableStateFlow(0L)
 
     private var isStopwatchRunning = false
 

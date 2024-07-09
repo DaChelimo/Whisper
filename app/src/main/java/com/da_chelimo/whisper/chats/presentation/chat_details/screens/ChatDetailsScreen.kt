@@ -80,17 +80,20 @@ fun ChatDetailsScreen(
                         modifier = Modifier.fillMaxWidth()
                     ) {
 
-                        UserIcon(
-                            modifier = Modifier.padding(top = 24.dp, bottom = 16.dp),
-                            profilePic = otherUser?.profilePic,
-                            iconSize = 120.dp,
-                            progressBarSize = 32.dp,
-                            progressBarThickness = 3.dp,
-                            borderIfUsingDefaultPic = 2.dp,
-                            onClick = {
-                                isProfilePicFullScreen = true
-                            }
-                        )
+                        Column(
+                            modifier = Modifier.padding(top = 24.dp, bottom = 16.dp)
+                        ) {
+                            UserIcon(
+                                profilePic = otherUser?.profilePic,
+                                iconSize = 130.dp,
+                                progressBarSize = 32.dp,
+                                progressBarThickness = 3.dp,
+                                borderIfUsingDefaultPic = 2.dp,
+                                onClick = {
+                                    isProfilePicFullScreen = true
+                                }
+                            )
+                        }
 
                         Text(
                             text = user.name,

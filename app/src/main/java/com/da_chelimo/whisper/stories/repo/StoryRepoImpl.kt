@@ -24,25 +24,51 @@ class StoryRepoImpl(
     private val chatRepo: ChatRepo
 ) : StoryRepo {
 
-    override suspend fun postStory(localImageUri: Uri, storyCaption: String, userID: String) {
+    override suspend fun postStory(
+        localImageUri: Uri,
+        storyCaption: String,
+        currentUserID: String
+    ) {
         val storyID = UUID.randomUUID().toString()
+        val currentUser = Firebase.auth.uid?.let { userRepo.getUserFromUID(it) }
 
 
-        val imageUrl = Firebase.storage.getReference("${StoryRepo.STORY}/$userID/$storyID")
+        val imageUrl = Firebase.storage.getReference("${StoryRepo.STORY}/$currentUserID/$storyID")
             .putFile(localImageUri)
             .await().storage.downloadUrl
             .await().toString()
 
-        val story = Story(storyID = storyID, authorUID = userID, imageUrl = imageUrl, storyCaption = storyCaption)
-        StoryRepo.getStoryCollection(userID)
+        val story = Story(
+            storyID = storyID,
+            authorUID = currentUserID,
+            imageUrl = imageUrl,
+            storyCaption = storyCaption
+        )
+        StoryRepo.getStoryCollection(currentUserID)
             .document(story.storyID)
             .set(story)
+
+
+        val oldStoryCount =
+            StoryRepo.getStoryDetailsCollection(currentUserID).get().await()
+                .toObject<StoryPreview>()?.storyCount ?: 0
+        val storyPreview = StoryPreview(
+            authorID = currentUserID,
+            authorProfilePic = currentUser?.profilePic,
+            authorName = currentUser?.name ?: "--",
+            storyCount = oldStoryCount + 1,
+            previewImage = imageUrl,
+            timeUploaded = System.currentTimeMillis()
+        )
+        StoryRepo.getStoryDetailsCollection(currentUserID)
+            .set(storyPreview)
     }
 
     // Gets all the stories of the given user
     override suspend fun loadStories(authorID: String): List<Story> {
         val stories = StoryRepo.getStoryCollection(authorID)
             .whereEqualTo(Story::authorUID.name, authorID)
+            .orderBy(Story::timeUploaded.name, Query.Direction.ASCENDING)
             .get().await().toObjects(Story::class.java)
             .filterNotNull()
 
@@ -89,11 +115,10 @@ class StoryRepoImpl(
         StoryRepo.getStoryCollection(userID).get().await().toObjects<Story>()
 
 
-
-
     private suspend fun addStoryToStoryDetails(story: Story, userID: String) {
         val currentUser = userRepo.getUserFromUID(userID)
-        val oldStoryPreview = StoryRepo.getStoryDetailsCollection(userID).get().await().toObject<StoryPreview>()
+        val oldStoryPreview =
+            StoryRepo.getStoryDetailsCollection(userID).get().await().toObject<StoryPreview>()
 
         val storyPreview =
             StoryPreview(
@@ -112,7 +137,9 @@ class StoryRepoImpl(
         StoryRepo.getStoryCollection(userID).document(storyID).delete().isSuccessful
 
     private suspend fun removeStoryFromStoryDetails(story: Story, userID: String) {
-        val oldStoryPreview = StoryRepo.getStoryDetailsCollection(userID).get().await().toObject<StoryPreview>() ?: return
+        val oldStoryPreview =
+            StoryRepo.getStoryDetailsCollection(userID).get().await().toObject<StoryPreview>()
+                ?: return
         val oldStoryCount = oldStoryPreview.storyCount
 
         // We are removing the last story

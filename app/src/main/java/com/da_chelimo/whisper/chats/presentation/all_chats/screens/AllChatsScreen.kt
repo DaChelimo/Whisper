@@ -5,8 +5,6 @@ import android.annotation.SuppressLint
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,13 +14,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.Menu
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
@@ -38,7 +31,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -133,7 +125,7 @@ fun AllChatsScreen(
 //                )
             }
         },
-        backgroundColor = LocalAppColors.current.lighterMainBackground
+        backgroundColor = LocalAppColors.current.mainBackground
     ) {
 
         ControlBlurOnScreen(
@@ -145,8 +137,7 @@ fun AllChatsScreen(
 
                 Box(
                     modifier = Modifier
-                        .fillMaxSize()
-                        .background(LocalAppColors.current.mainBackground)
+                        .weight(1f)
                 ) {
                     // The user has NO CHATS
                     if (chats?.isEmpty() == true) {
@@ -201,42 +192,46 @@ fun AllChatsScreen(
                     }
 
 
-                    val permissionRequestLauncher = rememberLauncherForActivityResult(
-                        contract = ActivityResultContracts.RequestPermission()
-                    ) { isGranted ->
-                        if (isGranted)
-                            navController.navigateSafely(SelectContact)
-                        else
-                            coroutineScope.launch {
-                                snackbarHostState.showSnackbar(context.getString(R.string.read_contacts_permission))
-                            }
-                    }
-
-                    Card(
-                        modifier = Modifier
-                            .align(Alignment.BottomEnd)
-                            .padding(horizontal = 8.dp, vertical = 16.dp)
-                            .clickable {
-                                permissionRequestLauncher.launch(Manifest.permission.READ_CONTACTS)
-                            },
-                        shape = RoundedCornerShape(12.dp),
-                        colors = CardDefaults.cardColors(
-                            containerColor = LocalAppColors.current.fabContainerColor,
-                            contentColor = Color.White
-                        ),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Rounded.Add,
-                            contentDescription = stringResource(R.string.start_a_chat),
-                            modifier = Modifier
-                                .size(48.dp)
-                                .padding(8.dp)
-                        )
-                    }
+//                    Card(
+//                        modifier = Modifier
+//                            .align(Alignment.BottomEnd)
+//                            .padding(horizontal = 8.dp, vertical = 16.dp)
+//                            .clickable {
+//                                permissionRequestLauncher.launch(Manifest.permission.READ_CONTACTS)
+//                            },
+//                        shape = RoundedCornerShape(12.dp),
+//                        colors = CardDefaults.cardColors(
+//                            containerColor = LocalAppColors.current.fabContainerColor,
+//                            contentColor = Color.White
+//                        ),
+//                        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+//                    ) {
+//                        Icon(
+//                            imageVector = Icons.Rounded.Add,
+//                            contentDescription = stringResource(R.string.start_a_chat),
+//                            modifier = Modifier
+//                                .size(48.dp)
+//                                .padding(8.dp)
+//                        )
+//                    }
                 }
 
-                AppBottomBar(currentBottomBar = BottomBars.AllChats, navController = navController)
+                val permissionRequestLauncher = rememberLauncherForActivityResult(
+                    contract = ActivityResultContracts.RequestPermission()
+                ) { isGranted ->
+                    if (isGranted)
+                        navController.navigateSafely(SelectContact)
+                    else
+                        coroutineScope.launch {
+                            snackbarHostState.showSnackbar(context.getString(R.string.read_contacts_permission))
+                        }
+                }
+
+                AppBottomBar(
+                    currentBottomBar = BottomBars.AllChats,
+                    navController = navController,
+                    hasPrimaryAction = true,
+                    onPrimaryAction = { permissionRequestLauncher.launch(Manifest.permission.READ_CONTACTS) })
             }
         }
     }

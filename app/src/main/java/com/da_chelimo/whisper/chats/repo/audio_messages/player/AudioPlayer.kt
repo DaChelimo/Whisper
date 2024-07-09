@@ -26,7 +26,7 @@ interface AudioPlayer {
      * null if audio has not started being played;
      * when null, the length of the audio message is show
      */
-    val timeLeftInMillis: Flow<String?>
+    val timeLeftInMillis: Flow<Long?>
 
     suspend fun playAudio(context: Context, audioUrl: String)
     fun pauseAudio()

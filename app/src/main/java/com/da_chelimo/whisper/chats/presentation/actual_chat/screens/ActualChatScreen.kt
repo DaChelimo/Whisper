@@ -62,7 +62,6 @@ import com.da_chelimo.whisper.chats.repo.audio_messages.player.PlayerState
 import com.da_chelimo.whisper.chats.repo.audio_messages.recorder.RecorderState
 import com.da_chelimo.whisper.core.presentation.ui.ChatDetails
 import com.da_chelimo.whisper.core.presentation.ui.SendImage
-import com.da_chelimo.whisper.core.presentation.ui.SendImageIn
 import com.da_chelimo.whisper.core.presentation.ui.ViewImage
 import com.da_chelimo.whisper.core.presentation.ui.navigateSafely
 import com.da_chelimo.whisper.core.presentation.ui.theme.AppTheme
@@ -72,6 +71,7 @@ import com.da_chelimo.whisper.core.presentation.ui.theme.QuickSand
 import com.da_chelimo.whisper.core.presentation.ui.theme.StatusBars
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import linc.com.amplituda.Amplituda
 import org.koin.androidx.compose.koinViewModel
 import timber.log.Timber
 
@@ -91,6 +91,7 @@ fun ActualChatScreen(
 ) {
     val context = LocalContext.current
     val clipboardManager = LocalClipboardManager.current
+    val amplituda = remember { Amplituda(context) }
 
     val composeMessage by viewModel.textMessage.collectAsState()
     val otherUser by viewModel.otherUser.collectAsState()
@@ -138,6 +139,7 @@ fun ActualChatScreen(
     }
 
     LaunchedEffect(key1 = shouldNavigateBack) {
+        Timber.d("shouldNavigateBack is $shouldNavigateBack")
         if (shouldNavigateBack)
             navController.popBackStack()
     }
@@ -229,6 +231,7 @@ fun ActualChatScreen(
                         val messageType = message.messageType.toMessageType()
                         if (messageType is MessageType.Audio) {
                             AudioMessage(
+                                amplituda = amplituda,
                                 message = message,
                                 messageIDInFocus = messageIDInFocus,
                                 toggleOptionsMenuVisibility = toggleOptionsMenuVisibility,
@@ -237,10 +240,15 @@ fun ActualChatScreen(
                                 audioUrlBeingPlayed = audioBeingPlayed,
                                 timeLeftInMillis = playerTimeLeftInMillis,
                                 onPlayOrPause = {
-                                    viewModel.playOrPauseAudio(
-                                        context = context,
-                                        audioUrl = messageType.audioUrl
-                                    )
+                                    /**
+                                     * When messageType.audioUrl is blank, it means the audio file has not been fully uploaded
+                                     */
+                                    if (messageType.audioUrl.isNotBlank()) {
+                                        viewModel.playOrPauseAudio(
+                                            context = context,
+                                            audioUrl = messageType.audioUrl
+                                        )
+                                    }
                                 },
                                 onSeekTo = {
                                     // TODO:
@@ -258,7 +266,7 @@ fun ActualChatScreen(
                             )
                         }
 
-                        Spacer(modifier = Modifier.height(2.dp))
+                        Spacer(modifier = Modifier.height(3.dp))
 
                         DaySeparatorForActualChat(
                             mapOfMessageIDAndDateInString = viewModel.mapOfMessageIDAndDateInString,
@@ -309,7 +317,8 @@ fun ActualChatScreen(
                         navController.navigateSafely(
                             SendImage(
                                 imageUri = imageUri.toString(),
-                                sendImageIn = SendImageIn.Chat(chatID)
+                                chatId = chatID
+//                                sendImageIn = SendImageIn.Chat(chatID)
 //                                onSendImage = { imageCaption ->
 //                                    coroutineScope.launch {
 //                                        viewModel.sendImage(imageUri.toString(), imageCaption)
@@ -323,10 +332,10 @@ fun ActualChatScreen(
 
             val shouldOpenMediaPicker by viewModel.openMediaPicker.collectAsState()
             LaunchedEffect(key1 = shouldOpenMediaPicker) {
-                if (shouldOpenMediaPicker)
+                if (shouldOpenMediaPicker) {
                     permissionLauncher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
-
-                viewModel.updateOpenMediaPicker(false)
+                    viewModel.updateOpenMediaPicker(false)
+                }
             }
 
 

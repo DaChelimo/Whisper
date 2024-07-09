@@ -12,6 +12,10 @@ class App : Application() {
     }
 
     /**
+     * ASAP TODO:
+     * 1) Add spinner in image when state is Not Sent -> DONE
+     * 2) Create a not sent mini clock to put in a message when message is still sending -> DONE
+     *
      * Issues:
      * 1) CreateProfile SelectPhoto causing crash -> FIXED
      * 2) Selecting user in ContactsScreen is causing nav.popStack()  -> FIXED
@@ -19,6 +23,7 @@ class App : Application() {
      * 4) Show loading spinner in the ContactsScreen when contacts have not yet
      *    been loaded
      * 5) Double sending of OTP code -> FIXED-ish
+     * 6) Problems with voice call stopwatch
      */
 
     /**
@@ -28,6 +33,7 @@ class App : Application() {
      * 5) Fix navigation issues -> DONE
      *
      * 6) Status -> ONGOING
+     * 6b) Create a server that checks for expired stories (every hour) and deletes them
      *
      * 3) Video support
      * 4) Waveform in vns

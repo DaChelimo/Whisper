@@ -289,7 +289,7 @@ class ActualChatViewModel(
         messagesRepo.sendAudioMessage(
             chatID = chatID!!,
             audioUri = audioFileUri?.toString() ?: return@launch,
-            duration = recordingDurationInMillis.value
+            duration = (recorderState.value as? RecorderState.Ended)?.timeInMillis ?: 0L
         )
     }
 

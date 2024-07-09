@@ -26,6 +26,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -41,6 +42,7 @@ import com.da_chelimo.whisper.chats.presentation.actual_chat.components.messages
 import com.da_chelimo.whisper.chats.presentation.utils.toChatPreviewTime
 import com.da_chelimo.whisper.core.presentation.ui.components.UserIcon
 import com.da_chelimo.whisper.core.presentation.ui.theme.AppTheme
+import com.da_chelimo.whisper.core.presentation.ui.theme.LightGrey
 import com.da_chelimo.whisper.core.presentation.ui.theme.LocalAppColors
 import com.da_chelimo.whisper.core.presentation.ui.theme.Montserrat
 import com.da_chelimo.whisper.core.presentation.ui.theme.QuickSand
@@ -170,7 +172,10 @@ fun ChatPreviewTicks(
             }
 
             when (lastMessageStatus) {
+                MessageStatus.NOT_SENT -> NotSentIcon()
+
                 MessageStatus.SENT -> SingleTick(modifier = Modifier.padding(end = 6.dp))
+
                 MessageStatus.RECEIVED -> {
                     val tickColor =
                         LocalAppColors.current.plainTextColorOnMainBackground.copy(alpha = 0.7f)
@@ -180,7 +185,7 @@ fun ChatPreviewTicks(
                     }
                 }
 
-                else -> {
+                MessageStatus.OPENED -> {
                     Row {
                         RoundedSingleTick(borderColor = LocalAppColors.current.mainBackground)
                         RoundedSingleTick(
@@ -189,11 +194,23 @@ fun ChatPreviewTicks(
                         )
                     }
                 }
+
+                else -> {}
             }
         }
     }
 }
 
+@Composable
+fun NotSentIcon(modifier: Modifier = Modifier) {
+    Image(
+        painter = painterResource(id = R.drawable.not_sent),
+        contentDescription = null,
+        modifier = modifier.size(12.dp),
+        contentScale = ContentScale.Crop,
+        colorFilter = ColorFilter.tint(LightGrey)
+    )
+}
 
 @Composable
 fun SingleTick(

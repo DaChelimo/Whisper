@@ -12,7 +12,7 @@ interface StoryRepo {
     companion object {
         const val STORY = "story"
 
-        private const val STORY_DETAILS_COLLECTION_REF = "details"
+        private const val STORY_DETAILS_COLLECTION_REF = "story_details"
         private const val STORY_CONTENT_COLLECTION_REF = "content"
         private const val STORY_VIEWERS_COLLECTION_REF = "viewers"
 
@@ -49,7 +49,7 @@ interface StoryRepo {
     /**
      * Posts an image to the user's story
      */
-    suspend fun postStory(localImageUri: Uri, storyCaption: String, userID: String)
+    suspend fun postStory(localImageUri: Uri, storyCaption: String, currentUserID: String)
 
     /**
      * Watch the story of a user... Updates the user's viewerCount

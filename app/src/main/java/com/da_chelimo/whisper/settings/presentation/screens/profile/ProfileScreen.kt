@@ -78,10 +78,16 @@ fun ProfileScreen(
                         .padding(vertical = 30.dp)
                         .align(Alignment.CenterHorizontally)
                 ) {
-                    UserIcon(profilePic = user?.profilePic, iconSize = 180.dp, progressBarSize = 36.dp, progressBarThickness = 3.dp,
-                        borderIfUsingDefaultPic = 2.dp, onClick = {
+                    UserIcon(
+                        profilePic = user?.profilePic,
+                        iconSize = 180.dp,
+                        progressBarSize = 36.dp,
+                        progressBarThickness = 3.dp,
+                        borderIfUsingDefaultPic = 2.dp,
+                        onClick = {
                             previewProfilePicFullScreen = user?.profilePic ?: ""
-                        })
+                        }
+                    )
 
                     Image(
                         painter = painterResource(id = R.drawable.camera),

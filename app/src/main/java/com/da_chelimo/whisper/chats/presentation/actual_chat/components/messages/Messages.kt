@@ -3,6 +3,8 @@
 package com.da_chelimo.whisper.chats.presentation.actual_chat.components.messages
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
@@ -34,17 +36,24 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -59,6 +68,7 @@ import com.da_chelimo.whisper.chats.domain.Message
 import com.da_chelimo.whisper.chats.domain.MessageStatus
 import com.da_chelimo.whisper.chats.domain.MessageType
 import com.da_chelimo.whisper.chats.domain.toMessageType
+import com.da_chelimo.whisper.chats.presentation.all_chats.components.NotSentIcon
 import com.da_chelimo.whisper.chats.presentation.all_chats.components.SingleTick
 import com.da_chelimo.whisper.chats.presentation.utils.toHourAndMinute
 import com.da_chelimo.whisper.core.presentation.ui.theme.AppTheme
@@ -69,6 +79,14 @@ import com.da_chelimo.whisper.core.presentation.ui.theme.Poppins
 import com.da_chelimo.whisper.core.utils.formatDurationInMillis
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
+import com.linc.audiowaveform.AudioWaveform
+import com.linc.audiowaveform.infiniteLinearGradient
+import com.linc.audiowaveform.model.AmplitudeType
+import com.linc.audiowaveform.model.WaveformAlignment
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import linc.com.amplituda.Amplituda
+import timber.log.Timber
 
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -180,12 +198,13 @@ fun TextOrImageMessage(
 
 @Composable
 fun AudioMessage(
+    amplituda: Amplituda,
     message: Message,
     messageIDInFocus: String?,
     toggleOptionsMenuVisibility: (String?) -> Unit,
     unSendMessage: (String) -> Unit,
     audioUrlBeingPlayed: String?,
-    timeLeftInMillis: String?,
+    timeLeftInMillis: Long?,
     isPlaying: Boolean,
     modifier: Modifier = Modifier,
     isMyChat: Boolean = message.senderID == Firebase.auth.uid, // Doing this allows Compose preview to work
@@ -202,11 +221,19 @@ fun AudioMessage(
         Row(
             modifier = modifier
                 .padding(horizontal = 8.dp)
-                .padding(vertical = 16.dp),
+                .padding(vertical = 6.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             val onSurfaceColor =
                 if (isMyChat) Color.White else LocalAppColors.current.appThemeTextColor
+
+            var amplitudes: List<Int>? = null
+            LaunchedEffect(key1 = Unit) {
+                launch(Dispatchers.IO) {
+                    amplitudes = amplituda.processAudio(audioType.audioUrl).get().amplitudesAsList()
+                    Timber.d("amplitudes are $amplitudes")
+                }
+            }
 
             Image(
                 painter = painterResource(
@@ -214,21 +241,46 @@ fun AudioMessage(
                 ),
                 contentDescription = stringResource(if (isPlaying) R.string.pause else R.string.resume),
                 modifier = Modifier
+                    .padding(horizontal = 4.dp)
                     .size(26.dp)
                     .clickable { onPlayOrPause() },
                 colorFilter = ColorFilter.tint(onSurfaceColor)
             )
 
+
+            val animatedGradientBrush = Brush.infiniteLinearGradient(
+                colors = listOf(Color(0xff22c1c3), Color(0xfffdbb2d)),
+                animation = tween(durationMillis = 6000, easing = LinearEasing),
+                width = 128F
+            )
             // TODO: Use onSeekTo() in the slider that we'll put here
-            Spacer(
+            var waveProgress by remember {
+                mutableFloatStateOf(0.3f)
+            }
+            AudioWaveform(
                 modifier = Modifier
-                    .padding(horizontal = 8.dp)
-                    .weight(1f)
+                    .height(40.dp)
+                    .padding(start = 8.dp)
+                    .weight(1f),
+                style = Fill,
+                amplitudes = amplitudes ?: listOf(),
+                waveformAlignment = WaveformAlignment.Center,
+                amplitudeType = AmplitudeType.Avg,
+                // Colors could be updated with Brush API
+                progressBrush = animatedGradientBrush,
+                waveformBrush = SolidColor(Color.LightGray),
+                spikeWidth = 4.dp,
+                spikePadding = 2.dp,
+                progress = waveProgress,
+                onProgressChange = {
+                    waveProgress = it
+                    // TODO: Implement onSeekTo here
+                }
             )
 
             Text(
                 text =
-                if (isThisAudioSelected && timeLeftInMillis != null) timeLeftInMillis
+                if (isThisAudioSelected && timeLeftInMillis != null) timeLeftInMillis.formatDurationInMillis()
                 else audioType.duration.formatDurationInMillis(),
 
                 modifier = Modifier.padding(start = 8.dp),
@@ -460,7 +512,12 @@ fun ChatMessage(
 
                         MessageStatus.RECEIVED -> RoundedSingleTick(borderColor = LocalAppColors.current.lighterMainBackground)
 
-                        else -> SingleTick(color = LocalAppColors.current.appThemeTextColor, modifier = Modifier.padding(end = 4.dp))
+                        MessageStatus.SENT -> SingleTick(
+                            color = LocalAppColors.current.appThemeTextColor,
+                            modifier = Modifier.padding(end = 4.dp)
+                        )
+
+                        MessageStatus.NOT_SENT -> NotSentIcon()
                     }
                 }
             }
@@ -526,6 +583,9 @@ private fun PreviewChats() = AppTheme(darkTheme = true) {
             .background(LocalAppColors.current.lighterMainBackground)
             .padding(vertical = 20.dp)
     ) {
+        val context = LocalContext.current
+        val amplituda = remember { Amplituda(context) }
+
         var chatIDInFocus by remember {
             mutableStateOf<String?>(null)
         }
@@ -545,14 +605,15 @@ private fun PreviewChats() = AppTheme(darkTheme = true) {
             copyToClipboard = { }, editMessage = {}, unSendMessage = {})
 
 
-        var timeLeftInMillis by remember {
-            mutableStateOf("00:12")
+        val timeLeftInMillis by remember {
+            mutableLongStateOf(12000L)
         }
-        var audioUrlBeingPlayed by remember { mutableStateOf("abc") }
+        val audioUrlBeingPlayed by remember { mutableStateOf("abc") }
         var isPlaying by remember {
             mutableStateOf(false)
         }
         AudioMessage(
+            amplituda = amplituda,
             isMyChat = true,
             message = Message.TEST_MY_Message.copy(
                 messageType = MessageType.Audio(30_000, "abc").toFirebaseMap()
@@ -567,6 +628,7 @@ private fun PreviewChats() = AppTheme(darkTheme = true) {
             onSeekTo = {}
         )
         AudioMessage(
+            amplituda = amplituda,
             isMyChat = false,
             message = Message.TEST_MY_Message.copy(
                 messageType = MessageType.Audio(30_000, "").toFirebaseMap()

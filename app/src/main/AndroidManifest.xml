@@ -20,6 +20,7 @@
         android:theme="@style/App.Splash"
         tools:targetApi="31">
 
+<!--        android:extractNativeLibs="false"-->
         <activity
             android:name=".main.MainActivity"
             android:exported="true"

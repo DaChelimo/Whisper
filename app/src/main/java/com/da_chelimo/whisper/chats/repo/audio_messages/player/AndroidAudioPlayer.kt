@@ -3,18 +3,14 @@ package com.da_chelimo.whisper.chats.repo.audio_messages.player
 import android.content.Context
 import android.media.AudioAttributes
 import android.media.MediaPlayer
-import com.da_chelimo.whisper.core.utils.StopWatch
-import com.da_chelimo.whisper.core.utils.formatDurationInMillis
+import com.da_chelimo.whisper.core.utils.PlayerStopWatch
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.withContext
-import timber.log.Timber
 
 class AndroidAudioPlayer(
-    private val stopWatch: StopWatch = StopWatch()
+    private val playerStopWatch: PlayerStopWatch = PlayerStopWatch()
 ) : AudioPlayer {
 
     private var mediaPlayer: MediaPlayer? = null
@@ -28,13 +24,14 @@ class AndroidAudioPlayer(
     // When null, timeLeftInMillis will be null; the duration of the audio recording is used by default in the UI
     private var audioDurationInMillis: Long? = null
 
-    override val timeLeftInMillis = stopWatch.timeInMillis.map { timeUsedInMillis ->
-        audioDurationInMillis
-            ?.let { it - timeUsedInMillis }
-            ?.formatDurationInMillis()
-    }.onEach {
-        Timber.d("timeLeftInMillis is $it")
-    }
+    override val timeLeftInMillis = playerStopWatch.timeInMillis
+//        .timeInMillis.map { timeUsedInMillis ->
+//        audioDurationInMillis
+//            ?.let { it - timeUsedInMillis }
+//            ?.formatDurationInMillis()
+//    }.onEach {
+//        Timber.d("timeLeftInMillis is $it")
+//    }
 
 
     private fun createAudioPlayer(audioUrl: String) =
@@ -64,7 +61,7 @@ class AndroidAudioPlayer(
                 stopAudio()
 
             if (audioBeingPlayed.value == null) { // Audio can only be played if no other audio is being played
-                stopWatch.stopAndReset()
+                playerStopWatch.stop()
 
                 _audioBeingPlayed.value = audioUrl
                 _playerState.value = PlayerState.Ongoing
@@ -75,7 +72,7 @@ class AndroidAudioPlayer(
 
                     audioDurationInMillis = duration.toLong()
 
-                    stopWatch.startOrResume()
+                    playerStopWatch.start(this)
 
                     mediaPlayer = this
                 }
@@ -85,13 +82,13 @@ class AndroidAudioPlayer(
 
     override fun pauseAudio() {
         _playerState.value = PlayerState.Paused
-        stopWatch.pauseOrStop()
+//        recorderStopWatch.pauseOrStop()
         mediaPlayer?.pause()
     }
 
     override fun resumeAudio() {
         _playerState.value = PlayerState.Ongoing
-        stopWatch.startOrResume()
+//        recorderStopWatch.startOrResume()
         mediaPlayer?.start()
     }
 
@@ -100,7 +97,8 @@ class AndroidAudioPlayer(
         _playerState.value = PlayerState.None
 
         audioDurationInMillis = null
-        stopWatch.stopAndReset()
+//        recorderStopWatch.stopAndReset()
+        playerStopWatch.stop()
 
         mediaPlayer?.stop()
         mediaPlayer?.release()

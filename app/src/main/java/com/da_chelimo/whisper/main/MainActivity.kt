@@ -28,6 +28,7 @@ import androidx.navigation.toRoute
 import com.da_chelimo.whisper.auth.ui.screens.create_profile.CreateProfileScreen
 import com.da_chelimo.whisper.auth.ui.screens.enter_code.EnterCodeScreen
 import com.da_chelimo.whisper.auth.ui.screens.enter_number.EnterNumberScreen
+import com.da_chelimo.whisper.calls.ui.screens.CallsScreen
 import com.da_chelimo.whisper.chats.presentation.actual_chat.screens.ActualChatScreen
 import com.da_chelimo.whisper.chats.presentation.actual_chat.screens.send_image.SendImageScreen
 import com.da_chelimo.whisper.chats.presentation.actual_chat.screens.view_image.ViewImageScreen
@@ -36,23 +37,24 @@ import com.da_chelimo.whisper.chats.presentation.chat_details.screens.ChatDetail
 import com.da_chelimo.whisper.chats.presentation.select_contact.screens.SelectContactScreen
 import com.da_chelimo.whisper.core.presentation.ui.ActualChat
 import com.da_chelimo.whisper.core.presentation.ui.AllChats
+import com.da_chelimo.whisper.core.presentation.ui.Calls
 import com.da_chelimo.whisper.core.presentation.ui.ChatDetails
 import com.da_chelimo.whisper.core.presentation.ui.CreateProfile
 import com.da_chelimo.whisper.core.presentation.ui.EnterCode
 import com.da_chelimo.whisper.core.presentation.ui.EnterNumber
+import com.da_chelimo.whisper.core.presentation.ui.Groups
 import com.da_chelimo.whisper.core.presentation.ui.MyProfile
 import com.da_chelimo.whisper.core.presentation.ui.SelectContact
 import com.da_chelimo.whisper.core.presentation.ui.SendImage
 import com.da_chelimo.whisper.core.presentation.ui.SendImageIn
-import com.da_chelimo.whisper.core.presentation.ui.SendImageInNavType
 import com.da_chelimo.whisper.core.presentation.ui.Settings
 import com.da_chelimo.whisper.core.presentation.ui.Stories
 import com.da_chelimo.whisper.core.presentation.ui.ViewImage
-import com.da_chelimo.whisper.core.presentation.ui.ViewStory
 import com.da_chelimo.whisper.core.presentation.ui.Welcome
 import com.da_chelimo.whisper.core.presentation.ui.navigateSafely
 import com.da_chelimo.whisper.core.presentation.ui.theme.AppTheme
 import com.da_chelimo.whisper.core.presentation.ui.theme.changeStatusBarColor
+import com.da_chelimo.whisper.groups.ui.screens.GroupsScreen
 import com.da_chelimo.whisper.network_moniter.UserStatusMoniter
 import com.da_chelimo.whisper.notifications.AppNotificationManager
 import com.da_chelimo.whisper.notifications.ReplyService
@@ -60,12 +62,10 @@ import com.da_chelimo.whisper.notifications.UnreadMessagesService
 import com.da_chelimo.whisper.settings.presentation.screens.profile.ProfileScreen
 import com.da_chelimo.whisper.settings.presentation.screens.settings.SettingsScreen
 import com.da_chelimo.whisper.stories.ui.screens.all_stories.StoriesScreen
-import com.da_chelimo.whisper.stories.ui.screens.view_story.ViewStoryScreen
 import com.da_chelimo.whisper.welcome.WelcomeScreen
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import timber.log.Timber
-import kotlin.reflect.typeOf
 
 class MainActivity : ComponentActivity() {
 
@@ -174,14 +174,21 @@ class MainActivity : ComponentActivity() {
                             }
 
 
+                            composable<Groups> {
+                                GroupsScreen(navController = navController)
+                            }
+                            composable<Calls> {
+                                CallsScreen(navController = navController)
+                            }
+
 
                             composable<Stories> {
-                                StoriesScreen(navController = navController)
+                                StoriesScreen(navController = navController, coroutineScope = coroutineScope)
                             }
-                            composable<ViewStory> {
-                                val args = it.toRoute<ViewStory>()
-                                ViewStoryScreen(navController = navController, authorID = args.authorID)
-                            }
+//                            composable<ViewStory> {
+//                                val args = it.toRoute<ViewStory>()
+//                                ViewStoryScreen(authorID = args.authorID)
+//                            }
 
 
 
@@ -219,14 +226,16 @@ class MainActivity : ComponentActivity() {
                             }
 
                             composable<SendImage>(
-                                typeMap = mapOf(typeOf<SendImageIn>() to SendImageInNavType)
+//                                TODO: Find a way to change this
+//                                typeMap = mapOf(typeOf<SendImageIn>() to parcelableType<SendImageIn>())
                             ) {
                                 val args = it.toRoute<SendImage>()
+                                val chatID = args.chatId
 
                                 SendImageScreen(
                                     navController = navController,
                                     imageUri = args.imageUri,
-                                    sendImageIn = args.sendImageIn
+                                    sendImageIn = if (chatID != null) SendImageIn.Chat(chatID) else SendImageIn.Story
 //                                    onSendImage = args.onSendImage
                                 )
                             }

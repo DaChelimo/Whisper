@@ -1,5 +1,7 @@
 package com.da_chelimo.whisper.core.presentation.ui
 
+import android.os.Build
+import android.os.Bundle
 import android.os.Parcelable
 import androidx.annotation.MainThread
 import androidx.lifecycle.Lifecycle
@@ -8,6 +10,8 @@ import androidx.navigation.NavController
 import androidx.navigation.NavType
 import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 
 
 /**
@@ -60,10 +64,14 @@ data class CreateProfile(val phoneNumber: String) : Parcelable
 
 @Serializable
 object Settings
-
 @Serializable
 object MyProfile
 
+
+@Serializable
+object Groups
+@Serializable
+object Calls
 
 @Serializable
 object Stories
@@ -81,20 +89,56 @@ data class ActualChat(val chatId: String?, val newContact: String?)
 data class ChatDetails(val chatId: String, val otherUserId: String)
 
 
+@Parcelize
 @Serializable
-open class SendImageIn: java.io.Serializable {
-    @Serializable
-    class Chat(val chatId: String?): SendImageIn()
+open class SendImageIn: Parcelable {
+    data class Chat(val chatId: String?) : SendImageIn()
+//    class Chat(val chatId: String?): SendImageIn()
 
-    @Serializable
-    data object Story : SendImageIn() {
-        private fun readResolve(): Any = Story
+    data object Story : SendImageIn()
+//        private fun readResolve(): Any = Story
+//    }
+}
+
+inline fun <reified T : Any> serializableType(
+    isNullableAllowed: Boolean = false,
+    json: Json = Json,
+) = object : NavType<T>(isNullableAllowed = isNullableAllowed) {
+    override fun get(bundle: Bundle, key: String) =
+        bundle.getString(key)?.let<String, T>(json::decodeFromString)
+
+    override fun parseValue(value: String): T = json.decodeFromString(value)
+
+    override fun serializeAsValue(value: T): String = json.encodeToString(value)
+
+    override fun put(bundle: Bundle, key: String, value: T) {
+        bundle.putString(key, json.encodeToString(value))
     }
 }
 
-val SendImageInNavType = object : NavType.SerializableType<SendImageIn>(type = SendImageIn::class.java) {}
+inline fun <reified T : Parcelable> parcelableType(
+    isNullableAllowed: Boolean = false,
+    json: Json = Json,
+) = object : NavType<T>(isNullableAllowed = isNullableAllowed) {
+    override fun get(bundle: Bundle, key: String) =
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            bundle.getParcelable(key, T::class.java)
+        } else {
+            @Suppress("DEPRECATION")
+            bundle.getParcelable(key)
+        }
 
+    override fun parseValue(value: String): T = json.decodeFromString(value)
+
+    override fun serializeAsValue(value: T): String = json.encodeToString(value)
+
+    override fun put(bundle: Bundle, key: String, value: T) = bundle.putParcelable(key, value)
+}
+
+//val SendImageInNavType = object : NavType.SerializableType<SendImageIn>(type = SendImageIn::class.java) {}
+
+@Parcelize
 @Serializable
-data class SendImage(val imageUri: String, val sendImageIn: SendImageIn): java.io.Serializable  //, val onSendImage: (String) -> Unit)
+data class SendImage(val imageUri: String, val chatId: String?): Parcelable  //, val onSendImage: (String) -> Unit)
 @Serializable
 data class ViewImage(val imageUrl: String)

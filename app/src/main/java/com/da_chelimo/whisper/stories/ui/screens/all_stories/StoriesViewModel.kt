@@ -1,16 +1,12 @@
 package com.da_chelimo.whisper.stories.ui.screens.all_stories
 
-import androidx.core.net.toUri
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import com.da_chelimo.whisper.core.repo.user.UserRepo
 import com.da_chelimo.whisper.core.repo.user_details.UserDetailsRepo
 import com.da_chelimo.whisper.stories.repo.StoryRepo
-import com.google.firebase.auth.ktx.auth
-import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.launch
+import timber.log.Timber
 
 class StoriesViewModel(
     private val userRepo: UserRepo,
@@ -41,13 +37,16 @@ class StoriesViewModel(
 //    }
 
 
-    fun openStory(authorUID: String) {
+    fun openStoryUsingAuthorID(authorUID: String) {
         _storyToOpen.value = authorUID
     }
 
-    fun resetOpenStory() { _storyToOpen.value = null }
+    fun resetOpenStory() {
+        _storyToOpen.value = null
+    }
 
     fun updateOpenMediaPicker(shouldOpen: Boolean) {
+        Timber.d("updateOpenMediaPicker called")
         _openMediaPicker.value = shouldOpen
     }
 
