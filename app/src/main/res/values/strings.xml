@@ -82,4 +82,15 @@
     <string name="recording_permission_needed">Recording permission need to record an audio message</string>
     <string name="chat_messages">Chat messages</string>
     <string name="channel_for_direct_messages">Channel for direct messages you receive</string>
+    <string name="stories">Stories</string>
+    <string name="create_your_story">Create your story</string>
+    <string name="no_active_stories">No active stories</string>
+    <string name="recent_stories">Recent stories</string>
+    <string name="add_to_story">Add to story</string>
+    <string name="open_story_options">Open story options</string>
+
+    <string name="chats">Chats</string>
+    <string name="groups">Groups</string>
+    <string name="calls">Calls</string>
+    <string name="send">Send</string>
 </resources>

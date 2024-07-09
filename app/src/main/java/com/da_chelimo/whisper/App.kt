@@ -1,21 +1,21 @@
 package com.da_chelimo.whisper
 
 import android.app.Application
-import com.da_chelimo.whisper.core.di.appModule
-import com.da_chelimo.whisper.core.di.localModule
+import com.da_chelimo.whisper.di.initKoin
 import com.da_chelimo.whisper.notifications.AppNotificationManager
-import org.koin.android.ext.koin.androidContext
-import org.koin.android.ext.koin.androidLogger
-import org.koin.core.context.startKoin
-import org.koin.core.logger.Level
 import timber.log.Timber
 
 class App : Application() {
+
     private val appNotificationManager by lazy {
         AppNotificationManager(applicationContext)
     }
 
     /**
+     * ASAP TODO:
+     * 1) Add spinner in image when state is Not Sent -> DONE
+     * 2) Create a not sent mini clock to put in a message when message is still sending -> DONE
+     *
      * Issues:
      * 1) CreateProfile SelectPhoto causing crash -> FIXED
      * 2) Selecting user in ContactsScreen is causing nav.popStack()  -> FIXED
@@ -23,6 +23,7 @@ class App : Application() {
      * 4) Show loading spinner in the ContactsScreen when contacts have not yet
      *    been loaded
      * 5) Double sending of OTP code -> FIXED-ish
+     * 6) Problems with voice call stopwatch
      */
 
     /**
@@ -31,9 +32,11 @@ class App : Application() {
      * 2) Add single, double and blue ticks in message -> DONE
      * 5) Fix navigation issues -> DONE
      *
+     * 6) Status -> ONGOING
+     * 6b) Create a server that checks for expired stories (every hour) and deletes them
+     *
      * 3) Video support
      * 4) Waveform in vns
-     * 6) Status
      * 7) Calls
      */
 
@@ -41,22 +44,8 @@ class App : Application() {
         super.onCreate()
         Timber.plant(Timber.DebugTree())
 
+        initKoin()
+
         appNotificationManager.clearNotifications()
-
-//        networkIntent?.let {
-//            try {
-//                networkService.startService(it)
-//            } catch (exception: Exception) {
-//                Timber.e(exception)
-//            }
-//        }
-//        networkMonitor.setupCallback(applicationContext, true)
-
-        startKoin {
-            androidLogger(Level.DEBUG)
-            androidContext(this@App)
-            modules(appModule)
-            modules(localModule)
-        }
     }
 }

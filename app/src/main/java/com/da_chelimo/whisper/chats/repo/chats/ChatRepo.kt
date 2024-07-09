@@ -55,6 +55,12 @@ interface ChatRepo {
 
 
     /**
+     * Gets all teh chat IDS of the user
+     */
+    fun getChatIdsForUser(userID: String): Flow<List<String>?>
+
+
+    /**
      * Gets all the chats of the user, given the userID
      */
     fun getChatsForUser(userID: String?): Flow<List<Chat>?>

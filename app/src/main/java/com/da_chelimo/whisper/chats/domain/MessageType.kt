@@ -68,7 +68,7 @@ sealed class MessageType(open var message: String, open var type: Types) {
             is Audio -> mapOf(
                 durationKey to duration,
                 typeKey to type,
-                audioUrlKey to audioUrl
+                audioUrlKey to (audioUrl ?: "")
             )
         }
     }

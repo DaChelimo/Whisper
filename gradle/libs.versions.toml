@@ -1,21 +1,21 @@
 [versions]
-agp = "8.4.1"
+agp = "8.4.2"
 androidImageCropper = "4.5.0"
 cloudy = "0.1.2"
 kotlin = "1.9.0"
 coreKtx = "1.13.1"
 junit = "4.13.2"
-junitVersion = "1.1.5"
-espressoCore = "3.5.1"
-lifecycleRuntimeKtx = "2.8.1"
+junitVersion = "1.2.1"
+espressoCore = "3.6.1"
+lifecycleRuntimeKtx = "2.8.3"
 activityCompose = "1.9.0"
-navigationCompose = "2.8.0-beta02"
+navigationCompose = "2.8.0-beta04"
 
 composeBom = "2024.06.00"
 firebaseBom = "33.1.1"
 koin-bom = "3.5.0"
 
-googlefonts-compose = "1.6.7"
+googlefonts-compose = "1.6.8"
 glide-compose = "1.0.0-beta01"
 
 spotless = "6.7.0"
@@ -67,6 +67,8 @@ compose-glide = { group = "com.github.bumptech.glide", name = "compose", version
 compose-coil = { group = "io.coil-kt", name ="coil", version = "2.6.0" }
 compose-countrycode = { group = "io.github.joelkanyi", name = "komposecountrycodepicker", version = "1.2.0" }
 compose-imageCropper = { module = "com.vanniktech:android-image-cropper", version.ref = "androidImageCropper" }
+compose-audiowaveform = { module = "com.github.lincollincol:compose-audiowaveform", version = "1.1.2" }
+compose-amplituda = { module = "com.github.lincollincol:amplituda", version = "2.2.2" }
 
 
 koin-bom = { group = "io.insert-koin", name = "koin-bom", version.ref = "koin-bom" }
@@ -84,7 +86,7 @@ moshi = { group = "com.squareup.moshi", name = "moshi", version.ref = "moshi" }
 moshi-reflect = { group = "com.squareup.moshi", name = "moshi-kotlin", version.ref = "moshi" }
 ksp-moshi-codegen = { group = "com.squareup.moshi", name = "moshi-kotlin-codegen", version.ref = "moshi" }
 
-kotlin-serialization = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version = "1.6.0"}
+kotlin-serialization = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version = "1.6.2"}
 
 room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "room" }
 room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "room" }
@@ -101,6 +103,8 @@ android-application = { id = "com.android.application", version.ref = "agp" }
 jetbrains-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 android-library = { id = "com.android.library", version.ref = "agp" }
 android-safeArgs = { id = "androidx.navigation.safeargs.kotlin" }
+
+compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }

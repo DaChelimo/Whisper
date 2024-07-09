@@ -7,5 +7,5 @@ sealed class RecorderState {
     data object Ongoing: RecorderState()
     data object Paused: RecorderState()
 
-    data class Ended(val fileUri: Uri?): RecorderState()
+    data class Ended(val fileUri: Uri?, val timeInMillis: Long): RecorderState()
 }

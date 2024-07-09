@@ -20,8 +20,8 @@ android {
 
     defaultConfig {
         val majorRelease = 1
-        val defaultRelease = 3
-        val minorRelease = 2
+        val defaultRelease = 4
+        val minorRelease = 0
 
         applicationId = "com.da_chelimo.whisper"
         minSdk = 24
@@ -90,6 +90,8 @@ dependencies {
     implementation(libs.cloudy)
     implementation(libs.compose.googleFonts)
     implementation(libs.compose.imageCropper)
+    implementation(libs.compose.audiowaveform)
+    implementation(libs.compose.amplituda)
 
 
     // Firebase

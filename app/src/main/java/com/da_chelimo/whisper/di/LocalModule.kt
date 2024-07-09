@@ -1,4 +1,4 @@
-package com.da_chelimo.whisper.core.di
+package com.da_chelimo.whisper.di
 
 import android.content.Context
 import androidx.room.Room

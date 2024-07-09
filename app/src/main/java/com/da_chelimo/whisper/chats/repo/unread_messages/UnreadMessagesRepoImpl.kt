@@ -39,7 +39,7 @@ class UnreadMessagesRepoImpl(
          * {SKETCHYYYYY... I knowwwww.... And I'm... I'm.... I'm SORRYYYYY :(}
          */
         val currentUser = Firebase.auth.uid?.let {
-            userRepo.getUserFromUID(it)?.toMiniUser()?.copy(lastSeen = 0L)
+            userRepo.getUserFromUID(it)?.toMiniUser()
         }
         Timber.d("currentUser is $currentUser")
 
@@ -69,7 +69,7 @@ class UnreadMessagesRepoImpl(
 
     override fun getUnreadMessages(): Flow<List<UnreadMessages>> = callbackFlow {
         val currentUser = Firebase.auth.uid?.let {
-            userRepo.getUserFromUID(it)?.toMiniUser()?.copy(lastSeen = 0L)
+            userRepo.getUserFromUID(it)?.toMiniUser()
         }
         val firstUserFilter = Filter.equalTo(Chat::firstMiniUser.name, currentUser)
         val secondUserFilter = Filter.equalTo(Chat::secondMiniUser.name, currentUser)

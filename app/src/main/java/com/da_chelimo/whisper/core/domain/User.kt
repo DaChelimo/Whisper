@@ -48,4 +48,4 @@ fun User.isOnline() =
 
 
 fun User.toMiniUser() =
-    MiniUser(name, uid, profilePic, lastSeen)
+    MiniUser(name, uid, profilePic)

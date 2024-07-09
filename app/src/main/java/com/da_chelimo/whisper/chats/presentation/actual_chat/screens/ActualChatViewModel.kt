@@ -32,6 +32,9 @@ import com.da_chelimo.whisper.core.repo.user_details.UserDetailsRepoImpl
 import com.da_chelimo.whisper.core.utils.formatDurationInMillis
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
+import kotlinx.coroutines.DelicateCoroutinesApi
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.launchIn
@@ -243,6 +246,15 @@ class ActualChatViewModel(
     }
 
 
+    @OptIn(DelicateCoroutinesApi::class)
+    suspend fun sendImage(imageUri: String, imageCaption: String) {
+        GlobalScope.launch {
+            chatID?.let { messagesRepo.sendImageMessage(it, imageUri, imageCaption) }
+        }
+        delay(1200)
+    }
+
+
     /**
      * Stop any audio recording that may be playing
      * Start recording
@@ -277,7 +289,7 @@ class ActualChatViewModel(
         messagesRepo.sendAudioMessage(
             chatID = chatID!!,
             audioUri = audioFileUri?.toString() ?: return@launch,
-            duration = recordingDurationInMillis.value
+            duration = (recorderState.value as? RecorderState.Ended)?.timeInMillis ?: 0L
         )
     }
 

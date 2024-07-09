@@ -34,7 +34,7 @@ class ChatRepoImpl(private val userRepo: UserRepo = UserRepoImpl()) : ChatRepo {
 
 
     // In case the user gets a new chat while in the AllChatsScreen
-    private fun getChatIdsForUser(userID: String) = callbackFlow {
+    override fun getChatIdsForUser(userID: String) = callbackFlow {
         val chatIdListener = getPersonalizedChatsFirebaseRef(userID)
             .addSnapshotListener { value, _ ->
                 val listOfChatIDs =

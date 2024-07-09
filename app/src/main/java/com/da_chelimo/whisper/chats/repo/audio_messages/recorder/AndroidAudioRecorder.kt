@@ -7,20 +7,20 @@ import android.media.MediaRecorder.AudioSource
 import android.net.Uri
 import android.os.Build
 import androidx.core.net.toUri
-import com.da_chelimo.whisper.core.utils.StopWatch
+import com.da_chelimo.whisper.core.utils.RecorderStopWatch
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import java.io.File
 import java.util.UUID
 
 class AndroidAudioRecorder(
-    private val stopWatch: StopWatch = StopWatch()
+    private val recorderStopWatch: RecorderStopWatch = RecorderStopWatch()
 ) : AudioRecorder {
 
     private var mediaRecorder: MediaRecorder? = null
     private var cacheFile: File? = null
 
-    override val durationInMillis: StateFlow<Long> = stopWatch.timeInMillis
+    override val durationInMillis: StateFlow<Long> = recorderStopWatch.timeInMillis
 
     private val _recorderState = MutableStateFlow<RecorderState>(RecorderState.None)
     override val recorderState: StateFlow<RecorderState> = _recorderState
@@ -45,7 +45,7 @@ class AndroidAudioRecorder(
         createAudioRecorder(context, cacheFile?.path ?: return).apply {
             prepare()
             start()
-            stopWatch.startOrResume()
+            recorderStopWatch.startOrResume()
 
             mediaRecorder = this
             _recorderState.value = RecorderState.Ongoing
@@ -54,38 +54,39 @@ class AndroidAudioRecorder(
 
     override fun pauseRecording() {
         _recorderState.value = RecorderState.Paused
-        stopWatch.pauseOrStop()
+        recorderStopWatch.pauseOrStop()
         mediaRecorder?.pause()
     }
 
     override fun resumeRecording() {
         _recorderState.value = RecorderState.Ongoing
-        stopWatch.startOrResume()
+        recorderStopWatch.startOrResume()
         mediaRecorder?.resume()
     }
 
     override fun endRecording(): Uri? {
-        stopWatch.stopAndReset()
+        val audioDuration = recorderStopWatch.timeInMillis.value
+        recorderStopWatch.stopAndReset()
 
         mediaRecorder?.stop()
         mediaRecorder?.release()
         mediaRecorder = null
 
         return cacheFile?.toUri()?.apply {
-            _recorderState.value = RecorderState.Ended(this)
+            _recorderState.value = RecorderState.Ended(this, audioDuration)
             cacheFile = null
         }
     }
 
     override fun cancelRecording() {
-        stopWatch.pauseOrStop()
+        recorderStopWatch.stopAndReset()
 
         mediaRecorder?.stop()
         mediaRecorder?.release()
         mediaRecorder = null
 
         cacheFile?.delete()
-        _recorderState.value = RecorderState.Ended(null)
+        _recorderState.value = RecorderState.Ended(null, 0L)
     }
 
 

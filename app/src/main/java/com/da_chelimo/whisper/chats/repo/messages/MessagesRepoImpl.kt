@@ -8,6 +8,7 @@ import com.da_chelimo.whisper.chats.domain.MessageType
 import com.da_chelimo.whisper.chats.domain.toMessageType
 import com.da_chelimo.whisper.chats.repo.chats.ChatRepo
 import com.google.firebase.auth.ktx.auth
+import com.google.firebase.firestore.Filter
 import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.toObject
 import com.google.firebase.ktx.Firebase
@@ -30,39 +31,86 @@ class MessagesRepoImpl(
         chatID: String,
         imageUri: String,
         messageText: String?
-    ): Boolean {
-        val imageUrl = uploadFileUsingUri("$chatID/IMAGES/${UUID.randomUUID()}", imageUri)
-        val imageType = MessageType.Image(messageText ?: "", imageUrl)
+    ): String? {
 
-        return sendMessage(chatID, imageType)
+        /**
+         * Before the image is uploaded to Firebase Storage, we can display the local image
+         * on the sender's screen (since the status is NOT_SENT, it won't be displayed on the other side)
+         */
+        val imageType = MessageType.Image(messageText ?: "", imageUri)
+        val messageID = sendMessage(chatID, imageType, finalMessageStatus = MessageStatus.NOT_SENT)
+
+        val imageUrl = uploadFileUsingUri("CHATS/$chatID/IMAGES/${UUID.randomUUID()}", imageUri)
+
+        updateMessageAfterUpload(
+            chatID,
+            messageID,
+            mapOf(Message::messageType.name to imageType.copy(imageUrl = imageUrl).toFirebaseMap())
+        )
+
+        return messageID
     }
 
     override suspend fun sendAudioMessage(
         chatID: String,
         audioUri: String,
         duration: Long
-    ): Boolean {
-        val audioUrl = uploadFileUsingUri("$chatID/AUDIO/${UUID.randomUUID()}", audioUri)
-        val audioType= MessageType.Audio(duration, audioUrl)
+    ): String? {
+        // Empty string indicates it has not yet been uploaded
+        val audioMessageType = MessageType.Audio(duration, "")
+        val messageID = sendMessage(
+            chatID,
+            audioMessageType,
+            finalMessageStatus = MessageStatus.NOT_SENT
+        )
+        val audioUrl = uploadFileUsingUri("CHATS/$chatID/AUDIO/${UUID.randomUUID()}", audioUri)
 
-        return sendMessage(chatID, audioType)
+        updateMessageAfterUpload(
+            chatID,
+            messageID,
+            mapOf(
+                Message::messageType.name to audioMessageType.copy(audioUrl = audioUrl)
+                    .toFirebaseMap()
+            )
+        )
+
+        return messageID
     }
+
+    private suspend fun updateMessageAfterUpload(
+        chatID: String,
+        messageID: String?,
+        fieldUpdates: Map<String, Any>
+    ) {
+        messageID?.let {
+            ChatRepo.getMessagesCollectionRef(chatID).document(it)
+                .update(
+                    fieldUpdates.toMutableMap().apply {
+                        set(Message::messageStatus.name, MessageStatus.SENT)
+                    }
+                )
+                .await()
+        }
+    }
+
 
     // chats >> chat1234 >> messages >> messageID
     override suspend fun sendMessage(
         chatID: String,
-        messageType: MessageType
-    ): Boolean {
+        messageType: MessageType,
+        finalMessageStatus: MessageStatus
+    ): String? {
+        val messageID = UUID.randomUUID().toString()
+
         val message = Message(
             senderID = Firebase.auth.uid!!,
-            messageID = UUID.randomUUID().toString(),
+            messageID = messageID,
             messageType = messageType.toFirebaseMap(),
             timeSent = System.currentTimeMillis(),
             messageStatus = MessageStatus.NOT_SENT
         )
 
-
-        return try {
+        try {
             ChatRepo.getMessagesCollectionRef(chatID)
                 .document(message.messageID)
                 .set(message)
@@ -73,7 +121,7 @@ class MessagesRepoImpl(
 
             ChatRepo.getMessagesCollectionRef(chatID)
                 .document(message.messageID)
-                .update(Message::messageStatus.name, MessageStatus.SENT)
+                .update(Message::messageStatus.name, finalMessageStatus)
                 .addOnCompleteListener {
                     Timber.d("update(Message::messageStatus.name) is ${it.isSuccessful}")
                 }
@@ -92,9 +140,11 @@ class MessagesRepoImpl(
                 )
             )
 
-            true
+            return messageID
         } catch (e: Exception) {
-            false
+            e.printStackTrace()
+
+            return null
         }
     }
 
@@ -112,6 +162,16 @@ class MessagesRepoImpl(
     // chats >> chat1234 >> messages
     override suspend fun getMessagesFromChatID(chatID: String) = callbackFlow<List<Message>> {
         val messagesSnapshotListener = ChatRepo.getMessagesCollectionRef(chatID)
+            .where(
+                // Display message if:
+                Filter.or(
+                    // 1) It is not in NOT_SENT state
+                    Filter.notEqualTo(Message::messageStatus.name, MessageStatus.NOT_SENT),
+
+                    // 2) Any state, but is from the CURRENT USER
+                    Filter.equalTo(Message::senderID.name, Firebase.auth.uid!!)
+                )
+            )
             .orderBy(Message::timeSent.name, Query.Direction.DESCENDING)
             .addSnapshotListener { value, error ->
                 val messages = value?.toObjects(Message::class.java)
