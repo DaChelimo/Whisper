@@ -1,5 +1,8 @@
 package com.da_chelimo.whisper.stories.ui.components
 
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -15,14 +18,20 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -36,8 +45,11 @@ import com.da_chelimo.whisper.core.presentation.ui.theme.LightGrey
 import com.da_chelimo.whisper.core.presentation.ui.theme.LocalAppColors
 import com.da_chelimo.whisper.core.presentation.ui.theme.QuickSand
 import com.da_chelimo.whisper.core.utils.toStoryTime
+import com.da_chelimo.whisper.stories.domain.Story
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
+import kotlinx.coroutines.delay
+import timber.log.Timber
 
 
 @Composable
@@ -113,16 +125,59 @@ private fun PreviewStoryBar() = AppTheme {
 fun StoryTopCountIndicator(
     currentStoryIndex: Int,
     totalStoryCount: Int,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onTimerOver: () -> Unit
 ) {
     Row(modifier.fillMaxWidth()) {
         repeat(totalStoryCount) { index ->
             val isOrWasViewed = index <= currentStoryIndex
-            Surface(
-                modifier = Modifier.height((1.5).dp).weight(1f),
-                shape = RoundedCornerShape(50),
-                color = if (isOrWasViewed) Color.White else LightGrey
-            ) {}
+            val currentStory = index == currentStoryIndex
+
+
+            if (currentStory) {
+                var timeLeft by remember {
+                    mutableLongStateOf(0L)
+                }
+                LaunchedEffect(key1 = currentStoryIndex) {
+                    timeLeft = 0L
+                }
+
+
+                val animatedProgress by animateFloatAsState(
+                    targetValue = (timeLeft / Story.DURATION).toFloat(),
+                    animationSpec = tween(
+                        easing = LinearEasing,
+                        durationMillis = Story.DURATION.toInt()
+                    ),
+                    label = "Animated Progress"
+                )
+
+
+                LaunchedEffect(key1 = currentStoryIndex) {
+                    timeLeft = Story.DURATION
+                    Timber.d("animatedProgress is $animatedProgress")
+
+                    delay(Story.DURATION)
+                    onTimerOver()
+                }
+
+                LinearProgressIndicator(
+                    progress = { animatedProgress },
+                    modifier = Modifier
+                        .height((2).dp)
+                        .weight(1f),
+                    strokeCap = StrokeCap.Round,
+                    trackColor = LightGrey,
+                    color = Color.White
+                )
+            } else
+                Surface(
+                    modifier = Modifier
+                        .height((2).dp)
+                        .weight(1f),
+                    shape = RoundedCornerShape(50),
+                    color = if (isOrWasViewed) Color.White else LightGrey
+                ) {}
 
             Spacer(modifier = Modifier.width(4.dp))
         }

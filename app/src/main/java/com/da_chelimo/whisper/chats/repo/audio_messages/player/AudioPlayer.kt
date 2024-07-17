@@ -33,4 +33,5 @@ interface AudioPlayer {
     fun resumeAudio()
     fun stopAudio()
 
+    fun seekTo(newPositionInMillis: Long)
 }

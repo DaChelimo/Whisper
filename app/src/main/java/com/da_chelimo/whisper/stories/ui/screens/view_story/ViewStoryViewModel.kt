@@ -34,6 +34,7 @@ class ViewStoryViewModel(
     val hideStory: StateFlow<Boolean> = _hideStory
 
 
+
     fun loadUser(authorID: String) = viewModelScope.launch {
         _author.value = userRepo.getUserFromUID(authorID)
     }
@@ -49,8 +50,9 @@ class ViewStoryViewModel(
 
         if (newIndex > lastIndex)
             _hideStory.value = true
-        else
+        else {
             _storyIndex.value = newIndex
+        }
     }
 
     fun moveToPreviousStory(currentIndex: Int) {
@@ -58,8 +60,9 @@ class ViewStoryViewModel(
 
         if (newIndex < 0)
             _hideStory.value = true
-        else
+        else {
             _storyIndex.value = newIndex
+        }
     }
 
 

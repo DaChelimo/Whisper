@@ -40,6 +40,7 @@ fun UserIcon(
     onClick: () -> Unit
 ) {
     Glider(
+        contentScale = ContentScale.Crop,
         imageUrl = profilePic ?: R.drawable.young_man_anim,
         contentDescription = stringResource(id = R.string.change_profile_picture),
 
@@ -81,17 +82,20 @@ fun Glider(
     modifier: Modifier = Modifier,
     contentDescription: String? = null,
     loading: @Composable ColumnScope.() -> Unit,
-    error: @Composable ColumnScope.() -> Unit
+    error: @Composable ColumnScope.() -> Unit,
+    contentScale: ContentScale,
 ) {
     GlideSubcomposition(model = imageUrl, modifier = modifier) {
         when (state) {
             is RequestState.Success -> {
-                Image(
-                    painter = painter,
-                    contentDescription = contentDescription,
-                    contentScale = ContentScale.Crop,
-                    modifier = modifier
-                )
+                Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.Center) {
+                    Image(
+                        painter = painter,
+                        contentDescription = contentDescription,
+                        contentScale = contentScale,
+                        modifier = modifier
+                    )
+                }
             }
 
             is RequestState.Loading -> {

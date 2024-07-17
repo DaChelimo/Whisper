@@ -71,13 +71,6 @@ fun StoriesScreen(navController: NavController, coroutineScope: CoroutineScope) 
                 }
 
 
-//            LaunchedEffect(key1 = storyToOpen) {
-//                if (storyToOpen != null) {
-//                    navController.navigateSafely(ViewStory(storyToOpen!!))
-//                    viewModel.resetOpenStory()
-//                }
-//            }
-
             Box(modifier = Modifier.weight(1f)) {
                 Column(Modifier.fillMaxSize()) {
 
@@ -133,18 +126,6 @@ fun StoriesScreen(navController: NavController, coroutineScope: CoroutineScope) 
                         }
                     }
                 }
-//
-//                FloatingActionButton(
-//                    onClick = {  },
-//                    containerColor = DarkBlue,
-//                    contentColor = Color.White,
-//                    modifier = Modifier.align(Alignment.BottomEnd)
-//                ) {
-//                    Icon(
-//                        imageVector = Icons.Rounded.Add,
-//                        contentDescription = stringResource(R.string.add_to_story)
-//                    )
-//                }
             }
 
             val shouldOpenMediaPicker by viewModel.openMediaPicker.collectAsState()
@@ -176,6 +157,7 @@ fun StoriesScreen(navController: NavController, coroutineScope: CoroutineScope) 
                     // For a second, you can see the previous user name and story
                     ViewStoryScreen(
                         authorID = storyToOpen!!,
+//                        coroutineScope = coroutineScope,
                         onHideStory = {
                             viewModel.resetOpenStory()
                         }

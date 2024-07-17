@@ -32,6 +32,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -126,6 +127,8 @@ fun ViewStoryScreen(authorID: String, onHideStory: () -> Unit) {
                 ) {
                     Glider(
                         imageUrl = stories?.getOrNull(storyIndex)?.imageUrl,
+                        contentScale = ContentScale.FillWidth,
+
                         modifier = Modifier
                             .weight(1f)
                             .clip(RoundedCornerShape(8.dp))
@@ -173,7 +176,10 @@ fun ViewStoryScreen(authorID: String, onHideStory: () -> Unit) {
                     totalStoryCount = pagerState.pageCount,
                     modifier = Modifier
                         .padding(top = 12.dp)
-                        .padding(horizontal = 4.dp)
+                        .padding(horizontal = 4.dp),
+                    onTimerOver = {
+                        viewModel.moveToNextStory(pagerState.currentPage)
+                    }
                 )
 
                 Row(

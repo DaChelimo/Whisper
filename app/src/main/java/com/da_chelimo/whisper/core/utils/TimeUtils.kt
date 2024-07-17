@@ -15,13 +15,15 @@ fun Long.toStoryTime(): String {
     val jodaTime = DateTime(this)
     val timeInterval = Interval(this, System.currentTimeMillis()).toDuration()
 
-    return if (timeInterval.standardMinutes < 60)
+    return if (timeInterval.standardSeconds < 60)
+        "${jodaTime.toString("ss")} seconds ago"
+    else if (timeInterval.standardMinutes < 60)
         "${jodaTime.toString("mm")} minutes ago"
     else if (timeInterval.standardHours < 24)
         toHourAndMinute(true)
     else if (timeInterval.standardDays < 2)
         "Yesterday"
-    else jodaTime.toString("HH:mm EEEE")
+    else jodaTime.toString("EEEE HH:mm")
 }
 
 
@@ -59,8 +61,13 @@ class PlayerStopWatch {
         handler.post(runnable)
     }
 
-    fun pause() { isPlaying = false }
-    fun resume() { isPlaying = true; handler.post(runnable) }
+    fun pause() {
+        isPlaying = false
+    }
+
+    fun resume() {
+        isPlaying = true; handler.post(runnable)
+    }
 
     fun stop() {
         _timeInMillis.value = 0L

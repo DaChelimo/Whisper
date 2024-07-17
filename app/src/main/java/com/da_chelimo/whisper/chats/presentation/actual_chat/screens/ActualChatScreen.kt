@@ -250,8 +250,8 @@ fun ActualChatScreen(
                                         )
                                     }
                                 },
-                                onSeekTo = {
-                                    // TODO:
+                                onSeekTo = { newPosition ->
+                                    viewModel.seekTo(messageType, newPosition)
                                 }
                             )
                         } else if (messageType is MessageType.Text || messageType is MessageType.Image) {

@@ -309,6 +309,10 @@ class ActualChatViewModel(
             }
     }
 
+    fun seekTo(selectedAudioMessage: MessageType.Audio, newPositionInMillis: Long) {
+        if (selectedAudioMessage.audioUrl == audioPlayer.audioBeingPlayed.value)
+            audioPlayer.seekTo(newPositionInMillis)
+    }
 
     override fun onCleared() {
         super.onCleared()
