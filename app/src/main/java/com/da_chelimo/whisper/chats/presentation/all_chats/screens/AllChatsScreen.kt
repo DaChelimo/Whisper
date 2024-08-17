@@ -137,10 +137,11 @@ fun AllChatsScreen(
 
                 Box(
                     modifier = Modifier
+                        .fillMaxWidth()
                         .weight(1f)
                 ) {
                     // The user has NO CHATS
-                    if (chats?.isEmpty() == true) {
+                    if (chats.isNullOrEmpty()) {
                         Column(Modifier.align(Alignment.Center)) {
                             Image(
                                 painter = painterResource(id = R.drawable.start_chat),

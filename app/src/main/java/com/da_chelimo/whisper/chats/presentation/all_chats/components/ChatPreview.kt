@@ -167,10 +167,6 @@ fun ChatPreviewTicks(
 ) {
     Column(modifier) {
         if (lastMessageIsMine) {
-            LaunchedEffect(key1 = Unit) {
-                Timber.d("lastMessageStatus is $lastMessageStatus")
-            }
-
             when (lastMessageStatus) {
                 MessageStatus.NOT_SENT -> NotSentIcon()
 

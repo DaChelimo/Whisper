@@ -34,7 +34,6 @@ class ViewStoryViewModel(
     val hideStory: StateFlow<Boolean> = _hideStory
 
 
-
     fun loadUser(authorID: String) = viewModelScope.launch {
         _author.value = userRepo.getUserFromUID(authorID)
     }
@@ -69,6 +68,7 @@ class ViewStoryViewModel(
     fun updateTypedMessage(newText: String) {
         _typedMessage.value = newText
     }
+
     fun resetHideStory() {
         _storyIndex.value = 0
         _hideStory.value = false

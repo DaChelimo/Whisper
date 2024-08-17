@@ -1,4 +1,4 @@
-package com.da_chelimo.whisper.main
+package com.da_chelimo.whisper.main_activity
 
 import android.content.Intent
 import android.os.Bundle

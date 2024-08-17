@@ -3,7 +3,6 @@ package com.da_chelimo.whisper.core.presentation.ui.theme
 import android.content.res.Configuration
 import android.os.Build
 import android.view.View
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material.ripple.LocalRippleTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
@@ -58,7 +57,7 @@ private val LightColorScheme = lightColorScheme(
 
 @Composable
 fun AppTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
+    darkTheme: Boolean = true, //isSystemInDarkTheme(),
     // Dynamic color is available on Android 12+
     dynamicColor: Boolean = false,
     content: @Composable () -> Unit

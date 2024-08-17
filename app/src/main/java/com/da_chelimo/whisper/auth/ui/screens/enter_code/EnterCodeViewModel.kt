@@ -78,9 +78,11 @@ class EnterCodeViewModel(
 
 
     fun authenticateWithNumber(phoneNumber: String, activity: Activity?) {
+        Timber.d("authenticateWithNumber called")
         if (!isAuthenticating) {
             startTimer()
 
+            Timber.d("authenticateWithNumber called since isAuthenticating is $isAuthenticating")
             authRepo.authenticateWithNumber(
                 phoneNumber = phoneNumber,
                 activity = activity!!,

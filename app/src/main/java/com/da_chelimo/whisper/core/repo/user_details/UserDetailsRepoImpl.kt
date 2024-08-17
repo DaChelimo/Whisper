@@ -116,7 +116,7 @@ class UserDetailsRepoImpl : UserDetailsRepo {
 
 
     override fun updateUserLastSeen(userID: String, lastSeen: Long) {
-        Timber.d("Service: updateUserLastSeen with lastSeen as $lastSeen")
+//        Timber.d("Service: updateUserLastSeen with lastSeen as $lastSeen")
 
         getUserProfileReference(userID)
             .update(User::lastSeen.name, lastSeen)

@@ -7,6 +7,7 @@ import com.da_chelimo.whisper.chats.domain.Chat
 import com.da_chelimo.whisper.chats.repo.chats.ChatRepo
 import com.da_chelimo.whisper.chats.repo.contacts.local.dao.LocalContactDao
 import com.da_chelimo.whisper.chats.repo.contacts.local.toLocalContacts
+import com.da_chelimo.whisper.chats.repo.contacts.models.SystemContact
 import com.da_chelimo.whisper.core.domain.User
 import com.da_chelimo.whisper.core.domain.toMiniUser
 import com.da_chelimo.whisper.core.repo.user.UserRepo
@@ -37,8 +38,8 @@ class ContactsRepoImpl(
 
 
     override suspend fun checkForPreExistingChat(contactToCheck: User): String? {
-        val otherContact = contactToCheck.toMiniUser()
         val myContact = userRepo.getUserFromUID(Firebase.auth.uid!!)?.toMiniUser()
+        val otherContact = contactToCheck.toMiniUser()
 
 
         val firstUserFilter = Filter.and(Filter.equalTo(Chat::firstMiniUser.name, myContact), Filter.equalTo(Chat::secondMiniUser.name, otherContact))
@@ -60,33 +61,17 @@ class ContactsRepoImpl(
         Timber.d("Chat exists: $chatExists")
 
         return chatExists?.chatID
-//        val chatWithOtherUserAsFirstUser = Firebase.firestore.collection(ChatRepo.CHAT_DETAILS)
-//            .whereEqualTo(Chat::firstMiniUser.name, otherContact)
-//            .whereEqualTo(Chat::secondMiniUser.name, myContact)
-//            .get()
-//            .await()
-//            .toObjects(Chat::class.java)
-//            .firstOrNull()
-//
-//        val chatWithCurrentUserAsFirstUser = Firebase.firestore.collection(ChatRepo.CHAT_DETAILS)
-//            .whereEqualTo(Chat::firstMiniUser.name, myContact)
-//            .whereEqualTo(Chat::secondMiniUser.name, otherContact)
-//            .get()
-//            .await()
-//            .toObjects(Chat::class.java)
-//            .firstOrNull()
-//
-//
-//
-//        return chatWithCurrentUserAsFirstUser?.chatID ?: chatWithOtherUserAsFirstUser?.chatID
     }
+
+
 
     /**
      * Gets all the contacts on the user's phone, breaks them into groups of 30 (maximum for Firebase queries) and
      * searches for them on Firebase Firestore
      */
     override suspend fun refreshContactsOnWhisper(context: Context) {
-        val phoneContacts = getContactsOnPhone(context).values.toMutableList()
+        val phoneContacts = getContactsOnPhone(context)
+
         val numOfLists = phoneContacts.count() / 30 + 1
         val shorterPhoneContacts = (0..numOfLists).map { index ->
             val lastIndex =
@@ -98,40 +83,53 @@ class ContactsRepoImpl(
                 ((index + 1) * 30).coerceAtLeast(0).coerceAtMost(lastIndex)
 
             if (toIndex > fromIndex)
-                phoneContacts.subList(fromIndex, toIndex)
+                phoneContacts.subList(fromIndex, toIndex).map { it.number }
             else
                 listOf()
         }.filter { it.isNotEmpty() }
 
-        val contactsOnWhisper = mutableListOf<User>()
-        shorterPhoneContacts.forEach { listToCheck ->
+
+        var contactsOnWhisper = mutableListOf<User>()
+        shorterPhoneContacts.forEach { listOfNumbersToCheck: List<String> ->
             contactsOnWhisper.addAll(
                 firestore
                     .collection(UserRepo.USERS_COLLECTION)
-                    .whereIn(User::number.name, listToCheck)
+                    .whereIn(User::number.name, listOfNumbersToCheck)
                     .get()
                     .await()
                     .toObjects(User::class.java)
             )
         }
 
-        localContactDao.refreshContacts(contactsOnWhisper.toLocalContacts())
+        Timber.d("phoneContacts.size is ${phoneContacts.size}")
 
-        Timber.d("contactsOnWhisper is $contactsOnWhisper")
+        Timber.d("Before: contactsOnWhisper is $contactsOnWhisper")
+        contactsOnWhisper = contactsOnWhisper.mapNotNull { contact ->
+            val systemContact = phoneContacts.find { it.number == contact.number }
+            systemContact?.let { contact.copy(name = it.name) }
+        }.toMutableList()
+
+        Timber.d("After: contactsOnWhisper is $contactsOnWhisper")
+        localContactDao.refreshContacts(contactsOnWhisper.toLocalContacts())
     }
 
 
-    private suspend fun getContactsOnPhone(context: Context): Map<String, String> =
+    /**
+     * Returns a map of the contact:
+     * key -> name
+     * value -> number
+     */
+    private suspend fun getContactsOnPhone(context: Context): List<SystemContact> =
         withContext(Dispatchers.IO) {
             val cursor = context.contentResolver.query(
                 ContactsContract.CommonDataKinds.Phone.CONTENT_URI,
                 CONTACTS_PROJECTION,
-                null, // SELECTION,
-                null, //SELECTION_ARGS,
+                null,
+                null,
                 Contacts.DISPLAY_NAME
             )
 
-            val contacts = mutableMapOf<String, String>()
+            val contacts = mutableListOf<SystemContact>()
 
             cursor?.let {
                 while (it.moveToNext()) {
@@ -141,7 +139,7 @@ class ContactsRepoImpl(
                         it.getString(it.getColumnIndexOrThrow(ContactsContract.CommonDataKinds.Phone.NORMALIZED_NUMBER))
 
                     try {
-                        contacts[contactName] = contactNumber
+                        contacts.add(SystemContact(contactName, contactNumber))
                     } catch (_: NullPointerException) {
                     }
                 }

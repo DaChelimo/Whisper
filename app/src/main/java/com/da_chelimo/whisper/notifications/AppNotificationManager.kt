@@ -20,7 +20,7 @@ import coil.request.ImageRequest
 import com.da_chelimo.whisper.R
 import com.da_chelimo.whisper.core.domain.MiniUser
 import com.da_chelimo.whisper.core.presentation.ui.theme.DarkBlue
-import com.da_chelimo.whisper.main.MainActivity
+import com.da_chelimo.whisper.main_activity.MainActivity
 import com.da_chelimo.whisper.notifications.models.NotiMessage
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase

@@ -3,6 +3,7 @@
 package com.da_chelimo.whisper.chats.presentation.actual_chat.components.messages
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
@@ -523,7 +524,7 @@ fun ChatMessage(
                 }
             }
 
-            if (showOptionsMenu)
+            AnimatedVisibility(visible = showOptionsMenu) {
                 Column(
                     Modifier
                         .fillMaxWidth()
@@ -542,6 +543,7 @@ fun ChatMessage(
                         unSendMessage = unSendMessage
                     )
                 }
+            }
         }
     }
 

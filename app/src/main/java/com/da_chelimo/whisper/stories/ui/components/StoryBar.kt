@@ -1,8 +1,5 @@
 package com.da_chelimo.whisper.stories.ui.components
 
-import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -123,6 +120,7 @@ private fun PreviewStoryBar() = AppTheme {
 
 @Composable
 fun StoryTopCountIndicator(
+    isPaused: Boolean,
     currentStoryIndex: Int,
     totalStoryCount: Int,
     modifier: Modifier = Modifier,
@@ -135,34 +133,30 @@ fun StoryTopCountIndicator(
 
 
             if (currentStory) {
-                var timeLeft by remember {
-                    mutableLongStateOf(0L)
-                }
-                LaunchedEffect(key1 = currentStoryIndex) {
-                    timeLeft = 0L
-                }
-
-
-                val animatedProgress by animateFloatAsState(
-                    targetValue = (timeLeft / Story.DURATION).toFloat(),
-                    animationSpec = tween(
-                        easing = LinearEasing,
-                        durationMillis = Story.DURATION.toInt()
-                    ),
-                    label = "Animated Progress"
-                )
-
+                var progress by remember(key1 = currentStoryIndex) { mutableLongStateOf(0L) }
 
                 LaunchedEffect(key1 = currentStoryIndex) {
-                    timeLeft = Story.DURATION
-                    Timber.d("animatedProgress is $animatedProgress")
-
-                    delay(Story.DURATION)
-                    onTimerOver()
+                    Timber.d("currentStoryIndex changed: $currentStoryIndex")
                 }
+
+                LaunchedEffect(key1 = isPaused) {
+                    Timber.d("StoryTopCountIndicator: isPaused is $isPaused")
+                    while (!isPaused) {
+                        progress += 20
+                        delay(20)
+
+                        if (progress >= Story.DURATION) {
+                            onTimerOver()
+                            break
+                        }
+                    }
+                }
+
 
                 LinearProgressIndicator(
-                    progress = { animatedProgress },
+                    progress = {
+                        progress.toFloat() / Story.DURATION.toFloat()
+                    },
                     modifier = Modifier
                         .height((2).dp)
                         .weight(1f),

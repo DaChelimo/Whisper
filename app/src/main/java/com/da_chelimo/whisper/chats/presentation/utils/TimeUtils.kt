@@ -33,9 +33,9 @@ fun Long.toChatPreviewTime(addAmPMSymbol: Boolean = false): String? = try {
     val jodaTime = DateTime(this, DateTimeZone.getDefault())
     val timeInterval = Interval(jodaTime.millis, System.currentTimeMillis()).toDuration()
 
-    Timber.d("LAst seen in millis is $this")
-    Timber.d("Last seen is ${DateTime(this).toString("HH:mm dd/MM/yyyy")}")
-    Timber.d("timeInterval.standardHours is ${timeInterval.standardHours}")
+//    Timber.d("LAst seen in millis is $this")
+//    Timber.d("Last seen is ${DateTime(this).toString("HH:mm dd/MM/yyyy")}")
+//    Timber.d("timeInterval.standardHours is ${timeInterval.standardHours}")
     // Less than a day {it's better to use 18 instead of 24}
     if (timeInterval.standardHours < 24)
         toHourAndMinute(addAmPMSymbol)

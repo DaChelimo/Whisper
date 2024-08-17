@@ -109,13 +109,15 @@ class ActualChatViewModel(
             } else {
                 val chat = chat.value
 
-                val otherUserUID = if (chat?.firstMiniUser?.uid == Firebase.auth.uid) chat?.secondMiniUser?.uid
-                else chat?.firstMiniUser?.uid
+                val otherUser = if (chat?.firstMiniUser?.uid == Firebase.auth.uid) chat?.secondMiniUser
+                else chat?.firstMiniUser
 
                 /**
-                 * Fetch the user profile to allow you to see his last seen
+                 * Fetch the user profile to allow you to see his last seen but......
+                 * replace his official Whisper username with how the current user has saved him/her
+                 * on his contact list (using otherUser.name)
                  */
-                userRepo.getUserFromUID(otherUserUID ?: return)?.toMiniUser()
+                userRepo.getUserFromUID(otherUser?.uid ?: return)?.toMiniUser()?.copy(name = otherUser.name)
             }
 
         Timber.d("otherUser.value is ${otherUser.value}")
