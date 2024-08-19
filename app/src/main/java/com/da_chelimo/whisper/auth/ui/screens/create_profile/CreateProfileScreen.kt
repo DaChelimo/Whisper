@@ -116,9 +116,7 @@ fun CreateProfileScreen(
 
 
             Box(Modifier.fillMaxSize()) {
-                if (taskState is TaskState.LOADING)
-                    LoadingSpinner(modifier = Modifier.align(Alignment.Center))
-                else
+                if (taskState is TaskState.NONE) {
                     Column(
                         Modifier
                             .fillMaxSize()
@@ -233,6 +231,8 @@ fun CreateProfileScreen(
                             )
                         }
                     }
+                } else
+                    LoadingSpinner(modifier = Modifier.align(Alignment.Center))
             }
         }
     }

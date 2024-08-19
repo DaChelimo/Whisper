@@ -15,15 +15,19 @@ fun Long.toStoryTime(): String {
     val jodaTime = DateTime(this)
     val timeInterval = Interval(this, System.currentTimeMillis()).toDuration()
 
+    // Less than a day {it's better to use 18 instead of 24}
+    val hourAndMinute = toHourAndMinute(addAmPMSymbol = true)
+    val isToday = jodaTime.millis >= DateTime.now().withTimeAtStartOfDay().millis
+
     return if (timeInterval.standardSeconds < 60)
-        "${jodaTime.toString("ss")} seconds ago"
+        "${timeInterval.standardSeconds} seconds ago"
     else if (timeInterval.standardMinutes < 60)
-        "${jodaTime.toString("mm")} minutes ago"
-    else if (timeInterval.standardHours < 24)
-        toHourAndMinute(true)
+        "${timeInterval.standardMinutes} minutes ago"
+    else if (timeInterval.standardHours < 24 && isToday)
+        "Today $hourAndMinute"
     else if (timeInterval.standardDays < 2)
-        "Yesterday"
-    else jodaTime.toString("EEEE HH:mm")
+        "Yesterday $hourAndMinute"
+    else jodaTime.toString("EEEE $hourAndMinute")
 }
 
 

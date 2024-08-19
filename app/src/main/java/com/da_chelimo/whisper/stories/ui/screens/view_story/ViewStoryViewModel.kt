@@ -42,9 +42,14 @@ class ViewStoryViewModel(
         _stories.value = storyRepo.loadStories(authorID)
     }
 
+    fun deleteStory() = viewModelScope.launch {
+        val story = stories.value?.getOrNull(storyIndex.value) ?: return@launch
+        _stories.value = stories.value?.filter { it.storyID != story.storyID }
+        storyRepo.deleteStory(story.storyID)
+    }
 
-    fun moveToNextStory(currentIndex: Int) {
-        val newIndex = currentIndex + 1
+    fun moveToNextStory() {
+        val newIndex = storyIndex.value + 1
         val lastIndex = stories.value?.lastIndex ?: return
 
         if (newIndex > lastIndex)
@@ -54,8 +59,8 @@ class ViewStoryViewModel(
         }
     }
 
-    fun moveToPreviousStory(currentIndex: Int) {
-        val newIndex = currentIndex - 1
+    fun moveToPreviousStory() {
+        val newIndex = storyIndex.value - 1
 
         if (newIndex < 0)
             _hideStory.value = true

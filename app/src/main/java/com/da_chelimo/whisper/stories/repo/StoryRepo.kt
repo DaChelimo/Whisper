@@ -57,5 +57,5 @@ interface StoryRepo {
     suspend fun watchStory(storyAuthor: String, storyID: String, currentUserID: String)
 
 
-
+    suspend fun deleteStory(storyID: String)
 }

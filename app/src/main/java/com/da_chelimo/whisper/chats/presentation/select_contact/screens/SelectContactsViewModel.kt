@@ -36,6 +36,9 @@ class SelectContactsViewModel(
         val existingChatID = contactsRepo.checkForPreExistingChat(newContact)
         Timber.d("startOrResumeConversation.existingChatID is $existingChatID")
 
+        Timber.d("existingChatID is $existingChatID")
+        Timber.d("newContact.uid is ${newContact.uid}")
+
         _shouldNavigateToActualChat.value = if (existingChatID != null)
             ActualChat(chatId = existingChatID, newContact = null)
         else

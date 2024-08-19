@@ -97,12 +97,13 @@ class ActualChatViewModel(
             Timber.d("chat.value?.isDisabled is ${chat.value?.isDisabled}")
         }
     }
-
     /**
      * Gets the other user's profile either using the chatID (existing chat) or newContact (new chat)
      */
     suspend fun loadOtherUser(chatID: String?, newContactUID: String?) {
         Timber.d("chatID in loadOtherUser is $chatID")
+        Timber.d("newContactUID in loadOtherUser is $newContactUID")
+
         _otherUser.value =
             if (chatID == null) {
                 contactsRepo.getContactFromUID(newContactUID!!)?.toMiniUser()

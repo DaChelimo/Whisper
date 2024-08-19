@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material3.Icon
@@ -135,11 +134,8 @@ fun StoryTopCountIndicator(
             if (currentStory) {
                 var progress by remember(key1 = currentStoryIndex) { mutableLongStateOf(0L) }
 
-                LaunchedEffect(key1 = currentStoryIndex) {
-                    Timber.d("currentStoryIndex changed: $currentStoryIndex")
-                }
 
-                LaunchedEffect(key1 = isPaused) {
+                LaunchedEffect(key1 = isPaused, key2 = currentStoryIndex) {
                     Timber.d("StoryTopCountIndicator: isPaused is $isPaused")
                     while (!isPaused) {
                         progress += 20
@@ -169,7 +165,7 @@ fun StoryTopCountIndicator(
                     modifier = Modifier
                         .height((2).dp)
                         .weight(1f),
-                    shape = RoundedCornerShape(50),
+                    shape = CircleShape,
                     color = if (isOrWasViewed) Color.White else LightGrey
                 ) {}
 

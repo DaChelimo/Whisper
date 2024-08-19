@@ -7,6 +7,7 @@ data class Story(
     val storyCaption: String,
     val timeUploaded: Long = System.currentTimeMillis(),
     val totalViewers: Int = 0,
+
     val viewersIDs: List<String> = listOf() // List<MiniUser>
 ) {
 

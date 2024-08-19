@@ -126,7 +126,6 @@ class MainActivity : ComponentActivity() {
                         NavHost(
                             navController = navController,
                             startDestination = if (Firebase.auth.uid == null) Welcome else AllChats
-//                            startDestination = AllChats// if (Firebase.auth.uid == null) Welcome else AllChats
                         ) {
 
                             composable<Welcome> {
@@ -185,10 +184,6 @@ class MainActivity : ComponentActivity() {
                             composable<Stories> {
                                 StoriesScreen(navController = navController, coroutineScope = coroutineScope)
                             }
-//                            composable<ViewStory> {
-//                                val args = it.toRoute<ViewStory>()
-//                                ViewStoryScreen(authorID = args.authorID)
-//                            }
 
 
 
