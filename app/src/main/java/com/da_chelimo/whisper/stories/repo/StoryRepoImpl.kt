@@ -66,8 +66,7 @@ class StoryRepoImpl(
 
     // Gets all the stories of the given user
     override suspend fun loadStories(authorID: String): List<Story> {
-        val stories = StoryRepo.getStoryCollection(authorID)
-            .whereEqualTo(Story::authorUID.name, authorID)
+        val stories = getStoriesQuery(authorID)
             .orderBy(Story::timeUploaded.name, Query.Direction.ASCENDING)
             .get().await().toObjects(Story::class.java)
             .filterNotNull()
@@ -75,6 +74,11 @@ class StoryRepoImpl(
         Timber.d("Stories is $stories")
         return stories
     }
+
+
+    private fun getStoriesQuery(authorID: String) =
+        StoryRepo
+        .getStoryCollection(authorID)
 
 
     override fun getMyStoryPreview() = callbackFlow {
@@ -85,6 +89,8 @@ class StoryRepoImpl(
                     error?.printStackTrace()
 
                     val myStoryPreview = value?.toObject<StoryPreview>()
+                    Timber.d("myStoryPreview is $myStoryPreview")
+
                     trySend(myStoryPreview)
                 }
         }
@@ -112,7 +118,7 @@ class StoryRepoImpl(
         StoryRepo.getStoryDetailsCollection(userID).get().await().toObject<StoryPreview>()
 
     override suspend fun getStoriesForUID(userID: String) =
-        StoryRepo.getStoryCollection(userID).get().await().toObjects<Story>()
+        getStoriesQuery(userID).get().await().toObjects<Story>()
 
 
     private suspend fun addStoryToStoryDetails(story: Story, userID: String) {
@@ -164,10 +170,23 @@ class StoryRepoImpl(
     }
 
     private suspend fun getLastStory(userID: String) =
-        StoryRepo.getStoryCollection(userID)
+        getStoriesQuery(userID)
             .orderBy(Story::timeUploaded.name, Query.Direction.DESCENDING)
             .limit(1)
             .get().await().toObjects<Story>().firstOrNull()
+
+
+    override suspend fun deleteStory(storyID: String) {
+        val storyDetailsRef = StoryRepo.getStoryDetailsCollection(Firebase.auth.uid ?: return)
+        val storyDetails = storyDetailsRef.get().await().toObject<StoryPreview>()
+        storyDetailsRef.update(StoryPreview::storyCount.name, storyDetails?.storyCount?.minus(1) ?: 0)
+
+        val storyRef = StoryRepo.getStoryCollection(Firebase.auth.uid!!).document(storyID)
+        Timber.d("Delete: storyRef is ${storyRef.get().await().toObject<Story>()}")
+        val isSuccess = storyRef.delete()
+        Timber.d("isSuccess is ${isSuccess.isSuccessful}")
+//        storyRef.update(Story::active.name, false)
+    }
 
     override suspend fun watchStory(storyAuthor: String, storyID: String, currentUserID: String) {
         TODO("Not yet implemented")

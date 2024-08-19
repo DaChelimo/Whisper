@@ -75,11 +75,11 @@ sealed class MessageType(open var message: String, open var type: Types) {
 }
 
 
-fun Map<String, Any?>.toMessageType(): MessageType {
+fun Map<String, Any?>?.toMessageType(): MessageType {
     val mapOf = this
 
-    if (mapOf.isEmpty()) // Default implementation
-        return Text("")
+    if (mapOf.isNullOrEmpty()) // Default implementation
+        return Text("~ Open to start a conversation ~")
 
     val typeAsString = mapOf.getOrElse(MessageType::type.name) { Types.Text }
     val allTypes = Types.entries.map { it.name }

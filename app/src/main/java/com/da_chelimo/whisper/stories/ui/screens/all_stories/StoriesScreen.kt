@@ -3,6 +3,7 @@ package com.da_chelimo.whisper.stories.ui.screens.all_stories
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -71,13 +72,6 @@ fun StoriesScreen(navController: NavController, coroutineScope: CoroutineScope) 
                 }
 
 
-//            LaunchedEffect(key1 = storyToOpen) {
-//                if (storyToOpen != null) {
-//                    navController.navigateSafely(ViewStory(storyToOpen!!))
-//                    viewModel.resetOpenStory()
-//                }
-//            }
-
             Box(modifier = Modifier.weight(1f)) {
                 Column(Modifier.fillMaxSize()) {
 
@@ -133,18 +127,6 @@ fun StoriesScreen(navController: NavController, coroutineScope: CoroutineScope) 
                         }
                     }
                 }
-//
-//                FloatingActionButton(
-//                    onClick = {  },
-//                    containerColor = DarkBlue,
-//                    contentColor = Color.White,
-//                    modifier = Modifier.align(Alignment.BottomEnd)
-//                ) {
-//                    Icon(
-//                        imageVector = Icons.Rounded.Add,
-//                        contentDescription = stringResource(R.string.add_to_story)
-//                    )
-//                }
             }
 
             val shouldOpenMediaPicker by viewModel.openMediaPicker.collectAsState()
@@ -166,7 +148,7 @@ fun StoriesScreen(navController: NavController, coroutineScope: CoroutineScope) 
             )
         }
 
-        if (storyToOpen != null) {
+        AnimatedVisibility(visible = storyToOpen != null) {
             VerticalDraggable(
                 coroutineScope = coroutineScope,
                 modifier = Modifier.fillMaxSize(),
@@ -174,12 +156,15 @@ fun StoriesScreen(navController: NavController, coroutineScope: CoroutineScope) 
                 content = {
                     // TODO: Clear the previous user story data...
                     // For a second, you can see the previous user name and story
-                    ViewStoryScreen(
-                        authorID = storyToOpen!!,
-                        onHideStory = {
-                            viewModel.resetOpenStory()
-                        }
-                    )
+                    storyToOpen?.let { authorID ->
+                        ViewStoryScreen(
+                            authorID = authorID,
+//                        coroutineScope = coroutineScope,
+                            onHideStory = {
+                                viewModel.resetOpenStory()
+                            }
+                        )
+                    }
                 }
             )
         }

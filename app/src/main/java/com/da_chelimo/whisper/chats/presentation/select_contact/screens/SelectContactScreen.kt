@@ -31,6 +31,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.da_chelimo.whisper.R
+import com.da_chelimo.whisper.chats.domain.ContactState
 import com.da_chelimo.whisper.chats.presentation.select_contact.components.ContactPreview
 import com.da_chelimo.whisper.core.presentation.ui.AllChats
 import com.da_chelimo.whisper.core.presentation.ui.components.DefaultScreen
@@ -47,8 +48,13 @@ fun SelectContactScreen(
     navController: NavController,
     viewModel: SelectContactsViewModel = koinViewModel()
 ) {
-    val contactsOnWhisper by viewModel.contactsOnWhisper.collectAsState(initial = null)
+    val contactsOnWhisper by viewModel.contactsOnWhisper.collectAsState(initial = ContactState.Fetching)
     val shouldNavigateToActualChat by viewModel.shouldNavigateToActualChat.collectAsState()
+
+    //TODO: Remove this
+    LaunchedEffect(key1 = contactsOnWhisper) {
+        Timber.d("contactsOnWhisper is $contactsOnWhisper")
+    }
 
     LaunchedEffect(Unit) {
         viewModel.fetchContactsOnWhisper(context)
@@ -84,52 +90,60 @@ fun SelectContactScreen(
 
         Spacer(modifier = Modifier.height(2.dp))
 
-        if (contactsOnWhisper == null) { // Network call hasn't returned yet
-            Column(
-                Modifier.fillMaxSize(),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                LoadingSpinner()
-            }
-        } else if (contactsOnWhisper!!.isEmpty()) { // No contacts on whisper
-            Box(Modifier.fillMaxSize(0.85f).align(Alignment.CenterHorizontally)) {
-                Column(
-                    Modifier.align(Alignment.Center),
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally
+        when (contactsOnWhisper) {
+            ContactState.Fetching -> { // Network call hasn't returned yet
+                Box(
+                    Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
                 ) {
-                    Image(
-                        painter = painterResource(id = R.drawable.no_users_on_whisper),
-                        contentDescription = null,
-                        modifier = Modifier.size(150.dp)
-                    )
-
-                    Text(
-                        text = stringResource(R.string.none_of_your_contacts_is_on_whisper),
-                        fontFamily = Poppins,
-                        fontSize = 17.sp,
-                        textAlign = TextAlign.Center,
-//                        fontWeight = FontWeight.SemiBold,
-                        modifier = Modifier
-                            .padding(top = 16.dp)
-                            .fillMaxWidth(0.75f)
-                    )
+                    LoadingSpinner()
                 }
             }
-        } else { // There are contacts on Whisper
-            LazyColumn {
-                items(contactsOnWhisper!!) { contact ->
-                    ContactPreview(
-                        contact = contact,
-                        openProfilePic = {
-                            // TODO: Open DP preview
-                        },
-                        startConversation = {
-                            Timber.d("Navigating with contact as $contact")
-                            viewModel.startOrResumeConversation(contact)
-                        }
-                    )
+
+            ContactState.Empty -> { // No contacts on whisper
+                Box(
+                    Modifier
+                        .fillMaxSize(0.85f)
+                        .align(Alignment.CenterHorizontally)) {
+                    Column(
+                        Modifier.align(Alignment.Center),
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Image(
+                            painter = painterResource(id = R.drawable.no_users_on_whisper),
+                            contentDescription = null,
+                            modifier = Modifier.size(120.dp)
+                        )
+
+                        Text(
+                            text = stringResource(R.string.none_of_your_contacts_is_on_whisper),
+                            fontFamily = Poppins,
+                            fontSize = 17.sp,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier
+                                .padding(top = 16.dp)
+                                .fillMaxWidth(0.75f)
+                        )
+                    }
+                }
+            }
+
+            else -> { // There are contacts on Whisper
+                val contacts = (contactsOnWhisper as ContactState.Success).listOfContacts
+                LazyColumn {
+                    items(contacts) { contact ->
+                        ContactPreview(
+                            contact = contact,
+                            openProfilePic = {
+                                // TODO: Open DP preview
+                            },
+                            startConversation = {
+                                Timber.d("Navigating with contact as $contact")
+                                viewModel.startOrResumeConversation(contact)
+                            }
+                        )
+                    }
                 }
             }
         }

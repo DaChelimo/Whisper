@@ -3,6 +3,7 @@
 package com.da_chelimo.whisper.chats.presentation.actual_chat.components.messages
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
@@ -210,7 +211,7 @@ fun AudioMessage(
     isMyChat: Boolean = message.senderID == Firebase.auth.uid, // Doing this allows Compose preview to work
 
     onPlayOrPause: () -> Unit,
-    onSeekTo: () -> Unit
+    onSeekTo: (Long) -> Unit
 ) {
     val audioType = remember {
         message.messageType.toMessageType() as MessageType.Audio
@@ -271,9 +272,10 @@ fun AudioMessage(
                 waveformBrush = SolidColor(Color.LightGray),
                 spikeWidth = 4.dp,
                 spikePadding = 2.dp,
-                progress = waveProgress,
-                onProgressChange = {
-                    waveProgress = it
+                progress = timeLeftInMillis?.let { (it / audioType.duration).toFloat() } ?: 0f,
+                onProgressChange = { seekToFloat ->
+                    waveProgress = seekToFloat
+                    onSeekTo((seekToFloat * audioType.duration).toLong())
                     // TODO: Implement onSeekTo here
                 }
             )
@@ -522,7 +524,7 @@ fun ChatMessage(
                 }
             }
 
-            if (showOptionsMenu)
+            AnimatedVisibility(visible = showOptionsMenu) {
                 Column(
                     Modifier
                         .fillMaxWidth()
@@ -541,6 +543,7 @@ fun ChatMessage(
                         unSendMessage = unSendMessage
                     )
                 }
+            }
         }
     }
 

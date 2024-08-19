@@ -69,11 +69,16 @@ class AuthRepoImpl : AuthRepo {
 
 
     override suspend fun submitSMSCode(smsCode: String, onSignInComplete: (Boolean) -> Unit) {
+        Timber.d("storedVerificationId is $storedVerificationId")
+
         storedVerificationId?.let {
             val authCredential = PhoneAuthProvider.getCredential(it, smsCode)
 
             Firebase.auth
                 .signInWithCredential(authCredential)
+                .addOnFailureListener { e ->
+                    Timber.e(e)
+                }
                 .addOnCompleteListener { task ->
                     Timber.d("task.isSuccessful is ${task.isSuccessful}")
                     onSignInComplete(task.isSuccessful)

@@ -25,13 +25,6 @@ class AndroidAudioPlayer(
     private var audioDurationInMillis: Long? = null
 
     override val timeLeftInMillis = playerStopWatch.timeInMillis
-//        .timeInMillis.map { timeUsedInMillis ->
-//        audioDurationInMillis
-//            ?.let { it - timeUsedInMillis }
-//            ?.formatDurationInMillis()
-//    }.onEach {
-//        Timber.d("timeLeftInMillis is $it")
-//    }
 
 
     private fun createAudioPlayer(audioUrl: String) =
@@ -80,15 +73,21 @@ class AndroidAudioPlayer(
         }
 
 
+    override fun seekTo(newPositionInMillis: Long) {
+        val newPosition = newPositionInMillis.coerceIn(0, mediaPlayer?.duration?.toLong()).toInt()
+        mediaPlayer?.seekTo(newPosition)
+    }
+
+
     override fun pauseAudio() {
         _playerState.value = PlayerState.Paused
-//        recorderStopWatch.pauseOrStop()
+        playerStopWatch.pause()
         mediaPlayer?.pause()
     }
 
     override fun resumeAudio() {
         _playerState.value = PlayerState.Ongoing
-//        recorderStopWatch.startOrResume()
+        playerStopWatch.resume()
         mediaPlayer?.start()
     }
 
@@ -97,7 +96,6 @@ class AndroidAudioPlayer(
         _playerState.value = PlayerState.None
 
         audioDurationInMillis = null
-//        recorderStopWatch.stopAndReset()
         playerStopWatch.stop()
 
         mediaPlayer?.stop()

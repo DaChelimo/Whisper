@@ -1,4 +1,4 @@
-package com.da_chelimo.whisper.main
+package com.da_chelimo.whisper.main_activity
 
 import androidx.lifecycle.ViewModel
 import com.da_chelimo.whisper.core.domain.User

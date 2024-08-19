@@ -11,18 +11,23 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material3.Icon
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -36,8 +41,11 @@ import com.da_chelimo.whisper.core.presentation.ui.theme.LightGrey
 import com.da_chelimo.whisper.core.presentation.ui.theme.LocalAppColors
 import com.da_chelimo.whisper.core.presentation.ui.theme.QuickSand
 import com.da_chelimo.whisper.core.utils.toStoryTime
+import com.da_chelimo.whisper.stories.domain.Story
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
+import kotlinx.coroutines.delay
+import timber.log.Timber
 
 
 @Composable
@@ -111,18 +119,55 @@ private fun PreviewStoryBar() = AppTheme {
 
 @Composable
 fun StoryTopCountIndicator(
+    isPaused: Boolean,
     currentStoryIndex: Int,
     totalStoryCount: Int,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onTimerOver: () -> Unit
 ) {
     Row(modifier.fillMaxWidth()) {
         repeat(totalStoryCount) { index ->
             val isOrWasViewed = index <= currentStoryIndex
-            Surface(
-                modifier = Modifier.height((1.5).dp).weight(1f),
-                shape = RoundedCornerShape(50),
-                color = if (isOrWasViewed) Color.White else LightGrey
-            ) {}
+            val currentStory = index == currentStoryIndex
+
+
+            if (currentStory) {
+                var progress by remember(key1 = currentStoryIndex) { mutableLongStateOf(0L) }
+
+
+                LaunchedEffect(key1 = isPaused, key2 = currentStoryIndex) {
+                    Timber.d("StoryTopCountIndicator: isPaused is $isPaused")
+                    while (!isPaused) {
+                        progress += 20
+                        delay(20)
+
+                        if (progress >= Story.DURATION) {
+                            onTimerOver()
+                            break
+                        }
+                    }
+                }
+
+
+                LinearProgressIndicator(
+                    progress = {
+                        progress.toFloat() / Story.DURATION.toFloat()
+                    },
+                    modifier = Modifier
+                        .height((2).dp)
+                        .weight(1f),
+                    strokeCap = StrokeCap.Round,
+                    trackColor = LightGrey,
+                    color = Color.White
+                )
+            } else
+                Surface(
+                    modifier = Modifier
+                        .height((2).dp)
+                        .weight(1f),
+                    shape = CircleShape,
+                    color = if (isOrWasViewed) Color.White else LightGrey
+                ) {}
 
             Spacer(modifier = Modifier.width(4.dp))
         }

@@ -6,11 +6,12 @@ data class Story(
     val imageUrl: String,
     val storyCaption: String,
     val timeUploaded: Long = System.currentTimeMillis(),
-    val totalViewers: Int = 0 ,
+    val totalViewers: Int = 0,
+
     val viewersIDs: List<String> = listOf() // List<MiniUser>
 ) {
 
-    constructor(): this(
+    constructor() : this(
         storyID = "",
         authorUID = "",
         imageUrl = "",
@@ -20,4 +21,7 @@ data class Story(
         viewersIDs = listOf()
     )
 
+    companion object {
+        const val DURATION = 4000L
+    }
 }

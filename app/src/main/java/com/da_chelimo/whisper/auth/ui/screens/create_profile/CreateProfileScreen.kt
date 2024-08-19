@@ -114,129 +114,124 @@ fun CreateProfileScreen(
 
             val scrollState = rememberScrollState()
 
-            // I would have used task State for this but it simply isn't loading
-            // TODO: Fix this
-            var isSubmittingData by remember {
-                mutableStateOf(false)
-            }
 
             Box(Modifier.fillMaxSize()) {
-                Column(
-                    Modifier
-                        .fillMaxSize()
-                        .verticalScroll(scrollState),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                )
-                {
-                    Text(
-                        text = stringResource(R.string.profile_info),
-                        style = MaterialTheme.typography.titleLarge,
-                        modifier = Modifier.padding(top = 12.dp)
+                if (taskState is TaskState.NONE) {
+                    Column(
+                        Modifier
+                            .fillMaxSize()
+                            .verticalScroll(scrollState),
+                        horizontalAlignment = Alignment.CenterHorizontally
                     )
+                    {
+                        Text(
+                            text = stringResource(R.string.profile_info),
+                            style = MaterialTheme.typography.titleLarge,
+                            modifier = Modifier.padding(top = 12.dp)
+                        )
 
-                    Text(
-                        text = stringResource(R.string.provide_name_and_profile_photo),
-                        fontFamily = Poppins,
-                        fontSize = 14.sp,
-                        modifier = Modifier
-                            .padding(top = 6.dp)
-                    )
+                        Text(
+                            text = stringResource(R.string.provide_name_and_profile_photo),
+                            fontFamily = Poppins,
+                            fontSize = 14.sp,
+                            modifier = Modifier
+                                .padding(top = 6.dp)
+                        )
 
-                    Box(Modifier) {
-                        UserIcon(
-                            profilePic = profilePic?.toString(),
-                            iconSize = 120.dp,
-                            progressBarSize = 32.dp,
-                            progressBarThickness = 3.dp,
-                            modifier = Modifier.padding(top = 8.dp),
-                            borderIfUsingDefaultPic = 2.dp,
-                            onClick = {
-                                shouldOpenGallery = true
+                        Box(Modifier) {
+                            UserIcon(
+                                profilePic = profilePic?.toString(),
+                                iconSize = 120.dp,
+                                progressBarSize = 32.dp,
+                                progressBarThickness = 3.dp,
+                                modifier = Modifier.padding(top = 8.dp),
+                                borderIfUsingDefaultPic = 2.dp,
+                                onClick = {
+                                    shouldOpenGallery = true
+                                }
+                            )
+
+                            IconButton(
+                                onClick = { shouldOpenGallery = true },
+                                modifier = Modifier.align(Alignment.BottomEnd),
+                                colors = IconButtonDefaults.iconButtonColors(
+                                    containerColor = DarkBlue,
+                                    contentColor = Color.White
+                                )
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Rounded.Add,
+                                    contentDescription = stringResource(R.string.select_profile_picture_from_galley),
+                                    modifier = Modifier.size(26.dp)
+                                )
+                            }
+                        }
+
+                        CreateProfileTextField(
+                            modifier = Modifier.padding(top = 20.dp),
+                            value = name,
+                            placeHolderText = stringResource(R.string.enter_your_name),
+                            onValueChange = {
+                                viewModel.updateName(it)
                             }
                         )
 
-                        IconButton(
-                            onClick = { shouldOpenGallery = true },
-                            modifier = Modifier.align(Alignment.BottomEnd),
-                            colors = IconButtonDefaults.iconButtonColors(
-                                containerColor = DarkBlue,
-                                contentColor = Color.White
-                            )
-                        ) {
-                            Icon(
-                                imageVector = Icons.Rounded.Add,
-                                contentDescription = stringResource(R.string.select_profile_picture_from_galley),
-                                modifier = Modifier.size(26.dp)
-                            )
-                        }
-                    }
-
-                    CreateProfileTextField(
-                        modifier = Modifier.padding(top = 20.dp),
-                        value = name,
-                        placeHolderText = stringResource(R.string.enter_your_name),
-                        onValueChange = {
-                            viewModel.updateName(it)
-                        }
-                    )
-
-                    CreateProfileTextField(
-                        modifier = Modifier.padding(top = 12.dp),
-                        value = bio,
-                        placeHolderText = stringResource(id = R.string.enter_your_bio),
-                        onValueChange = {
-                            viewModel.updateBio(it)
-                        }
-                    )
-
-
-                    Spacer(modifier = Modifier.weight(1f))
-
-
-                    LaunchedEffect(key1 = Unit) {
-                        viewModel.taskState.collectLatest {
-                            if (it is TaskState.DONE.SUCCESS)
-                                navController.navigateSafelyAndPopTo(
-                                    route = AllChats,
-                                    popTo = Welcome,
-                                    isInclusive = true
-                                )
-                            else if (it is TaskState.DONE.ERROR)
-                                snackbarHostState.showSnackbar("Error occurred")
-                        }
-                    }
-
-                    Button(
-                        onClick = {
-                            isSubmittingData = true
-                            viewModel.createUserProfile(phoneNumber)
-                            viewModel.resetTaskState()
-                            isSubmittingData = false
-                        },
-                        modifier = Modifier
-                            .padding(vertical = 24.dp)
-                            .fillMaxWidth(),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = MaterialTheme.colorScheme.surface,
-                            contentColor = MaterialTheme.colorScheme.onSurface,
-                            disabledContentColor = MaterialTheme.colorScheme.onSurface.copy(0.75f),
-                            disabledContainerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.75f)
-                        ),
-                        enabled = name.isNotBlank(),
-                        shape = MaterialTheme.shapes.medium
-                    ) {
-                        Text(
-                            text = stringResource(R.string.next),
-                            fontFamily = Poppins,
-                            fontSize = 16.sp,
-                            modifier = Modifier.padding(vertical = 6.dp)
+                        CreateProfileTextField(
+                            modifier = Modifier.padding(top = 12.dp),
+                            value = bio,
+                            placeHolderText = stringResource(id = R.string.enter_your_bio),
+                            onValueChange = {
+                                viewModel.updateBio(it)
+                            }
                         )
-                    }
-                }
 
-//                if (taskState !is TaskState.NONE)
-                // tODO: Why is this NOT WORKING????
-                if (isSubmittingData)
+
+                        Spacer(modifier = Modifier.weight(1f))
+
+
+                        LaunchedEffect(key1 = Unit) {
+                            viewModel.taskState.collectLatest {
+                                if (it is TaskState.DONE.SUCCESS)
+                                    navController.navigateSafelyAndPopTo(
+                                        route = AllChats,
+                                        popTo = Welcome,
+                                        isInclusive = true
+                                    )
+                                else if (it is TaskState.DONE.ERROR)
+                                    snackbarHostState.showSnackbar("Error occurred")
+                            }
+                        }
+
+                        Button(
+                            onClick = {
+                                viewModel.createUserProfile(phoneNumber)
+                                viewModel.resetTaskState()
+                            },
+                            modifier = Modifier
+                                .padding(vertical = 24.dp)
+                                .fillMaxWidth(),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.surface,
+                                contentColor = MaterialTheme.colorScheme.onSurface,
+                                disabledContentColor = MaterialTheme.colorScheme.onSurface.copy(
+                                    0.75f
+                                ),
+                                disabledContainerColor = MaterialTheme.colorScheme.surface.copy(
+                                    alpha = 0.75f
+                                )
+                            ),
+                            enabled = name.isNotBlank(),
+                            shape = MaterialTheme.shapes.medium
+                        ) {
+                            Text(
+                                text = stringResource(R.string.next),
+                                fontFamily = Poppins,
+                                fontSize = 16.sp,
+                                modifier = Modifier.padding(vertical = 6.dp)
+                            )
+                        }
+                    }
+                } else
                     LoadingSpinner(modifier = Modifier.align(Alignment.Center))
             }
         }

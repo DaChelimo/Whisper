@@ -171,7 +171,7 @@ fun ActualChatScreen(
                     .weight(1f)
                     .fillMaxWidth()
                     .clip(bottomRoundedShape)
-                    .background(LocalAppColors.current.lighterMainBackground)
+                    .background(LocalAppColors.current.darkerMainBackground)
                     .padding(bottom = 6.dp)
             ) {
 
@@ -187,12 +187,8 @@ fun ActualChatScreen(
                         if (viewModel.chatID != null && otherUID != null)
                             navController.navigateSafely(ChatDetails(viewModel.chatID!!, otherUID))
                     },
-                    onVoiceCall = {
-                        showComingSoonPopup = true
-                    },
-                    onVideoCall = {
-                        showComingSoonPopup = true
-                    }
+                    onVoiceCall = { showComingSoonPopup = true },
+                    onVideoCall = { showComingSoonPopup = true }
                 )
 
                 Spacer(
@@ -250,8 +246,8 @@ fun ActualChatScreen(
                                         )
                                     }
                                 },
-                                onSeekTo = {
-                                    // TODO:
+                                onSeekTo = { newPosition ->
+                                    viewModel.seekTo(messageType, newPosition)
                                 }
                             )
                         } else if (messageType is MessageType.Text || messageType is MessageType.Image) {

@@ -24,18 +24,18 @@ interface ChatRepo {
         const val CHAT_MESSAGES = "messages"
 
         fun getChatDetailsRef(chatID: String) =
-            Firebase.firestore.collection(ChatRepo.CHAT_DETAILS).document(chatID)
+            Firebase.firestore.collection(CHAT_DETAILS).document(chatID)
 
         fun getPersonalizedChatsFirebaseRef(uid: String) =
-            Firebase.firestore.collection(ChatRepo.PERSONALIZED_CHATS)
+            Firebase.firestore.collection(PERSONALIZED_CHATS)
                 .document("FILLER")
                 .collection(uid)
 
 
         fun getMessagesCollectionRef(chatID: String) =
-            Firebase.firestore.collection(ChatRepo.CHATS_COLLECTION)
+            Firebase.firestore.collection(CHATS_COLLECTION)
                 .document(chatID)
-                .collection(ChatRepo.CHAT_MESSAGES)
+                .collection(CHAT_MESSAGES)
 
     }
 
