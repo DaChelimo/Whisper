@@ -148,6 +148,6 @@ fun EnterNumberScreen(
 
 @Preview
 @Composable
-private fun PreviewEnterNumberScreen() = AppTheme(darkTheme = true) {
+private fun PreviewEnterNumberScreen() = AppTheme {
     EnterNumberScreen(rememberNavController()) {}
 }

@@ -81,7 +81,7 @@ fun TypeMessageBar(
                 cursorColor = Color.White,
                 selectionColors = TextSelectionColors(
                     handleColor = LocalAppColors.current.appThemeTextColor,
-                    backgroundColor = LocalAppColors.current.selectionColor
+                    backgroundColor = LocalAppColors.current.selectionColor.copy(alpha = 0.4f)
                 ),
                 focusedIndicatorColor = Color.Transparent,
                 unfocusedIndicatorColor = Color.Transparent,

@@ -122,6 +122,8 @@ dependencies {
     implementation(libs.room.runtime)
     implementation(libs.room.ktx)
     ksp(libs.room.compiler)
+//    androidx-datastore-preferences
+    implementation(libs.androidx.datastore.preferences)
 
     // Others
     implementation(libs.logging.timber)

@@ -106,6 +106,6 @@ fun WelcomeScreen(
 
 @Preview
 @Composable
-private fun PreviewWelcomeScreen() = AppTheme(darkTheme = true) {
+private fun PreviewWelcomeScreen() = AppTheme {
     WelcomeScreen(rememberNavController()) {}
 }

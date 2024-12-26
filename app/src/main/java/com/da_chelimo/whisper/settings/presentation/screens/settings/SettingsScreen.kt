@@ -1,6 +1,8 @@
 package com.da_chelimo.whisper.settings.presentation.screens.settings
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -9,6 +11,10 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowLeft
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -26,7 +32,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.da_chelimo.whisper.R
@@ -42,11 +47,14 @@ import com.da_chelimo.whisper.core.presentation.ui.theme.AppTheme
 import com.da_chelimo.whisper.core.presentation.ui.theme.LocalAppColors
 import com.da_chelimo.whisper.core.presentation.ui.theme.QuickSand
 import com.da_chelimo.whisper.settings.presentation.components.AreYouSurePopup
+import org.koin.androidx.compose.koinViewModel
+import timber.log.Timber
 
 @Composable
 fun SettingsScreen(navController: NavController) {
-    val viewModel = viewModel<SettingsViewModel>()
+    val viewModel = koinViewModel<SettingsViewModel>()
     val isDeleting by viewModel.isDeletingAccount.collectAsState()
+    val isDarkMode by viewModel.isDarkTheme.collectAsState()
 
 
     var showAreYouSurePopup by remember {
@@ -124,6 +132,45 @@ fun SettingsScreen(navController: NavController) {
                     showAreYouSurePopup = true
                 }
             )
+
+        }
+
+        Card(
+            shape = RoundedCornerShape(8.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = LocalAppColors.current.mainBackground
+            ),
+            modifier = Modifier
+                .padding(horizontal = 12.dp, vertical = 12.dp)
+                .align(Alignment.BottomCenter),
+            elevation = CardDefaults.elevatedCardElevation(defaultElevation = 2.dp)
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.padding(horizontal = 8.dp)
+            ) {
+                Text(
+                    text = stringResource(R.string.dark_mode),
+                    fontFamily = QuickSand,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.SemiBold
+                )
+
+                Spacer(modifier = Modifier.weight(1f))
+
+                Switch(
+                    checked = isDarkMode,
+                    colors = SwitchDefaults.colors(
+                        checkedThumbColor = LocalAppColors.current.switchCheckedColor,
+                        checkedTrackColor = LocalAppColors.current.switchCheckedColor.copy(alpha = 0.4f),
+                        uncheckedThumbColor = LocalAppColors.current.switchUncheckedColor,
+                        uncheckedTrackColor = LocalAppColors.current.switchUncheckedColor.copy(alpha = 0.4f),
+                        uncheckedBorderColor = Color.White.copy(alpha = 0.2f)
+                    ),
+                    onCheckedChange = { turnOn ->
+                        Timber.d("onCheckedChange called")
+                        viewModel.toggleTheme(turnOn) })
+            }
         }
 
         if (showAreYouSurePopup)

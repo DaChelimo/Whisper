@@ -13,6 +13,9 @@ class AppColors (
     val appThemeTextColor: Color,
     val blueCardColor: Color,
     val selectionColor: Color,
+
+    val switchCheckedColor: Color,
+    val switchUncheckedColor: Color
 )
 
 
@@ -27,7 +30,10 @@ val LightAppColors = AppColors(
     fabContainerColor = DarkerBlue,
     appThemeTextColor = DarkBlue,
     blueCardColor = DarkBlue,
-    selectionColor = DarkBlue.copy(alpha = 0.4f)
+    selectionColor = DarkBlue.copy(alpha = 0.4f),
+
+    switchCheckedColor = MediumBlue,
+    switchUncheckedColor = LightBlack
 )
 
 val DarkAppColors = AppColors(
@@ -38,5 +44,8 @@ val DarkAppColors = AppColors(
     fabContainerColor = DarkerBlue,
     appThemeTextColor = Color.White,
     blueCardColor = DarkBlue,
-    selectionColor = Color.White.copy(alpha = 0.3f)
+    selectionColor = Color.White.copy(alpha = 0.3f),
+
+    switchCheckedColor = MediumBlue,
+    switchUncheckedColor = Color.White
 )

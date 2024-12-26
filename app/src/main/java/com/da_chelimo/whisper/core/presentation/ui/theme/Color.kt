@@ -20,3 +20,5 @@ val CorrectGreen = Color(0xFF00FF92)
 val OnlineGreen = Color(0xFF0CFF97)
 val ErrorRed = Color(0xFFF0384E)
 val SelectionBlue = Color(0xFFAAF5EC)
+
+val MediumBlue = Color(0xFF0CA1CE)

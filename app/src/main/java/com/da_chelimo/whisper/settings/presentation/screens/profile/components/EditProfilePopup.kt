@@ -151,7 +151,7 @@ fun EditProfilePopup(
 
 @Preview
 @Composable
-private fun PreviewEditProfilePopup() = AppTheme(darkTheme = true) {
+private fun PreviewEditProfilePopup() = AppTheme {
     Column(
         Modifier
             .fillMaxSize()

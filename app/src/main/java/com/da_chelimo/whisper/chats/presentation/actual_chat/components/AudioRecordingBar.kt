@@ -119,7 +119,7 @@ fun AudioRecordingBar(
 
 @LightPreviewMode
 @Composable
-private fun PreviewAudioRecordingBar() = AppTheme(darkTheme = false) {
+private fun PreviewAudioRecordingBar() = AppTheme {
     Column(
         Modifier
             .fillMaxSize()

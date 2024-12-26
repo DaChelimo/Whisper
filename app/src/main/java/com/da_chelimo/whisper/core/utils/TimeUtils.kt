@@ -27,7 +27,7 @@ fun Long.toStoryTime(): String {
         "Today $hourAndMinute"
     else if (timeInterval.standardDays < 2)
         "Yesterday $hourAndMinute"
-    else jodaTime.toString("EEEE $hourAndMinute")
+    else jodaTime.toString("EEEE ") + hourAndMinute
 }
 
 

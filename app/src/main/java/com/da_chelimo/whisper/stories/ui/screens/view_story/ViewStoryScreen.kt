@@ -1,11 +1,14 @@
 package com.da_chelimo.whisper.stories.ui.screens.view_story
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -14,6 +17,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.pager.HorizontalPager
@@ -43,10 +47,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -55,6 +61,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.da_chelimo.whisper.R
+import com.da_chelimo.whisper.core.presentation.ui.components.AppSnackbar
 import com.da_chelimo.whisper.core.presentation.ui.components.Glider
 import com.da_chelimo.whisper.core.presentation.ui.components.UserIcon
 import com.da_chelimo.whisper.core.presentation.ui.theme.AppTheme
@@ -64,8 +71,11 @@ import com.da_chelimo.whisper.core.presentation.ui.theme.LightBlack
 import com.da_chelimo.whisper.core.presentation.ui.theme.LocalAppColors
 import com.da_chelimo.whisper.core.presentation.ui.theme.Poppins
 import com.da_chelimo.whisper.core.presentation.ui.theme.QuickSand
+import com.da_chelimo.whisper.stories.domain.ReplyState
 import com.da_chelimo.whisper.stories.domain.StoryPreview
+import com.da_chelimo.whisper.stories.domain.message
 import com.da_chelimo.whisper.stories.ui.components.StoryTopCountIndicator
+import com.da_chelimo.whisper.stories.ui.components.ViewStoryMessageBar
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.Job
@@ -76,6 +86,9 @@ import timber.log.Timber
 
 @Composable
 fun ViewStoryScreen(authorID: String, onHideStory: () -> Unit) {
+    val keyboard = LocalSoftwareKeyboardController.current
+    val focusRequester = remember { FocusRequester() }
+
     val viewModel: ViewStoryViewModel = koinViewModel()
     val author by viewModel.author.collectAsState(initial = null)
     val isCurrentUser = author?.uid == Firebase.auth.uid
@@ -85,7 +98,14 @@ fun ViewStoryScreen(authorID: String, onHideStory: () -> Unit) {
     val storyIndex by viewModel.storyIndex.collectAsState()
     val hideStory by viewModel.hideStory.collectAsState()
 
-    val typedMessage by viewModel.typedMessage.collectAsState()
+    val replyState by viewModel.replyState.collectAsState()
+    val (storyReply, setStoryReply) = remember(key1 = storyIndex) {
+        mutableStateOf("")
+    }
+
+    var isStoryPaused by remember {
+        mutableStateOf(false)
+    }
 
     LaunchedEffect(key1 = Unit) {
         viewModel.loadUser(authorID)
@@ -97,6 +117,29 @@ fun ViewStoryScreen(authorID: String, onHideStory: () -> Unit) {
         if (hideStory) {
             onHideStory()
             viewModel.resetHideStory()
+        }
+    }
+
+    LaunchedEffect(key1 = replyState) {
+        /**
+         * If the user wants to open the keyboard, handle that
+         *
+         * After sending the reply, two events occur: Sending & possible Error
+         * Hide either snackbar after 3 seconds
+         */
+        if (replyState == ReplyState.OpenKeyboard) {
+            isStoryPaused = true
+            focusRequester.requestFocus()
+            keyboard?.show()
+        } else if (replyState in listOf(
+                ReplyState.Sending,
+                ReplyState.Success,
+                ReplyState.ErrorOccurred
+            )
+        ) {
+            isStoryPaused = false
+            delay(3000)
+            viewModel.resetReplyState()
         }
     }
 
@@ -116,14 +159,11 @@ fun ViewStoryScreen(authorID: String, onHideStory: () -> Unit) {
                     pagerState.animateScrollToPage(storyIndex)
             }
 
-            var isPaused by remember {
-                mutableStateOf(false)
-            }
             /**
              * Every time we move to a new story, remove Pausing
              */
             LaunchedEffect(key1 = storyIndex) {
-                isPaused = false
+                isStoryPaused = false
             }
 
             HorizontalPager(
@@ -148,9 +188,9 @@ fun ViewStoryScreen(authorID: String, onHideStory: () -> Unit) {
                                         pressJob?.cancel()
                                         pressJob = launch {
                                             delay(250)
-                                            isPaused = true
+                                            isStoryPaused = true
                                             awaitRelease()
-                                            isPaused = false
+                                            isStoryPaused = false
                                         }
                                     }
                                 },
@@ -158,7 +198,7 @@ fun ViewStoryScreen(authorID: String, onHideStory: () -> Unit) {
                                     /**
                                      * Ensures that this is a tap and not a long press
                                      */
-                                    if (!isPaused) {
+                                    if (!isStoryPaused) {
                                         Timber.d("onTap called")
                                         val centerX = (localConfiguration.screenWidthDp.dp / 2)
                                         val tapPosition = offset.x.toDp()
@@ -229,7 +269,9 @@ fun ViewStoryScreen(authorID: String, onHideStory: () -> Unit) {
 
                                 Button(
                                     modifier = Modifier.padding(horizontal = 4.dp),
-                                    onClick = { },
+                                    onClick = {
+                                        viewModel.openKeyboard()
+                                    },
                                     contentPadding = PaddingValues(
                                         horizontal = 16.dp,
                                         vertical = 2.dp
@@ -264,7 +306,7 @@ fun ViewStoryScreen(authorID: String, onHideStory: () -> Unit) {
             }
             Column {
                 StoryTopCountIndicator(
-                    isPaused = isPaused,
+                    isPaused = isStoryPaused,
                     currentStoryIndex = pagerState.currentPage,
                     totalStoryCount = pagerState.pageCount,
                     modifier = Modifier
@@ -300,7 +342,7 @@ fun ViewStoryScreen(authorID: String, onHideStory: () -> Unit) {
                     IconButton(onClick = {
                         // TODO: Open story options
                         showStoryOption = true
-                        isPaused = true
+                        isStoryPaused = true
                     }) {
                         Icon(
                             imageVector = Icons.Rounded.MoreVert,
@@ -319,7 +361,7 @@ fun ViewStoryScreen(authorID: String, onHideStory: () -> Unit) {
                                 .fillMaxSize()
                                 .clickable {
                                     showStoryOption = false
-                                    isPaused = false
+                                    isStoryPaused = false
                                 }
                         ) {
                             Card(
@@ -330,18 +372,21 @@ fun ViewStoryScreen(authorID: String, onHideStory: () -> Unit) {
                                 shape = RoundedCornerShape(12.dp),
                                 colors = CardDefaults.cardColors(containerColor = LocalAppColors.current.mainBackground)
                             ) {
-                                Column(Modifier.padding(vertical = 4.dp).clickable {
-                                    /**
-                                     * If it is the current user's story, allow story deletion
-                                     * Otherwise, allow muting only
-                                     */
-                                    if (isCurrentUser) {
-                                        isPaused = false
-                                        viewModel.deleteStory()
-                                    } else {
-                                        showStoryOption = false
-                                    }
-                                }) {
+                                Column(
+                                    Modifier
+                                        .padding(vertical = 4.dp)
+                                        .clickable {
+                                            /**
+                                             * If it is the current user's story, allow story deletion
+                                             * Otherwise, allow muting only
+                                             */
+                                            if (isCurrentUser) {
+                                                isStoryPaused = false
+                                                viewModel.deleteStory()
+                                            } else {
+                                                showStoryOption = false
+                                            }
+                                        }) {
                                     Text(
                                         text = if (isCurrentUser) "Delete" else "Mute",
                                         modifier = Modifier
@@ -364,6 +409,43 @@ fun ViewStoryScreen(authorID: String, onHideStory: () -> Unit) {
             ) {
                 CircularProgressIndicator(modifier = Modifier.size(48.dp), strokeWidth = 4.dp)
             }
+        }
+
+        AnimatedVisibility(
+            visible = replyState == ReplyState.OpenKeyboard,
+            enter = fadeIn(),
+            exit = fadeOut()
+        ) {
+//            DisabledRipple {
+            Column(
+                Modifier
+                    .fillMaxSize()
+                    .clickable {
+                        viewModel.hideKeyboard()
+                        isStoryPaused = false
+                    },
+                verticalArrangement = Arrangement.Bottom
+            ) {
+                ViewStoryMessageBar(
+                    focusRequester = focusRequester,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .imePadding()
+                        .clickable { },
+                    text = storyReply,
+                    onTextChange = setStoryReply,
+                    sendMessage = { viewModel.sendStoryReply(storyReply) }
+                )
+            }
+//            }
+        }
+
+        Box(Modifier.fillMaxSize().imePadding(), contentAlignment = Alignment.BottomCenter) {
+            AppSnackbar(
+                modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 6.dp),
+                showSnackbar = replyState.message() != null,
+                message = replyState.message()
+            )
         }
     }
 }

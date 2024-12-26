@@ -579,7 +579,7 @@ fun RoundedSingleTick(
 
 @Preview
 @Composable
-private fun PreviewChats() = AppTheme(darkTheme = true) {
+private fun PreviewChats() = AppTheme {
     Column(
         Modifier
             .fillMaxWidth()

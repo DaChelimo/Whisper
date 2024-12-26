@@ -121,7 +121,7 @@ fun ChatDetailAction(
 
 @Preview
 @Composable
-private fun PreviewChatDetailsActions() = AppTheme(darkTheme = true) {
+private fun PreviewChatDetailsActions() = AppTheme {
     Column(
         Modifier
             .fillMaxWidth()

@@ -46,9 +46,22 @@ fun ChatDetailsScreen(
     val viewModel = viewModel<ChatDetailsViewModel>()
 
     val otherUser by viewModel.otherUser.collectAsState(initial = null)
+
+
+    /**
+     * Controls whether a popup showing "Coming Soon" is displayed on the entire screen
+     *
+     * This is set to true when the user is trying to access a feature that hasn't been built yet
+     */
     var showComingSoonPopup by remember {
         mutableStateOf(false)
     }
+
+
+    /**
+     * Set to true when the user opens the profile picture.
+     * When true, the profile picture occupies the entire screen, surrounded with a Blur.
+     */
     var isProfilePicFullScreen by remember {
         mutableStateOf(false)
     }

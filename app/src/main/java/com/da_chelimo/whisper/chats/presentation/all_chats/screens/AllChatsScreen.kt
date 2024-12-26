@@ -242,7 +242,7 @@ fun AllChatsScreen(
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Preview
 @Composable
-private fun PreviewAllChatsScreen() = AppTheme(darkTheme = true) {
+private fun PreviewAllChatsScreen() = AppTheme {
     val snackbarHostState = SnackbarHostState()
 
     Scaffold(snackbarHost = { SnackbarHost(hostState = snackbarHostState) }) {
