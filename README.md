@@ -1,4 +1,4 @@
-# Whisper Chat
+# Whisper ~ Real-time messaging app
 
 A modern, offline-first Android chat application built entirely with **Jetpack Compose**. This project demonstrates a robust, scalable architecture and a feature-set designed for a seamless user experience.
 
